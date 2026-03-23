@@ -1,0 +1,31 @@
+# ─── Node / NestJS ───────────────────────────────────────────────
+node_modules/
+apps/api/dist/
+apps/api/.env
+apps/api/.env.local
+
+# ─── Flutter / Dart ──────────────────────────────────────────────
+apps/mobile/.dart_tool/
+apps/mobile/build/
+apps/mobile/.flutter-plugins
+apps/mobile/.flutter-plugins-dependencies
+apps/mobile/android/.gradle/
+apps/mobile/ios/Pods/
+apps/mobile/ios/.symlinks/
+apps/mobile/**/*.g.dart
+apps/mobile/**/*.freezed.dart
+
+# ─── Env ─────────────────────────────────────────────────────────
+.env
+.env.local
+.env.production
+
+# ─── IDE ─────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.DS_Store
+*.iml
+
+# ─── Logs ────────────────────────────────────────────────────────
+*.log
+npm-debug.log*

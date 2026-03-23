@@ -1,0 +1,490 @@
+// ═══════════════════════════════════════════════════════════════════
+// Miraku — Prisma Schema
+// PostgreSQL + PostGIS
+//
+// Модули:
+//   1. Auth & Users
+//   2. Masters & Profiles
+//   3. Services & Schedule
+//   4. Bookings
+//   5. Reviews
+//   6. Chat
+//   7. Favourites
+//   8. Salons (CRM — фундамент)
+//   9. Notifications
+// ═══════════════════════════════════════════════════════════════════
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [postgis]
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 1. AUTH & USERS
+// Один аккаунт — две роли (клиент + мастер)
+// Как в InDrive: регистрация одна, роли переключаются внутри
+// ───────────────────────────────────────────────────────────────────
+
+model User {
+  id          String   @id @default(uuid())
+  phone       String   @unique
+  name        String
+  avatarUrl   String?
+  lang        Lang     @default(RU)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime? // soft delete
+
+  // Один пользователь может быть клиентом И мастером
+  masterProfile MasterProfile?
+  salonProfile  SalonProfile?
+
+  // Как клиент
+  bookingsAsClient Booking[]    @relation("ClientBookings")
+  reviews          Review[]
+  favourites       Favourite[]
+  chatMessages     ChatMessage[] @relation("SenderMessages")
+  chatRooms        ChatRoomUser[]
+
+  // Auth
+  refreshTokens    RefreshToken[]
+
+  // Уведомления
+  pushTokens       PushToken[]
+  notifications    Notification[]
+
+  @@map("users")
+}
+
+enum Lang {
+  RU
+  KZ
+  EN
+}
+
+// OTP коды — в Redis (TTL 5 мин), не в БД
+// JWT refresh tokens
+model RefreshToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 2. MASTERS & PROFILES
+// Профиль мастера — расширение User
+// Координаты через PostGIS для геофильтрации в ленте
+// ───────────────────────────────────────────────────────────────────
+
+model MasterProfile {
+  id             String        @id @default(uuid())
+  userId         String        @unique
+  bio            String?       @db.VarChar(300)
+  address        String        // Текстовый адрес для отображения
+  lat            Float         // Координаты рабочего места
+  lng            Float
+  // location — PostGIS Geography хранится через raw SQL миграцию
+  // ALTER TABLE master_profiles ADD COLUMN location geography(Point,4326)
+  bufferMinutes  Int           @default(15)
+  isActive       Boolean       @default(true)   // тогл "Принимаю записи"
+  isVerified     Boolean       @default(false)
+  verifiedAt     DateTime?
+  status         MasterStatus  @default(PENDING)
+  rating         Float?        // Денормализованный рейтинг (пересчитывается)
+  reviewCount    Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  user            User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  specializations MasterSpec[]
+  portfolioPhotos PortfolioPhoto[]
+  services        Service[]
+  schedules       Schedule[]
+  scheduleOverrides ScheduleOverride[]
+  bookings        Booking[]         @relation("MasterBookings")
+  reviews         Review[]          @relation("MasterReviews")
+  favouritedBy    Favourite[]
+  chatRooms       ChatRoom[]
+  salonMemberships SalonMaster[]
+
+  @@map("master_profiles")
+}
+
+enum MasterStatus {
+  PENDING    // Заявка отправлена, ждёт проверки
+  APPROVED   // Одобрен — виден в ленте
+  REJECTED   // Отклонён — можно исправить и переподать
+  SUSPENDED  // Заблокирован администратором
+}
+
+// Специализации мастера (многие-ко-многим через pivot)
+model MasterSpec {
+  id         String       @id @default(uuid())
+  masterId   String
+  category   ServiceCategory
+
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([masterId, category])
+  @@map("master_specs")
+}
+
+model PortfolioPhoto {
+  id         String   @id @default(uuid())
+  masterId   String
+  url        String
+  thumbUrl   String?  // Сжатая версия для ленты
+  isCover    Boolean  @default(false) // Обложка карточки в ленте
+  sortOrder  Int      @default(0)
+  createdAt  DateTime @default(now())
+
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@map("portfolio_photos")
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 3. SERVICES & SCHEDULE
+// Услуги мастера и расписание
+// ───────────────────────────────────────────────────────────────────
+
+model Service {
+  id           String          @id @default(uuid())
+  masterId     String
+  title        String
+  category     ServiceCategory
+  priceFrom    Int             // Цена в тенге
+  durationMin  Int             // Длительность в минутах
+  isEnabled    Boolean         @default(true)
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  master   MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  bookings Booking[]
+
+  @@map("services")
+}
+
+enum ServiceCategory {
+  MANICURE
+  PEDICURE
+  HAIRCUT
+  COLORING
+  MAKEUP
+  LASHES
+  BROWS
+  SKINCARE
+  OTHER
+}
+
+// Недельный шаблон расписания (0=Вс, 1=Пн, ..., 6=Сб)
+model Schedule {
+  id          String   @id @default(uuid())
+  masterId    String
+  dayOfWeek   Int      // 0–6
+  startTime   String   // "10:00"
+  endTime     String   // "19:00"
+  isDayOff    Boolean  @default(false)
+
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([masterId, dayOfWeek])
+  @@map("schedules")
+}
+
+// Особые дни — переопределяют шаблон для конкретной даты
+model ScheduleOverride {
+  id         String   @id @default(uuid())
+  masterId   String
+  date       DateTime @db.Date
+  isDayOff   Boolean  @default(true)
+  startTime  String?  // Если не выходной — другие часы
+  endTime    String?
+
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([masterId, date])
+  @@map("schedule_overrides")
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 4. BOOKINGS
+// Записи — сердце продукта
+// priceSnapshot — цена на момент записи (не меняется при изменении прайса)
+// ───────────────────────────────────────────────────────────────────
+
+model Booking {
+  id             String        @id @default(uuid())
+  clientId       String
+  masterId       String
+  serviceId      String
+  startsAt       DateTime
+  endsAt         DateTime      // startsAt + durationMin + bufferMin
+  status         BookingStatus @default(CONFIRMED)
+  priceSnapshot  Int           // Фиксируем цену на момент записи
+  cancelledBy    CancelledBy?
+  cancelReason   String?
+  completedAt    DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  // CRM: к какому салону относится (если мастер в салоне)
+  salonId        String?
+
+  client  User          @relation("ClientBookings", fields: [clientId], references: [id])
+  master  MasterProfile @relation("MasterBookings", fields: [masterId], references: [id])
+  service Service       @relation(fields: [serviceId], references: [id])
+  salon   SalonProfile? @relation(fields: [salonId], references: [id])
+  review  Review?
+
+  // CRM финансы
+  commissions BookingCommission?
+
+  @@index([masterId, startsAt])
+  @@index([clientId, startsAt])
+  @@index([salonId])
+  @@map("bookings")
+}
+
+enum BookingStatus {
+  CONFIRMED   // Запись создана
+  COMPLETED   // Мастер нажал "Выполнено"
+  CANCELLED   // Отменена (клиентом или мастером)
+}
+
+enum CancelledBy {
+  CLIENT
+  MASTER
+  SYSTEM
+}
+
+// CRM: расчёт комиссий по завершённой записи
+model BookingCommission {
+  id             String  @id @default(uuid())
+  bookingId      String  @unique
+  totalAmount    Int     // Итоговая сумма записи
+  platformFee    Int     // Комиссия Miraku (%)
+  masterAmount   Int     // Мастеру
+  salonAmount    Int?    // Салону (если в салоне)
+  isSettled      Boolean @default(false)
+  settledAt      DateTime?
+
+  booking Booking @relation(fields: [bookingId], references: [id])
+
+  @@map("booking_commissions")
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 5. REVIEWS
+// Только после COMPLETED записи
+// ───────────────────────────────────────────────────────────────────
+
+model Review {
+  id        String   @id @default(uuid())
+  bookingId String   @unique // Один отзыв на одну запись
+  clientId  String
+  masterId  String
+  rating    Int      // 1–5
+  text      String?
+  createdAt DateTime @default(now())
+
+  booking Booking       @relation(fields: [bookingId], references: [id])
+  client  User          @relation(fields: [clientId], references: [id])
+  master  MasterProfile @relation("MasterReviews", fields: [masterId], references: [id])
+
+  @@map("reviews")
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 6. CHAT
+// WebSocket + Redis Pub/Sub для real-time
+// ChatRoom создаётся при первом добавлении в избранное
+// ───────────────────────────────────────────────────────────────────
+
+model ChatRoom {
+  id        String   @id @default(uuid())
+  clientId  String   // User.id
+  masterId  String   // MasterProfile.id
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  master   MasterProfile  @relation(fields: [masterId], references: [id])
+  users    ChatRoomUser[]
+  messages ChatMessage[]
+
+  @@unique([clientId, masterId])
+  @@map("chat_rooms")
+}
+
+model ChatRoomUser {
+  id         String   @id @default(uuid())
+  roomId     String
+  userId     String
+  lastReadAt DateTime?
+
+  room ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  user User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([roomId, userId])
+  @@map("chat_room_users")
+}
+
+model ChatMessage {
+  id        String      @id @default(uuid())
+  roomId    String
+  senderId  String
+  content   String
+  type      MessageType @default(TEXT)
+  isRead    Boolean     @default(false)
+  createdAt DateTime    @default(now())
+
+  room   ChatRoom @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  sender User     @relation("SenderMessages", fields: [senderId], references: [id])
+
+  @@index([roomId, createdAt])
+  @@map("chat_messages")
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  BOOKING_LINK  // Быстрая ссылка на запись из чата
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 7. FAVOURITES
+// Клиент сохраняет мастера → разблокируется чат
+// ───────────────────────────────────────────────────────────────────
+
+model Favourite {
+  id        String   @id @default(uuid())
+  userId    String
+  masterId  String
+  createdAt DateTime @default(now())
+
+  user   User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, masterId])
+  @@map("favourites")
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 8. SALONS — CRM фундамент
+// Заложен сейчас, активируется когда придут салоны
+// ───────────────────────────────────────────────────────────────────
+
+model SalonProfile {
+  id          String      @id @default(uuid())
+  ownerId     String      @unique
+  name        String
+  description String?
+  address     String?
+  logoUrl     String?
+  isActive    Boolean     @default(true)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  owner    User          @relation(fields: [ownerId], references: [id])
+  masters  SalonMaster[]
+  bookings Booking[]
+
+  @@map("salon_profiles")
+}
+
+// Мастер в салоне — привязка по ID мастера
+model SalonMaster {
+  id                String       @id @default(uuid())
+  salonId           String
+  masterId          String
+  commissionPercent Float        @default(30) // % который идёт салону
+  status            SalonMasterStatus @default(PENDING)
+  joinedAt          DateTime?
+  createdAt         DateTime     @default(now())
+
+  salon  SalonProfile  @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@unique([salonId, masterId])
+  @@map("salon_masters")
+}
+
+enum SalonMasterStatus {
+  PENDING   // Приглашение отправлено, мастер не принял
+  ACTIVE    // Активен в салоне
+  INACTIVE  // Приостановлен
+  LEFT      // Покинул салон
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 9. NOTIFICATIONS
+// Push-токены и история уведомлений
+// ───────────────────────────────────────────────────────────────────
+
+model PushToken {
+  id        String   @id @default(uuid())
+  userId    String
+  token     String   @unique
+  platform  Platform
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("push_tokens")
+}
+
+enum Platform {
+  IOS
+  ANDROID
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String
+  type      NotificationType
+  title     String
+  body      String
+  data      Json?            // Доп. данные (bookingId, masterId и т.д.)
+  isRead    Boolean          @default(false)
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("notifications")
+}
+
+enum NotificationType {
+  // Для клиента
+  BOOKING_CONFIRMED
+  BOOKING_REMINDER      // За 2 часа до визита
+  BOOKING_CANCELLED_BY_MASTER
+  REVIEW_REQUEST        // Через 30 мин после COMPLETED
+
+  // Для мастера
+  NEW_BOOKING
+  BOOKING_REMINDER_MASTER
+  BOOKING_CANCELLED_BY_CLIENT
+  NEW_REVIEW
+  PROFILE_APPROVED
+  PROFILE_REJECTED
+
+  // Для мастера в салоне
+  SALON_INVITE
+  SALON_INVITE_ACCEPTED
+
+  // Чат
+  NEW_MESSAGE
+}
