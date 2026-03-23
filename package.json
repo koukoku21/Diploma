@@ -1,0 +1,14 @@
+{
+  "name": "miraku",
+  "version": "1.0.0",
+  "private": true,
+  "workspaces": [
+    "apps/api"
+  ],
+  "scripts": {
+    "api": "npm run start:dev --workspace=apps/api",
+    "api:build": "npm run build --workspace=apps/api",
+    "api:migrate": "npm run prisma:migrate --workspace=apps/api",
+    "api:studio": "npm run prisma:studio --workspace=apps/api"
+  }
+}
