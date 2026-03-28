@@ -14,21 +14,29 @@ final feedRepositoryProvider = Provider(
 // Фильтры
 class FeedFilter {
   const FeedFilter({
-    this.category,
+    this.serviceTemplateId,
     this.maxPrice,
     this.radius = 5000,
   });
-  final String? category;
+  final String? serviceTemplateId; // ID из ServiceTemplate
   final int? maxPrice;
   final int radius;
 
-  FeedFilter copyWith({String? category, int? maxPrice, int? radius}) =>
+  FeedFilter copyWith({
+    Object? serviceTemplateId = _sentinel,
+    Object? maxPrice = _sentinel,
+    int? radius,
+  }) =>
       FeedFilter(
-        category: category ?? this.category,
-        maxPrice: maxPrice ?? this.maxPrice,
+        serviceTemplateId: serviceTemplateId == _sentinel
+            ? this.serviceTemplateId
+            : serviceTemplateId as String?,
+        maxPrice: maxPrice == _sentinel ? this.maxPrice : maxPrice as int?,
         radius: radius ?? this.radius,
       );
 }
+
+const _sentinel = Object();
 
 final feedFilterProvider = StateProvider((_) => const FeedFilter());
 
@@ -100,7 +108,7 @@ class FeedNotifier extends StateNotifier<FeedState> {
         lat: _lat,
         lng: _lng,
         radius: _filter.radius,
-        category: _filter.category,
+        serviceTemplateId: _filter.serviceTemplateId,
         maxPrice: _filter.maxPrice,
         offset: reset ? 0 : state.nextOffset,
       );

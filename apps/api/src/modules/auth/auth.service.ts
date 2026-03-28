@@ -58,21 +58,20 @@ export class AuthService {
 
     await this.redis.del(otpKey);
 
-    // Ищем пользователя или создаём нового
-    let user = await this.prisma.user.findFirst({
+    // Ищем активного пользователя (для определения isNewUser)
+    const existing = await this.prisma.user.findFirst({
       where: { phone: dto.phone, deletedAt: null },
     });
 
-    const isNewUser = !user;
+    const isNewUser = !existing;
 
-    if (!user) {
-      user = await this.prisma.user.create({
-        data: {
-          phone: dto.phone,
-          name: dto.name ?? '',
-        },
-      });
-    }
+    // upsert: создаём нового ИЛИ восстанавливаем soft-deleted аккаунт.
+    // Атомарная операция — исключает race condition при двойном запросе.
+    const user = await this.prisma.user.upsert({
+      where: { phone: dto.phone },
+      create: { phone: dto.phone, name: dto.name ?? '' },
+      update: { deletedAt: null },
+    });
 
     const tokens = await this.generateTokens(user.id, user.phone);
 

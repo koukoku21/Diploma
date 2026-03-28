@@ -10,9 +10,9 @@ class ClientShell extends StatelessWidget {
 
   static const _tabs = [
     _TabItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Лента'),
+    _TabItem(icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view, label: 'Каталог'),
     _TabItem(icon: Icons.favorite_border, activeIcon: Icons.favorite, label: 'Избранное'),
     _TabItem(icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: 'Чаты'),
-    _TabItem(icon: Icons.calendar_month_outlined, activeIcon: Icons.calendar_month, label: 'Записи'),
     _TabItem(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Профиль'),
   ];
 

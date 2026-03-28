@@ -44,6 +44,8 @@ class ChatRoom {
     required this.masterName,
     required this.masterId,
     this.masterCover,
+    this.clientName,
+    this.clientAvatarUrl,
     this.lastMessage,
   });
 
@@ -51,12 +53,15 @@ class ChatRoom {
   final String masterName;
   final String masterId;
   final String? masterCover;
+  final String? clientName;
+  final String? clientAvatarUrl;
   final ChatMessage? lastMessage;
 
   factory ChatRoom.fromJson(Map<String, dynamic> j) {
     final master = j['master'] as Map<String, dynamic>?;
     final mUser  = master?['user'] as Map<String, dynamic>?;
     final photos = master?['portfolioPhotos'] as List?;
+    final client = j['client'] as Map<String, dynamic>?;
     final lastMsg = j['lastMessage'] as Map<String, dynamic>?;
 
     return ChatRoom(
@@ -65,6 +70,8 @@ class ChatRoom {
       masterId: master?['id'] as String? ?? '',
       masterCover: (photos?.isNotEmpty == true)
           ? (photos!.first as Map)['url'] as String? : null,
+      clientName: client?['name'] as String?,
+      clientAvatarUrl: client?['avatarUrl'] as String?,
       lastMessage: lastMsg != null ? ChatMessage.fromJson(lastMsg) : null,
     );
   }

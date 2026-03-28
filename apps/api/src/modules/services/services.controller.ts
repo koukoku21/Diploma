@@ -14,6 +14,17 @@ import { UpdateServiceDto } from './dto/update-service.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 
+// Публичный справочник услуг (без авторизации)
+@Controller('service-templates')
+export class ServiceTemplatesController {
+  constructor(private services: ServicesService) {}
+
+  @Get()
+  listTemplates() {
+    return this.services.listTemplates();
+  }
+}
+
 @UseGuards(JwtAuthGuard)
 @Controller('master/services')
 export class ServicesController {
@@ -25,13 +36,13 @@ export class ServicesController {
     return this.services.list(user.id);
   }
 
-  // M-11: добавить услугу
+  // M-11: добавить услугу (templateId + price + duration)
   @Post()
   create(@CurrentUser() user: { id: string }, @Body() dto: CreateServiceDto) {
     return this.services.create(user.id, dto);
   }
 
-  // M-11: редактировать услугу
+  // M-11: редактировать цену/длительность/включённость
   @Patch(':id')
   update(
     @CurrentUser() user: { id: string },

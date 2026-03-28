@@ -169,8 +169,8 @@ class BookingConfirmScreen extends ConsumerWidget {
 
     if (state.hasError) return;
 
-    // Успех → переходим к списку записей
-    context.go(AppRoutes.bookings);
+    // Успех → возвращаемся в ленту
+    context.go(AppRoutes.feed);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Запись создана! Ждём вас $date в $time',

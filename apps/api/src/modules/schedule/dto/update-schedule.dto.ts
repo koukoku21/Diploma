@@ -15,12 +15,12 @@ const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/; // HH:MM
 
 export class ScheduleDayDto {
   @IsInt()
-  @Min(0)
-  @Max(6)
-  dayOfWeek: number;
+  @Min(1)
+  @Max(7)
+  dayOfWeek: number; // 1=Mon..7=Sun
 
   @IsBoolean()
-  isDayOff: boolean;
+  isWorking: boolean;
 
   @IsOptional()
   @IsString()
@@ -37,5 +37,5 @@ export class UpdateScheduleDto {
   @IsArray()
   @ValidateNested({ each: true })
   @Type(() => ScheduleDayDto)
-  days: ScheduleDayDto[];
+  slots: ScheduleDayDto[];
 }

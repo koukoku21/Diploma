@@ -1,11 +1,18 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, RequestMethod } from '@nestjs/common';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import { AppModule } from './app.module';
+import * as path from 'path';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-  app.setGlobalPrefix('api/v1');
+  // Локальные загруженные файлы (fallback когда R2 не настроен)
+  app.useStaticAssets(path.join(process.cwd(), 'uploads'), { prefix: '/uploads' });
+
+  app.setGlobalPrefix('api/v1', {
+    exclude: [{ path: 'admin', method: RequestMethod.GET }],
+  });
 
   app.useGlobalPipes(
     new ValidationPipe({

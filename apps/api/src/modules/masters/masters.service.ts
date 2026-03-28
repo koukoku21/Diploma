@@ -34,13 +34,6 @@ export class MastersService {
       include: { specializations: true },
     });
 
-    // Обновляем PostGIS колонку location через raw SQL
-    await this.prisma.$executeRaw`
-      UPDATE master_profiles
-      SET location = ST_SetSRID(ST_MakePoint(${dto.lng}, ${dto.lat}), 4326)::geography
-      WHERE id = ${master.id}
-    `;
-
     // Дефолтное расписание: Пн-Пт 10:00-19:00 (dayOfWeek: 1-5)
     await this.prisma.schedule.createMany({
       data: [1, 2, 3, 4, 5].map((day) => ({
@@ -60,6 +53,7 @@ export class MastersService {
     const master = await this.prisma.masterProfile.findUnique({
       where: { userId },
       include: {
+        user: { select: { name: true, avatarUrl: true } },
         specializations: true,
         portfolioPhotos: { orderBy: { sortOrder: 'asc' } },
         services: { where: { isEnabled: true } },
@@ -105,15 +99,6 @@ export class MastersService {
       where: { id: master.id },
       data: rest,
     });
-
-    // Обновляем PostGIS location если изменились координаты
-    if (dto.lat !== undefined && dto.lng !== undefined) {
-      await this.prisma.$executeRaw`
-        UPDATE master_profiles
-        SET location = ST_SetSRID(ST_MakePoint(${dto.lng}, ${dto.lat}), 4326)::geography
-        WHERE id = ${master.id}
-      `;
-    }
 
     // Заменяем специализации если переданы
     if (specializations) {
@@ -166,25 +151,25 @@ export class MastersService {
         this.prisma.booking.findFirst({
           where: {
             masterId: master.id,
-            status: 'PENDING',
-            startTime: { gte: now },
+            status: 'CONFIRMED',
+            startsAt: { gte: now },
           },
-          orderBy: { startTime: 'asc' },
+          orderBy: { startsAt: 'asc' },
           include: {
             client: { select: { name: true } },
-            service: { select: { name: true } },
+            service: { select: { title: true } },
           },
         }),
-        // Количество новых запросов
+        // Количество новых записей
         this.prisma.booking.count({
-          where: { masterId: master.id, status: 'PENDING' },
+          where: { masterId: master.id, status: 'CONFIRMED' },
         }),
       ]);
 
     return {
       isActive: master.isActive,
-      todayIncome: todayIncome._sum.priceSnapshot?.toNumber() ?? 0,
-      monthIncome: monthIncome._sum.priceSnapshot?.toNumber() ?? 0,
+      todayIncome: todayIncome._sum.priceSnapshot ?? 0,
+      monthIncome: monthIncome._sum.priceSnapshot ?? 0,
       nextBooking,
       pendingCount,
     };

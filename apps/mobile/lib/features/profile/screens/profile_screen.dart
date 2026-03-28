@@ -1,12 +1,15 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:image_picker/image_picker.dart';
+import '../../../core/auth/token_storage.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/network/dio_client.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../../../core/widgets/inputs/app_text_field.dart';
 import '../data/profile_models.dart';
 
 final _profileProvider = FutureProvider.autoDispose<UserProfile>((ref) async {
@@ -54,12 +57,56 @@ class ProfileScreen extends ConsumerWidget {
   }
 }
 
-class _ProfileBody extends ConsumerWidget {
+class _ProfileBody extends ConsumerStatefulWidget {
   const _ProfileBody({required this.profile});
   final UserProfile profile;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<_ProfileBody> createState() => _ProfileBodyState();
+}
+
+class _ProfileBodyState extends ConsumerState<_ProfileBody> {
+  final _picker = ImagePicker();
+  late String _name;
+  String? _avatarUrl;
+
+  @override
+  void initState() {
+    super.initState();
+    _name = widget.profile.name;
+    _avatarUrl = widget.profile.avatarUrl;
+  }
+
+  Future<void> _pickAvatar() async {
+    final img = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
+    if (img == null) return;
+    final bytes = await img.readAsBytes();
+    final formData = FormData.fromMap({
+      'file': MultipartFile.fromBytes(bytes, filename: img.name),
+    });
+    final res = await createDio().patch('/users/me/avatar', data: formData);
+    if (mounted) setState(() => _avatarUrl = res.data['avatarUrl'] as String?);
+  }
+
+  void _showEditName() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: kBgSecondary,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (_) => _EditNameSheet(
+        currentName: _name,
+        onSaved: (newName) => setState(() => _name = newName),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final profile = widget.profile;
+
     return ListView(
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
       children: [
@@ -69,18 +116,48 @@ class _ProfileBody extends ConsumerWidget {
         Center(
           child: Column(
             children: [
-              CircleAvatar(
-                radius: 48,
-                backgroundColor: kBgTertiary,
-                backgroundImage: profile.avatarUrl != null
-                    ? NetworkImage(profile.avatarUrl!)
-                    : null,
-                child: profile.avatarUrl == null
-                    ? const Icon(Icons.person_outline, color: kTextTertiary, size: 48)
-                    : null,
+              GestureDetector(
+                onTap: _pickAvatar,
+                child: Stack(
+                  children: [
+                    CircleAvatar(
+                      radius: 48,
+                      backgroundColor: kBgTertiary,
+                      backgroundImage:
+                          _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
+                      child: _avatarUrl == null
+                          ? const Icon(Icons.person_outline,
+                              color: kTextTertiary, size: 48)
+                          : null,
+                    ),
+                    Positioned(
+                      right: 0,
+                      bottom: 0,
+                      child: Container(
+                        width: 28,
+                        height: 28,
+                        decoration: const BoxDecoration(
+                            color: kGold, shape: BoxShape.circle),
+                        child: const Icon(Icons.camera_alt,
+                            color: kBgPrimary, size: 16),
+                      ),
+                    ),
+                  ],
+                ),
               ),
               const SizedBox(height: AppSpacing.md),
-              Text(profile.name, style: AppTextStyles.h1),
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(_name, style: AppTextStyles.h1),
+                  const SizedBox(width: AppSpacing.xs),
+                  GestureDetector(
+                    onTap: _showEditName,
+                    child: const Icon(Icons.edit_outlined,
+                        color: kTextTertiary, size: 18),
+                  ),
+                ],
+              ),
               const SizedBox(height: AppSpacing.xs),
               Text(profile.phone,
                   style: AppTextStyles.body.copyWith(color: kTextSecondary)),
@@ -94,7 +171,8 @@ class _ProfileBody extends ConsumerWidget {
 
         // ─── Стать мастером / статус ───────────────────────────
         if (!profile.hasMasterProfile)
-          _BecomeMasterCard(onTap: () => context.push(AppRoutes.masterSpecializations))
+          _BecomeMasterCard(
+              onTap: () => context.push(AppRoutes.masterSpecializations))
         else if (profile.masterStatus == 'APPROVED')
           _BecomeMasterCard(
             label: 'Режим мастера',
@@ -103,14 +181,14 @@ class _ProfileBody extends ConsumerWidget {
             onTap: () => context.go(AppRoutes.masterDashboard),
           )
         else if (profile.masterStatus == 'PENDING')
-          _MasterStatusCard(
+          const _MasterStatusCard(
             icon: Icons.hourglass_bottom_rounded,
             color: kGold,
             title: 'Заявка на проверке',
             subtitle: 'Одобрение занимает до 24 часов',
           )
         else if (profile.masterStatus == 'REJECTED')
-          _MasterStatusCard(
+          const _MasterStatusCard(
             icon: Icons.cancel_outlined,
             color: kRose,
             title: 'Заявка отклонена',
@@ -124,7 +202,7 @@ class _ProfileBody extends ConsumerWidget {
         _MenuItem(
           icon: Icons.calendar_today_outlined,
           label: 'Мои записи',
-          onTap: () => context.go(AppRoutes.bookings),
+          onTap: () => context.push(AppRoutes.bookings),
         ),
         _MenuItem(
           icon: Icons.favorite_border_rounded,
@@ -139,6 +217,116 @@ class _ProfileBody extends ConsumerWidget {
 
         const SizedBox(height: AppSpacing.xl),
       ],
+    );
+  }
+}
+
+// ─── Edit name bottom sheet ───────────────────────────────────────
+class _EditNameSheet extends StatefulWidget {
+  const _EditNameSheet({required this.currentName, required this.onSaved});
+  final String currentName;
+  final ValueChanged<String> onSaved;
+
+  @override
+  State<_EditNameSheet> createState() => _EditNameSheetState();
+}
+
+class _EditNameSheetState extends State<_EditNameSheet> {
+  late final TextEditingController _ctrl;
+  bool _loading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = TextEditingController(text: widget.currentName);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  bool get _canSave => _ctrl.text.trim().length >= 2;
+
+  Future<void> _save() async {
+    setState(() => _loading = true);
+    try {
+      await createDio().patch('/users/me', data: {'name': _ctrl.text.trim()});
+      if (!mounted) return;
+      widget.onSaved(_ctrl.text.trim());
+      Navigator.pop(context);
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.toString(), style: AppTextStyles.caption),
+            backgroundColor: kBgSecondary,
+          ),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.screenH,
+        AppSpacing.md,
+        AppSpacing.screenH,
+        MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36,
+              height: 4,
+              margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+              decoration: BoxDecoration(
+                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+            ),
+          ),
+          Text('Изменить имя', style: AppTextStyles.title),
+          const SizedBox(height: AppSpacing.lg),
+          AppTextField(
+            controller: _ctrl,
+            hint: 'Ваше имя',
+            autofocus: true,
+            textInputAction: TextInputAction.done,
+            onChanged: (_) => setState(() {}),
+            onSubmitted: (_) => _canSave ? _save() : null,
+          ),
+          const SizedBox(height: AppSpacing.lg),
+          SizedBox(
+            width: double.infinity,
+            height: 52,
+            child: ElevatedButton(
+              onPressed: _canSave && !_loading ? _save : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kGold,
+                disabledBackgroundColor: kGold.withValues(alpha: 0.4),
+                foregroundColor: kBgPrimary,
+                shape: const StadiumBorder(),
+              ),
+              child: _loading
+                  ? const SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                          color: kBgPrimary, strokeWidth: 2))
+                  : Text('Сохранить',
+                      style: AppTextStyles.label.copyWith(
+                          fontWeight: FontWeight.w700, color: kBgPrimary)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
@@ -186,7 +374,8 @@ class _BecomeMasterCard extends StatelessWidget {
                   Text(label, style: AppTextStyles.label),
                   const SizedBox(height: 2),
                   Text(subtitle,
-                      style: AppTextStyles.caption.copyWith(color: kTextSecondary)),
+                      style:
+                          AppTextStyles.caption.copyWith(color: kTextSecondary)),
                 ],
               ),
             ),
@@ -231,7 +420,8 @@ class _MasterStatusCard extends StatelessWidget {
                 Text(title, style: AppTextStyles.label),
                 const SizedBox(height: 2),
                 Text(subtitle,
-                    style: AppTextStyles.caption.copyWith(color: kTextSecondary)),
+                    style:
+                        AppTextStyles.caption.copyWith(color: kTextSecondary)),
               ],
             ),
           ),
@@ -288,11 +478,11 @@ class _SettingsSheet extends StatelessWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.logout_rounded, color: kRose),
-            title: Text('Выйти', style: AppTextStyles.body.copyWith(color: kRose)),
+            title: Text('Выйти',
+                style: AppTextStyles.body.copyWith(color: kRose)),
             onTap: () async {
               Navigator.pop(context);
-              const storage = FlutterSecureStorage();
-              await storage.deleteAll();
+              await TokenStorage().clear();
               if (context.mounted) context.go(AppRoutes.phone);
             },
           ),

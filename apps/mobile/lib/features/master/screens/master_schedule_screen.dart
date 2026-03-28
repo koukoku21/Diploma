@@ -23,6 +23,22 @@ class _MasterScheduleScreenState extends ConsumerState<MasterScheduleScreen> {
   List<ScheduleSlot>? _local;
   bool _saving = false;
 
+  // Мержим данные из API с полным шаблоном 7 дней (1=Пн..7=Вс).
+  // Если день отсутствует в API — используем дефолт (Пн-Пт работает, Сб-Вс выходной).
+  static List<ScheduleSlot> _mergeWithDefaults(List<ScheduleSlot> fromApi) {
+    final byDay = {for (final s in fromApi) s.dayOfWeek: s};
+    return List.generate(7, (i) {
+      final day = i + 1;
+      return byDay[day] ??
+          ScheduleSlot(
+            dayOfWeek: day,
+            isWorking: day <= 5,
+            startTime: '10:00',
+            endTime: '19:00',
+          );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final async = ref.watch(masterScheduleProvider);
@@ -37,7 +53,7 @@ class _MasterScheduleScreenState extends ConsumerState<MasterScheduleScreen> {
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
         error: (e, _) => Center(child: Text('Ошибка: $e')),
         data: (slots) {
-          _local ??= List.from(slots);
+          _local ??= _mergeWithDefaults(slots);
           return _ScheduleEditor(
             slots: _local!,
             saving: _saving,

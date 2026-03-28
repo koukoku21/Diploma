@@ -8,20 +8,18 @@ import '../../../core/router/app_router.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
 import '../../../core/network/dio_client.dart';
 
-const _allSpecializations = [
-  'Маникюр',
-  'Педикюр',
-  'Наращивание ногтей',
-  'Стрижка',
-  'Окрашивание',
-  'Укладка',
-  'Макияж',
-  'Брови',
-  'Ресницы',
-  'Массаж',
-  'Эпиляция',
-  'Уход за кожей',
-];
+// label → API enum value (ServiceCategory)
+const _specializations = <String, String>{
+  'Маникюр':            'MANICURE',
+  'Педикюр':            'PEDICURE',
+  'Стрижка':            'HAIRCUT',
+  'Окрашивание':        'COLORING',
+  'Макияж':             'MAKEUP',
+  'Ресницы':            'LASHES',
+  'Брови':              'BROWS',
+  'Уход за кожей':      'SKINCARE',
+  'Другое':             'OTHER',
+};
 
 // M-1: Специализации мастера
 class MasterSpecializationsScreen extends ConsumerStatefulWidget {
@@ -42,11 +40,10 @@ class _MasterSpecializationsScreenState
     setState(() => _loading = true);
     try {
       await createDio().post('/masters', data: {
-        'specializations': _selected.toList(),
-        // address, lat, lng filled on next step
-        'address': '',
-        'lat': 0,
-        'lng': 0,
+        'specializations': _selected.map((s) => _specializations[s]).toList(),
+        'address': 'Астана',          // обновляется на следующем шаге
+        'lat': 51.1801,
+        'lng': 71.4460,
       });
       if (mounted) context.push(AppRoutes.masterAddress);
     } catch (e) {
@@ -93,7 +90,7 @@ class _MasterSpecializationsScreenState
                 child: Wrap(
                   spacing: AppSpacing.sm,
                   runSpacing: AppSpacing.sm,
-                  children: _allSpecializations.map((s) {
+                  children: _specializations.keys.map((s) {
                     final selected = _selected.contains(s);
                     return FilterChip(
                       label: Text(s, style: AppTextStyles.label.copyWith(

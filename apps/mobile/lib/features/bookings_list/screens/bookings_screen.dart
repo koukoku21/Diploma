@@ -61,15 +61,19 @@ class BookingsScreen extends ConsumerWidget {
                 if (upcoming.isNotEmpty) ...[
                   Text('Предстоящие', style: AppTextStyles.label.copyWith(color: kTextSecondary)),
                   const SizedBox(height: AppSpacing.sm),
-                  ...upcoming.map((b) => _BookingCard(booking: b,
-                      onReview: () => _showReview(context, ref, b))),
+                  ...upcoming.map((b) => _BookingCard(
+                      booking: b,
+                      onReview: () => _showReview(context, ref, b),
+                      onCancel: () => _confirmCancel(context, ref, b))),
                   const SizedBox(height: AppSpacing.xl),
                 ],
                 if (past.isNotEmpty) ...[
                   Text('Завершённые', style: AppTextStyles.label.copyWith(color: kTextSecondary)),
                   const SizedBox(height: AppSpacing.sm),
-                  ...past.map((b) => _BookingCard(booking: b,
-                      onReview: () => _showReview(context, ref, b))),
+                  ...past.map((b) => _BookingCard(
+                      booking: b,
+                      onReview: () => _showReview(context, ref, b),
+                      onCancel: () {})),
                 ],
               ],
             ),
@@ -77,6 +81,33 @@ class BookingsScreen extends ConsumerWidget {
         },
       ),
     );
+  }
+
+  Future<void> _confirmCancel(BuildContext context, WidgetRef ref, BookingItem booking) async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: kBgSecondary,
+        title: Text('Отменить запись?', style: AppTextStyles.title),
+        content: Text(
+          'Запись к ${booking.masterName} будет отменена.',
+          style: AppTextStyles.body.copyWith(color: kTextSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Нет', style: AppTextStyles.label.copyWith(color: kTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Да, отменить', style: AppTextStyles.label.copyWith(color: kRose)),
+          ),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    await ref.read(cancelBookingProvider.notifier).cancel(booking.id);
+    ref.invalidate(clientBookingsProvider);
   }
 
   void _showReview(BuildContext context, WidgetRef ref, BookingItem booking) {
@@ -98,9 +129,14 @@ class BookingsScreen extends ConsumerWidget {
 }
 
 class _BookingCard extends StatelessWidget {
-  const _BookingCard({required this.booking, required this.onReview});
+  const _BookingCard({
+    required this.booking,
+    required this.onReview,
+    required this.onCancel,
+  });
   final BookingItem booking;
   final VoidCallback onReview;
+  final VoidCallback onCancel;
 
   static const _months = ['', 'янв', 'фев', 'мар', 'апр', 'май', 'июн',
       'июл', 'авг', 'сен', 'окт', 'ноя', 'дек'];
@@ -160,6 +196,7 @@ class _BookingCard extends StatelessWidget {
           const SizedBox(width: AppSpacing.sm),
 
           Column(
+            crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               _StatusChip(status: booking.status),
               if (booking.status == BookingStatus.completed && !booking.hasReview) ...[
@@ -168,6 +205,14 @@ class _BookingCard extends StatelessWidget {
                   onTap: onReview,
                   child: Text('Оценить',
                       style: AppTextStyles.caption.copyWith(color: kGold)),
+                ),
+              ],
+              if (booking.status == BookingStatus.confirmed) ...[
+                const SizedBox(height: AppSpacing.sm),
+                GestureDetector(
+                  onTap: onCancel,
+                  child: Text('Отменить',
+                      style: AppTextStyles.caption.copyWith(color: kRose)),
                 ),
               ],
             ],
