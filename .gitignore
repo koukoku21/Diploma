@@ -36,3 +36,4 @@ apps/mobile/assets/fonts/
 *.log
 npm-debug.log*
 .claude/
+package-lock.json
