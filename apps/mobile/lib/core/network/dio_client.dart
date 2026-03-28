@@ -1,9 +1,9 @@
 import 'package:dio/dio.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../auth/token_storage.dart';
 
 const _baseUrl = String.fromEnvironment(
   'API_URL',
-  defaultValue: 'http://10.0.2.2:3000/api/v1', // Android emulator → localhost
+  defaultValue: 'http://localhost:4040/api/v1',
 );
 
 Dio createDio() {
@@ -25,7 +25,7 @@ class _AuthInterceptor extends Interceptor {
   _AuthInterceptor(this._dio);
 
   final Dio _dio;
-  final _storage = const FlutterSecureStorage();
+  final _storage = TokenStorage();
   bool _isRefreshing = false;
 
   @override
@@ -33,7 +33,7 @@ class _AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    final token = await _storage.read(key: 'access_token');
+    final token = await _storage.getAccessToken();
     if (token != null) {
       options.headers['Authorization'] = 'Bearer $token';
     }
@@ -53,7 +53,7 @@ class _AuthInterceptor extends Interceptor {
     // Пробуем обновить токен
     _isRefreshing = true;
     try {
-      final refreshToken = await _storage.read(key: 'refresh_token');
+      final refreshToken = await _storage.getRefreshToken();
       if (refreshToken == null) {
         _clearTokens();
         handler.next(err);
@@ -70,10 +70,7 @@ class _AuthInterceptor extends Interceptor {
       final newAccess  = res.data['accessToken']  as String;
       final newRefresh = res.data['refreshToken'] as String;
 
-      await Future.wait([
-        _storage.write(key: 'access_token',  value: newAccess),
-        _storage.write(key: 'refresh_token', value: newRefresh),
-      ]);
+      await _storage.saveTokens(newAccess, newRefresh);
 
       // Повторяем оригинальный запрос с новым токеном
       final opts = err.requestOptions
@@ -88,7 +85,5 @@ class _AuthInterceptor extends Interceptor {
     }
   }
 
-  Future<void> _clearTokens() async {
-    await _storage.deleteAll();
-  }
+  Future<void> _clearTokens() => _storage.clear();
 }

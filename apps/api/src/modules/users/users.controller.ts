@@ -4,8 +4,11 @@ import {
   Delete,
   Get,
   Patch,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -27,6 +30,15 @@ export class UsersController {
     @Body() dto: UpdateUserDto,
   ) {
     return this.users.updateProfile(user.id, dto);
+  }
+
+  @Patch('me/avatar')
+  @UseInterceptors(FileInterceptor('file'))
+  uploadAvatar(
+    @CurrentUser() user: { id: string },
+    @UploadedFile() file: Express.Multer.File,
+  ) {
+    return this.users.uploadAvatar(user.id, file);
   }
 
   @Delete('me')

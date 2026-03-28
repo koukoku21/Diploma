@@ -1,10 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../../shared/prisma.service';
+import { R2Service } from '../portfolio/r2.service';
 import { UpdateUserDto } from './dto/update-user.dto';
 
 @Injectable()
 export class UsersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private r2: R2Service,
+  ) {}
 
   async getProfile(userId: string) {
     const user = await this.prisma.user.findFirst({
@@ -42,6 +46,15 @@ export class UsersService {
         avatarUrl: true,
         lang: true,
       },
+    });
+  }
+
+  async uploadAvatar(userId: string, file: Express.Multer.File) {
+    const { url } = await this.r2.upload(file, 'avatars');
+    return this.prisma.user.update({
+      where: { id: userId },
+      data: { avatarUrl: url },
+      select: { id: true, avatarUrl: true },
     });
   }
 

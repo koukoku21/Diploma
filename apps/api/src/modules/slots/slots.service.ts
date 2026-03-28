@@ -24,17 +24,16 @@ export class SlotsService {
   }
 
   async invalidateCache(masterId: string, date: string) {
-    // Вызывается при создании / отмене записи
-    // Инвалидируем все слоты этого мастера на эту дату
-    // (для всех возможных serviceId — используем wildcard через scan)
     const pattern = `slots:${masterId}:${date}:*`;
-    await this.scanAndDelete(pattern);
+    await this.redis.delPattern(pattern);
   }
 
   private async computeSlots(masterId: string, query: SlotsQueryDto) {
     const { date, serviceId } = query;
     const targetDate = new Date(date);
-    const dayOfWeek = targetDate.getDay(); // 0=Вс, 1=Пн...
+    // JS: 0=Вс, 1=Пн...6=Сб → приводим к 1=Пн...7=Вс (как в Flutter/БД)
+    const jsDay = targetDate.getDay();
+    const dayOfWeek = jsDay === 0 ? 7 : jsDay;
 
     // Проверяем мастера и услугу
     const [master, service] = await Promise.all([
@@ -81,9 +80,9 @@ export class SlotsService {
     // 3. Генерируем все слоты за день с шагом SLOT_STEP_MIN
     const allSlots = generateTimeSlots(startTime, endTime, SLOT_STEP_MIN);
 
-    // 4. Получаем существующие записи мастера на эту дату
-    const dayStart = new Date(`${date}T00:00:00.000Z`);
-    const dayEnd = new Date(`${date}T23:59:59.999Z`);
+    // 4. Получаем существующие записи мастера на эту дату (UTC+5)
+    const dayStart = new Date(`${date}T00:00:00.000+05:00`);
+    const dayEnd = new Date(`${date}T23:59:59.999+05:00`);
 
     const bookings = await this.prisma.booking.findMany({
       where: {
@@ -99,14 +98,14 @@ export class SlotsService {
     const now = new Date();
 
     const availableSlots = allSlots.filter((slotTime) => {
-      const slotStart = new Date(`${date}T${slotTime}:00.000Z`);
+      const slotStart = new Date(`${date}T${slotTime}:00.000+05:00`);
       const slotEnd = new Date(slotStart.getTime() + serviceDuration * 60_000);
 
       // Не показываем прошедшие слоты
       if (slotStart <= now) return false;
 
       // Слот не влезает в рабочий день
-      const workEnd = new Date(`${date}T${endTime}:00.000Z`);
+      const workEnd = new Date(`${date}T${endTime}:00.000+05:00`);
       if (slotEnd > workEnd) return false;
 
       // Пересечение с существующими записями
@@ -127,15 +126,6 @@ export class SlotsService {
     };
   }
 
-  private async scanAndDelete(pattern: string) {
-    // ioredis не экспортируется напрямую, используем eval через prisma-обёртку
-    // Вместо scan — удаляем по известным ключам через отдельный метод
-    // Простое решение: ключи всегда имеют известный формат, удаляем через TTL
-    // (кэш протухнет сам через 5 мин после инвалидации)
-    // Для production-invalidation используем отдельный ключ-маркер
-    const markerKey = `slots:invalid:${pattern}`;
-    await this.redis.set(markerKey, '1', CACHE_TTL);
-  }
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────

@@ -26,6 +26,13 @@ apps/mobile/**/*.freezed.dart
 *.DS_Store
 *.iml
 
+# ─── Uploads (локальные файлы, в проде хранятся на R2) ───────────
+apps/api/uploads/
+
+# ─── Assets / Fonts (бинарные файлы, не в git) ───────────────────
+apps/mobile/assets/fonts/
+
 # ─── Logs ────────────────────────────────────────────────────────
 *.log
 npm-debug.log*
+.claude/

@@ -40,8 +40,8 @@ class MasterNextBooking {
   factory MasterNextBooking.fromJson(Map<String, dynamic> j) => MasterNextBooking(
         id: j['id'] as String,
         clientName: (j['client'] as Map?)?['name'] as String? ?? '—',
-        serviceName: (j['service'] as Map?)?['name'] as String? ?? '—',
-        startTime: DateTime.parse(j['startTime'] as String).toLocal(),
+        serviceName: (j['service'] as Map?)?['title'] as String? ?? '—',
+        startTime: DateTime.parse(j['startsAt'] as String).toLocal(),
       );
 }
 
@@ -65,9 +65,9 @@ class MasterBookingItem {
   factory MasterBookingItem.fromJson(Map<String, dynamic> j) => MasterBookingItem(
         id: j['id'] as String,
         clientName: (j['client'] as Map?)?['name'] as String? ?? '—',
-        serviceName: (j['service'] as Map?)?['name'] as String? ?? '—',
+        serviceName: (j['service'] as Map?)?['title'] as String? ?? '—',
         price: (j['priceSnapshot'] as num?)?.toDouble() ?? 0,
-        startTime: DateTime.parse(j['startTime'] as String).toLocal(),
+        startTime: DateTime.parse(j['startsAt'] as String).toLocal(),
         status: j['status'] as String? ?? 'PENDING',
       );
 }
@@ -89,7 +89,8 @@ class ScheduleSlot {
         dayOfWeek: j['dayOfWeek'] as int,
         startTime: j['startTime'] as String,
         endTime: j['endTime'] as String,
-        isWorking: j['isWorking'] as bool? ?? true,
+        // API хранит isDayOff, Flutter использует isWorking (инверсия)
+        isWorking: j['isWorking'] as bool? ?? !(j['isDayOff'] as bool? ?? false),
       );
 
   Map<String, dynamic> toJson() => {

@@ -1,21 +1,19 @@
-import { ServiceCategory } from '@prisma/client';
-import { IsEnum, IsInt, IsString, Max, MaxLength, Min } from 'class-validator';
+import { IsInt, IsUUID, Max, Min } from 'class-validator';
+import { Type } from 'class-transformer';
 
 export class CreateServiceDto {
-  @IsString()
-  @MaxLength(100)
-  title: string;
-
-  @IsEnum(ServiceCategory)
-  category: ServiceCategory;
+  @IsUUID()
+  templateId: string; // Ссылка на ServiceTemplate — название и категория берутся оттуда
 
   @IsInt()
   @Min(500)
   @Max(1_000_000)
+  @Type(() => Number)
   priceFrom: number; // в тенге
 
   @IsInt()
   @Min(15)
   @Max(480)
+  @Type(() => Number)
   durationMin: number; // в минутах
 }

@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/auth/token_storage.dart';
 import '../data/auth_api.dart';
 import '../data/auth_repository.dart';
 
 // ─── Инфраструктура ───────────────────────────────────────────────
-final _storageProvider = Provider((_) => const FlutterSecureStorage());
+final _storageProvider = Provider((_) => TokenStorage());
 final _dioProvider     = Provider((_) => createDio());
 final _authApiProvider = Provider((ref) => AuthApi(ref.watch(_dioProvider)));
 

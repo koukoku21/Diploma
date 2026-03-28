@@ -1,15 +1,14 @@
 import { Type } from 'class-transformer';
 import {
-  IsEnum,
   IsInt,
   IsLatitude,
   IsLongitude,
   IsNumber,
   IsOptional,
+  IsUUID,
   Max,
   Min,
 } from 'class-validator';
-import { ServiceCategory } from '@prisma/client';
 
 export class FeedQueryDto {
   @IsLatitude()
@@ -28,9 +27,10 @@ export class FeedQueryDto {
   @Type(() => Number)
   radius: number = 5_000;
 
+  // Фильтр по шаблону услуги (заменяет старый category)
   @IsOptional()
-  @IsEnum(ServiceCategory)
-  category?: ServiceCategory;
+  @IsUUID()
+  serviceTemplateId?: string;
 
   // Максимальная цена в тенге
   @IsOptional()

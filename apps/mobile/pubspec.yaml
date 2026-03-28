@@ -46,6 +46,9 @@ dependencies:
   # Image picker (портфолио мастера)
   image_picker: ^1.1.2
 
+  # Deep links / открытие внешних приложений
+  url_launcher: ^6.3.1
+
   # Utils
   shared_preferences: ^2.3.3
 

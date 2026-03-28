@@ -19,8 +19,13 @@ export class ChatService {
           include: {
             master: {
               include: {
-                user: { select: { name: true, avatarUrl: true } },
+                user: { select: { id: true, name: true, avatarUrl: true } },
                 portfolioPhotos: { where: { isCover: true }, take: 1 },
+              },
+            },
+            users: {
+              include: {
+                user: { select: { id: true, name: true, avatarUrl: true } },
               },
             },
             messages: {
@@ -33,12 +38,17 @@ export class ChatService {
       orderBy: { room: { updatedAt: 'desc' } },
     });
 
-    return roomUsers.map((ru) => ({
-      roomId: ru.room.id,
-      master: ru.room.master,
-      lastMessage: ru.room.messages[0] ?? null,
-      lastReadAt: ru.lastReadAt,
-    }));
+    return roomUsers.map((ru) => {
+      // "client" = the other participant (not the current user)
+      const otherUser = ru.room.users.find((u) => u.userId !== userId)?.user ?? null;
+      return {
+        roomId: ru.room.id,
+        master: ru.room.master,
+        client: otherUser,
+        lastMessage: ru.room.messages[0] ?? null,
+        lastReadAt: ru.lastReadAt,
+      };
+    });
   }
 
   // C-11: история сообщений

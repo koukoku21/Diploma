@@ -1,4 +1,4 @@
-import { IsPhoneNumber, IsString, Length } from 'class-validator';
+import { IsOptional, IsPhoneNumber, IsString, Length } from 'class-validator';
 
 export class VerifyOtpDto {
   @IsString()
@@ -9,6 +9,7 @@ export class VerifyOtpDto {
   @Length(4, 4)
   code: string;
 
-  // Имя — только при первой регистрации (экран A-4)
+  @IsOptional()
+  @IsString()
   name?: string;
 }

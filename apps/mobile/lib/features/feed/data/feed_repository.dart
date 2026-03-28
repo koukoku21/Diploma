@@ -10,7 +10,7 @@ class FeedRepository {
     required double lat,
     required double lng,
     int radius = 5000,
-    String? category,
+    String? serviceTemplateId,
     int? maxPrice,
     int offset = 0,
   }) async {
@@ -18,7 +18,7 @@ class FeedRepository {
       'lat': lat,
       'lng': lng,
       'radius': radius,
-      if (category != null) 'category': category,
+      if (serviceTemplateId != null) 'serviceTemplateId': serviceTemplateId,
       if (maxPrice != null) 'maxPrice': maxPrice,
       'offset': offset,
     });
