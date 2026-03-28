@@ -29,7 +29,7 @@ export class ScheduleService {
     const master = await this.getMasterOrThrow(userId);
 
     await Promise.all(
-      dto.days.map((day) =>
+      dto.slots.map((day) =>
         this.prisma.schedule.upsert({
           where: {
             masterId_dayOfWeek: {
@@ -40,12 +40,12 @@ export class ScheduleService {
           create: {
             masterId: master.id,
             dayOfWeek: day.dayOfWeek,
-            isDayOff: day.isDayOff,
+            isDayOff: !day.isWorking,
             startTime: day.startTime ?? '10:00',
             endTime: day.endTime ?? '19:00',
           },
           update: {
-            isDayOff: day.isDayOff,
+            isDayOff: !day.isWorking,
             startTime: day.startTime ?? '10:00',
             endTime: day.endTime ?? '19:00',
           },

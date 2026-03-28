@@ -54,7 +54,7 @@ class _MasterBookingsScreenState extends ConsumerState<MasterBookingsScreen>
       body: TabBarView(
         controller: _tabs,
         children: [
-          _BookingsList(status: 'PENDING', ref: ref),
+          _BookingsList(status: 'CONFIRMED', ref: ref),
           _BookingsList(status: 'COMPLETED', ref: ref),
         ],
       ),
@@ -116,7 +116,7 @@ class _MasterBookingTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fmt = DateFormat('d MMM, HH:mm', 'ru');
-    final isPending = booking.status == 'PENDING';
+    final isPending = booking.status == 'CONFIRMED';
 
     return ListTile(
       contentPadding: const EdgeInsets.symmetric(
@@ -162,14 +162,14 @@ class _ActionMenu extends StatelessWidget {
         if (v == 'complete') {
           await createDio().patch('/bookings/${booking.id}/complete');
           // ignore: unused_result
-          ref.refresh(masterBookingsProvider('PENDING'));
+          ref.refresh(masterBookingsProvider('CONFIRMED'));
           // ignore: unused_result
           ref.refresh(masterBookingsProvider('COMPLETED'));
         } else if (v == 'cancel') {
           await createDio().patch('/bookings/${booking.id}/cancel',
               data: {'cancelledBy': 'MASTER'});
           // ignore: unused_result
-          ref.refresh(masterBookingsProvider('PENDING'));
+          ref.refresh(masterBookingsProvider('CONFIRMED'));
         }
       },
       itemBuilder: (_) => [

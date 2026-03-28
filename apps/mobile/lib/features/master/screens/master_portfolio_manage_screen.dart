@@ -33,8 +33,9 @@ class _MasterPortfolioManageScreenState
     try {
       final dio = createDio();
       for (final photo in result) {
+        final bytes = await photo.readAsBytes();
         final formData = FormData.fromMap({
-          'file': await MultipartFile.fromFile(photo.path, filename: photo.name),
+          'file': MultipartFile.fromBytes(bytes, filename: photo.name),
         });
         await dio.post('/master/portfolio/upload', data: formData);
       }

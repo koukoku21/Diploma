@@ -29,3 +29,4 @@ apps/mobile/**/*.freezed.dart
 # ─── Logs ────────────────────────────────────────────────────────
 *.log
 npm-debug.log*
+.claude/

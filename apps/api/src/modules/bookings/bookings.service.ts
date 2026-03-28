@@ -53,8 +53,8 @@ export class BookingsService {
     });
     if (!master) throw new NotFoundException('Мастер не найден');
 
-    // Вычисляем startsAt / endsAt
-    const startsAt = new Date(`${date}T${time}:00.000Z`);
+    // Вычисляем startsAt / endsAt (UTC+5, Казахстан)
+    const startsAt = new Date(`${date}T${time}:00.000+05:00`);
     const endsAt = new Date(
       startsAt.getTime() +
         (service.durationMin + master.bufferMinutes) * 60_000,

@@ -10,6 +10,8 @@ interface FeedMasterRow {
   avatar_url: string | null;
   bio: string | null;
   address: string;
+  lat: number;
+  lng: number;
   rating: number | null;
   review_count: number;
   buffer_minutes: number;
@@ -25,21 +27,23 @@ export class FeedService {
   constructor(private prisma: PrismaService) {}
 
   async getFeed(query: FeedQueryDto) {
-    const { lat, lng, radius, category, maxPrice, offset } = query;
+    const { lat, lng, radius, serviceTemplateId, maxPrice, offset } = query;
 
-    // Фильтр по категории — подзапрос к master_specs
-    const categoryFilter = category
+    // Фильтр по шаблону услуги — проверяем наличие активной услуги с этим templateId
+    const templateFilter = serviceTemplateId
       ? `AND EXISTS (
-           SELECT 1 FROM master_specs ms
-           WHERE ms.master_id = mp.id AND ms.category = '${category}'
+           SELECT 1 FROM services s
+           WHERE s."masterId" = mp.id
+             AND s."isEnabled" = true
+             AND s."templateId" = '${serviceTemplateId}'
          )`
       : '';
 
-    // Фильтр по цене — минимальная цена услуги мастера
+    // Фильтр по цене — минимальная цена из активных услуг
     const priceFilter = maxPrice !== undefined
       ? `AND (
-           SELECT MIN(price_from) FROM services s
-           WHERE s.master_id = mp.id AND s.is_enabled = true
+           SELECT MIN("priceFrom") FROM services s
+           WHERE s."masterId" = mp.id AND s."isEnabled" = true
          ) <= ${maxPrice}`
       : '';
 
@@ -47,42 +51,52 @@ export class FeedService {
       SELECT
         mp.id,
         u.name          AS user_name,
-        u.avatar_url,
+        u."avatarUrl"   AS avatar_url,
         mp.bio,
         mp.address,
+        mp.lat,
+        mp.lng,
         mp.rating,
-        mp.review_count,
-        mp.buffer_minutes,
-        mp.is_active,
+        mp."reviewCount"    AS review_count,
+        mp."bufferMinutes"  AS buffer_minutes,
+        mp."isActive"       AS is_active,
         ROUND(
-          ST_Distance(mp.location, ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography)
+          6371000 * 2 * ASIN(SQRT(
+            POWER(SIN(RADIANS((mp.lat - ${lat}) / 2)), 2) +
+            COS(RADIANS(${lat})) * COS(RADIANS(mp.lat)) *
+            POWER(SIN(RADIANS((mp.lng - ${lng}) / 2)), 2)
+          ))
         )::int          AS distance_m,
         (
-          SELECT MIN(price_from) FROM services s
-          WHERE s.master_id = mp.id AND s.is_enabled = true
+          SELECT MIN("priceFrom") FROM services s
+          WHERE s."masterId" = mp.id AND s."isEnabled" = true
         )               AS min_price,
         (
           SELECT url FROM portfolio_photos pp
-          WHERE pp.master_id = mp.id AND pp.is_cover = true
+          WHERE pp."masterId" = mp.id AND pp."isCover" = true
           LIMIT 1
         )               AS cover_url,
         ARRAY(
-          SELECT category::text FROM master_specs ms
-          WHERE ms.master_id = mp.id
+          SELECT DISTINCT st.category::text
+          FROM services s
+          JOIN service_templates st ON st.id = s."templateId"
+          WHERE s."masterId" = mp.id AND s."isEnabled" = true
         )               AS specializations
       FROM master_profiles mp
-      JOIN users u ON u.id = mp.user_id
+      JOIN users u ON u.id = mp."userId"
       WHERE
-        mp.is_verified = true
-        AND mp.is_active = true
+        mp."isVerified" = true
+        AND mp."isActive" = true
         AND mp.status   = 'APPROVED'
-        AND u.deleted_at IS NULL
-        AND mp.location IS NOT NULL
-        AND ST_DWithin(
-          mp.location,
-          ST_SetSRID(ST_MakePoint(${lng}, ${lat}), 4326)::geography,
-          ${radius}
-        )
+        AND u."deletedAt" IS NULL
+        AND mp.lat IS NOT NULL
+        AND (
+          6371000 * 2 * ASIN(SQRT(
+            POWER(SIN(RADIANS((mp.lat - ${lat}) / 2)), 2) +
+            COS(RADIANS(${lat})) * COS(RADIANS(mp.lat)) *
+            POWER(SIN(RADIANS((mp.lng - ${lng}) / 2)), 2)
+          ))
+        ) <= ${radius}
       ORDER BY distance_m ASC
       LIMIT ${PAGE_SIZE}
       OFFSET ${offset}
@@ -95,6 +109,8 @@ export class FeedService {
         avatarUrl: r.avatar_url,
         bio: r.bio,
         address: r.address,
+        lat: r.lat,
+        lng: r.lng,
         rating: r.rating,
         reviewCount: r.review_count,
         bufferMinutes: r.buffer_minutes,

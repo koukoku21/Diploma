@@ -89,7 +89,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
                 hint: '700 000 00 00',
                 keyboardType: TextInputType.phone,
                 textInputAction: TextInputAction.done,
-                maxLength: 12,
+                maxLength: 13,
                 inputFormatters: [
                   FilteringTextInputFormatter.digitsOnly,
                   _PhoneFormatter(),

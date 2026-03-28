@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +7,8 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/network/dio_client.dart';
+import '../../../core/data/service_template.dart';
 import '../data/feed_models.dart';
 import '../providers/feed_provider.dart';
 import '../widgets/master_card.dart';
@@ -39,7 +42,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       context.push(AppRoutes.masterPublicProfile(master.id));
 
   bool _onSwipe(int prev, int? next, CardSwiperDirection dir) {
-    ref.read(feedProvider.notifier).removeTop();
+    // Defer state update to post-frame so the swiper animation finishes
+    // cleanly before the widget tree rebuilds (avoids setState-after-dispose).
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) ref.read(feedProvider.notifier).removeTop();
+    });
     return true;
   }
 
@@ -99,10 +106,13 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               controller: _swiperCtrl,
               cardsCount: state.cards.length,
               onSwipe: _onSwipe,
-              numberOfCardsDisplayed: state.cards.length.clamp(1, 3),
+              numberOfCardsDisplayed: (state.cards.length - 1).clamp(1, 3),
               backCardOffset: const Offset(0, 20),
               padding: const EdgeInsets.only(top: 8, bottom: 8),
               cardBuilder: (ctx, index, _, __) {
+                // Guard against library bug: swiper may request out-of-bounds
+                // indices during swipe animation transitions
+                if (index >= state.cards.length) return const SizedBox.shrink();
                 final master = state.cards[index];
                 return GestureDetector(
                   onTap: () =>
@@ -125,8 +135,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     );
   }
 
-  void _handleFavourite(FeedMaster master) {
+  Future<void> _handleFavourite(FeedMaster master) async {
     _swiperCtrl.swipe(CardSwiperDirection.top);
+    try {
+      await createDio().post('/favourites/${master.id}');
+    } catch (_) {
+      // ignore — favourite may already exist
+    }
+    if (!mounted) return;
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${master.name} добавлен в избранное',
@@ -241,23 +257,55 @@ class _FilterSheet extends ConsumerStatefulWidget {
 
 class _FilterSheetState extends ConsumerState<_FilterSheet> {
   late FeedFilter _local;
+  final _maxPriceCtrl = TextEditingController();
+  ServiceTemplate? _selectedTemplate;
 
   @override
   void initState() {
     super.initState();
     _local = ref.read(feedFilterProvider);
+    if (_local.maxPrice != null) {
+      _maxPriceCtrl.text = _local.maxPrice.toString();
+    }
+  }
+
+  @override
+  void dispose() {
+    _maxPriceCtrl.dispose();
+    super.dispose();
   }
 
   void _apply() {
-    ref.read(feedFilterProvider.notifier).state = _local;
-    ref.read(feedProvider.notifier).reload(_local);
+    final maxPrice = int.tryParse(_maxPriceCtrl.text.trim());
+    final filter = FeedFilter(
+      serviceTemplateId: _selectedTemplate?.id,
+      maxPrice: maxPrice,
+      radius: _local.radius,
+    );
+    ref.read(feedFilterProvider.notifier).state = filter;
+    ref.read(feedProvider.notifier).reload(filter);
     Navigator.pop(context);
+  }
+
+  void _reset() {
+    setState(() {
+      _selectedTemplate = null;
+      _maxPriceCtrl.clear();
+      _local = const FeedFilter();
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.all(AppSpacing.screenH),
+    final templatesAsync = ref.watch(serviceTemplatesProvider);
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.fromLTRB(
+        AppSpacing.screenH,
+        AppSpacing.md,
+        AppSpacing.screenH,
+        MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
+      ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -275,11 +323,68 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             ),
           ),
 
-          Text('Фильтры', style: AppTextStyles.title),
-          const SizedBox(height: AppSpacing.xl),
+          Row(
+            children: [
+              Text('Фильтры', style: AppTextStyles.title),
+              const Spacer(),
+              TextButton(
+                onPressed: _reset,
+                child: Text('Сбросить',
+                    style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.lg),
 
-          Text('Радиус поиска', style: AppTextStyles.label),
+          // ─── Услуга ─────────────────────────────────────────────
+          Text('Услуга', style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
+          templatesAsync.when(
+            loading: () =>
+                const Center(child: CircularProgressIndicator(color: kGold)),
+            error: (_, __) => const SizedBox.shrink(),
+            data: (templates) => _ServiceDropdown(
+              templates: templates,
+              selected: _selectedTemplate,
+              onChanged: (t) => setState(() => _selectedTemplate = t),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // ─── Цена до ────────────────────────────────────────────
+          Text('Максимальная цена (₸)', style: AppTextStyles.label),
+          const SizedBox(height: AppSpacing.sm),
+          TextField(
+            controller: _maxPriceCtrl,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            style: AppTextStyles.body,
+            decoration: InputDecoration(
+              hintText: 'Например: 5000',
+              hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
+              suffixText: '₸',
+              suffixStyle: AppTextStyles.body.copyWith(color: kTextSecondary),
+              filled: true,
+              fillColor: kBgTertiary,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                borderSide: const BorderSide(color: kBorder),
+              ),
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                borderSide: const BorderSide(color: kBorder),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                borderSide: const BorderSide(color: kGold),
+              ),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.lg),
+
+          // ─── Радиус ─────────────────────────────────────────────
+          Text('Радиус поиска', style: AppTextStyles.label),
+          const SizedBox(height: AppSpacing.xs),
           Slider(
             value: _local.radius.toDouble(),
             min: 500,
@@ -288,8 +393,8 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             activeColor: kGold,
             inactiveColor: kBorder2,
             label: '${(_local.radius / 1000).toStringAsFixed(1)} км',
-            onChanged: (v) => setState(
-                () => _local = _local.copyWith(radius: v.round())),
+            onChanged: (v) =>
+                setState(() => _local = _local.copyWith(radius: v.round())),
           ),
 
           const SizedBox(height: AppSpacing.xl),
@@ -308,8 +413,58 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                       .copyWith(fontWeight: FontWeight.w700, color: kBgPrimary)),
             ),
           ),
-          const SizedBox(height: AppSpacing.lg),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Дропдаун услуг ──────────────────────────────────────────────
+class _ServiceDropdown extends StatelessWidget {
+  const _ServiceDropdown({
+    required this.templates,
+    required this.selected,
+    required this.onChanged,
+  });
+
+  final List<ServiceTemplate> templates;
+  final ServiceTemplate? selected;
+  final ValueChanged<ServiceTemplate?> onChanged;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(
+          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+      decoration: BoxDecoration(
+        color: kBgTertiary,
+        borderRadius: BorderRadius.circular(AppRadius.sm),
+        border: Border.all(color: selected != null ? kGold : kBorder),
+      ),
+      child: DropdownButtonHideUnderline(
+        child: DropdownButton<ServiceTemplate?>(
+          value: selected,
+          isExpanded: true,
+          dropdownColor: kBgSecondary,
+          style: AppTextStyles.body,
+          icon: const Icon(Icons.expand_more, color: kTextTertiary, size: 20),
+          hint: Text('Любая услуга',
+              style: AppTextStyles.body.copyWith(color: kTextTertiary)),
+          items: [
+            // Пункт "Любая" — сбрасывает фильтр
+            DropdownMenuItem<ServiceTemplate?>(
+              value: null,
+              child: Text('Любая услуга',
+                  style: AppTextStyles.body.copyWith(color: kTextTertiary)),
+            ),
+            // Разделитель по категориям
+            ...templates.map((t) => DropdownMenuItem<ServiceTemplate?>(
+                  value: t,
+                  child: Text(t.name, style: AppTextStyles.body),
+                )),
+          ],
+          onChanged: onChanged,
+        ),
       ),
     );
   }

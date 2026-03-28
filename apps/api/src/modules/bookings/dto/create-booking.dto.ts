@@ -7,7 +7,7 @@ export class CreateBookingDto {
   @IsUUID()
   serviceId: string;
 
-  @IsISO8601({ strict: true })
+  @IsISO8601({ strict: false, strictSeparator: true })
   date: string; // YYYY-MM-DD
 
   @IsString()

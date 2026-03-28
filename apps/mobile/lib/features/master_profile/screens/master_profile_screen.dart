@@ -1,12 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
 import '../data/master_models.dart';
 import '../providers/master_provider.dart';
+import 'portfolio_gallery_screen.dart';
+import 'all_reviews_screen.dart';
 
 class MasterProfileScreen extends ConsumerWidget {
   const MasterProfileScreen({super.key, required this.masterId});
@@ -105,7 +108,18 @@ class _ProfileBody extends StatelessWidget {
               if (master.photos.length > 1) ...[
                 Text('Портфолио', style: AppTextStyles.title),
                 const SizedBox(height: AppSpacing.md),
-                _PortfolioGrid(photos: master.photos),
+                _PortfolioGrid(
+                  photos: master.photos,
+                  onTap: (index) => Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => PortfolioGalleryScreen(
+                        photos: master.photos,
+                        initialIndex: index,
+                      ),
+                    ),
+                  ),
+                ),
                 const SizedBox(height: AppSpacing.xl),
               ],
 
@@ -123,9 +137,55 @@ class _ProfileBody extends StatelessWidget {
 
               // Отзывы
               if (master.reviews.isNotEmpty) ...[
-                Text('Отзывы', style: AppTextStyles.title),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('Отзывы', style: AppTextStyles.title),
+                    if (master.reviewCount > 3)
+                      GestureDetector(
+                        onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => AllReviewsScreen(
+                              masterName: master.name,
+                              reviews: master.reviews,
+                              rating: master.rating,
+                              reviewCount: master.reviewCount,
+                            ),
+                          ),
+                        ),
+                        child: Text(
+                          'Все ${master.reviewCount}',
+                          style: AppTextStyles.caption
+                              .copyWith(color: kGold),
+                        ),
+                      ),
+                  ],
+                ),
                 const SizedBox(height: AppSpacing.md),
-                ...master.reviews.map((r) => _ReviewTile(review: r)),
+                ...master.reviews.take(3).map((r) => _ReviewTile(review: r)),
+                if (master.reviewCount > 3) ...[
+                  const SizedBox(height: AppSpacing.sm),
+                  GestureDetector(
+                    onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AllReviewsScreen(
+                          masterName: master.name,
+                          reviews: master.reviews,
+                          rating: master.rating,
+                          reviewCount: master.reviewCount,
+                        ),
+                      ),
+                    ),
+                    child: Center(
+                      child: Text(
+                        'Посмотреть все отзывы',
+                        style: AppTextStyles.caption.copyWith(color: kGold),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: AppSpacing.xl),
               ],
 
@@ -144,34 +204,104 @@ class _MetaRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         if (master.rating != null) ...[
-          const Icon(Icons.star_rounded, color: kGold, size: 18),
-          const SizedBox(width: 4),
-          Text(
-            '${master.rating!.toStringAsFixed(1)} (${master.reviewCount})',
-            style: AppTextStyles.label.copyWith(color: kGold),
+          Row(
+            children: [
+              // 5 звёзд с заливкой
+              ...List.generate(5, (i) {
+                final filled = i < master.rating!.floor();
+                final half   = !filled && i < master.rating!;
+                return Icon(
+                  half
+                      ? Icons.star_half_rounded
+                      : filled
+                          ? Icons.star_rounded
+                          : Icons.star_outline_rounded,
+                  color: (filled || half) ? kGold : kBorder2,
+                  size: 20,
+                );
+              }),
+              const SizedBox(width: 6),
+              Text(
+                master.rating!.toStringAsFixed(1),
+                style: AppTextStyles.label.copyWith(color: kGold),
+              ),
+              const SizedBox(width: 4),
+              Text(
+                '(${master.reviewCount})',
+                style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+              ),
+            ],
           ),
-          const SizedBox(width: AppSpacing.lg),
+          const SizedBox(height: 6),
         ],
-        const Icon(Icons.location_on_outlined, color: kTextSecondary, size: 16),
-        const SizedBox(width: 4),
-        Expanded(
-          child: Text(
-            master.address,
-            style: AppTextStyles.caption,
-            overflow: TextOverflow.ellipsis,
-          ),
+        Row(
+          children: [
+            const Icon(Icons.location_on_outlined, color: kTextSecondary, size: 16),
+            const SizedBox(width: 4),
+            Expanded(
+              child: Text(
+                master.address,
+                style: AppTextStyles.caption,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            if (master.lat != null && master.lng != null) ...[
+              const SizedBox(width: AppSpacing.sm),
+              GestureDetector(
+                onTap: () => _openRoute(master.lat!, master.lng!, master.address),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: AppSpacing.sm, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: kGold.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                    border: Border.all(color: kGold.withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.directions_outlined,
+                          color: kGold, size: 14),
+                      const SizedBox(width: 4),
+                      Text('Маршрут',
+                          style: AppTextStyles.caption
+                              .copyWith(color: kGold, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                ),
+              ),
+            ],
+          ],
         ),
       ],
     );
   }
 }
 
+Future<void> _openRoute(double lat, double lng, String address) async {
+  // 2GIS deep link — открывает приложение 2GIS с маршрутом до точки
+  final dgisUri = Uri.parse(
+      'dgis://2gis.ru/routeSearch/rsType/car/to/$lng,$lat/go');
+
+  if (await canLaunchUrl(dgisUri)) {
+    await launchUrl(dgisUri);
+    return;
+  }
+
+  // Fallback: веб-версия 2GIS
+  final webUri = Uri.parse(
+      'https://2gis.ru/directions/points/to/$lng,$lat');
+  await launchUrl(webUri, mode: LaunchMode.externalApplication);
+}
+
 class _PortfolioGrid extends StatelessWidget {
-  const _PortfolioGrid({required this.photos});
+  const _PortfolioGrid({required this.photos, required this.onTap});
   final List<MasterPortfolioPhoto> photos;
+  final void Function(int index) onTap;
 
   @override
   Widget build(BuildContext context) {
@@ -181,13 +311,16 @@ class _PortfolioGrid extends StatelessWidget {
         scrollDirection: Axis.horizontal,
         itemCount: photos.length,
         separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
-        itemBuilder: (_, i) => ClipRRect(
-          borderRadius: BorderRadius.circular(AppRadius.sm),
-          child: Image.network(
-            photos[i].thumbUrl ?? photos[i].url,
-            width: 100,
-            height: 120,
-            fit: BoxFit.cover,
+        itemBuilder: (_, i) => GestureDetector(
+          onTap: () => onTap(i),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            child: Image.network(
+              photos[i].thumbUrl ?? photos[i].url,
+              width: 100,
+              height: 120,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
       ),

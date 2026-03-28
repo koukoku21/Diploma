@@ -15,14 +15,12 @@
 // ═══════════════════════════════════════════════════════════════════
 
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("DATABASE_URL")
-  extensions = [postgis]
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 // ───────────────────────────────────────────────────────────────────
@@ -158,20 +156,37 @@ model PortfolioPhoto {
 // ───────────────────────────────────────────────────────────────────
 // 3. SERVICES & SCHEDULE
 // Услуги мастера и расписание
+// ServiceTemplate — справочник: мастер выбирает из него, не придумывает
 // ───────────────────────────────────────────────────────────────────
 
-model Service {
-  id           String          @id @default(uuid())
-  masterId     String
-  title        String
-  category     ServiceCategory
-  priceFrom    Int             // Цена в тенге
-  durationMin  Int             // Длительность в минутах
-  isEnabled    Boolean         @default(true)
-  createdAt    DateTime        @default(now())
-  updatedAt    DateTime        @updatedAt
+// Справочник услуг — заполняется администратором/сидом
+model ServiceTemplate {
+  id        String          @id @default(uuid())
+  name      String          // "Маникюр классический"
+  nameKz    String?         // Казахский перевод
+  category  ServiceCategory
+  isActive  Boolean         @default(true)
+  sortOrder Int             @default(0)
 
-  master   MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  services  Service[]
+
+  @@map("service_templates")
+}
+
+model Service {
+  id          String           @id @default(uuid())
+  masterId    String
+  templateId  String?          // Ссылка на шаблон (null у старых записей)
+  title       String           // Снапшот названия из шаблона
+  category    ServiceCategory  // Снапшот категории из шаблона
+  priceFrom   Int              // Цена в тенге — мастер устанавливает сам
+  durationMin Int              // Длительность в минутах — мастер устанавливает сам
+  isEnabled   Boolean          @default(true)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  master   MasterProfile    @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  template ServiceTemplate? @relation(fields: [templateId], references: [id])
   bookings Booking[]
 
   @@map("services")

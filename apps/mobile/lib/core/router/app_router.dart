@@ -14,6 +14,7 @@ import '../../features/favourites/screens/favourites_screen.dart';
 import '../../features/chat/screens/chats_screen.dart';
 import '../../features/chat/screens/chat_screen.dart';
 import '../../features/bookings_list/screens/bookings_screen.dart';
+import '../../features/catalog/screens/catalog_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 // Master onboarding
 import '../../features/master/screens/master_specializations_screen.dart';
@@ -40,10 +41,13 @@ class AppRoutes {
 
   // Client tabs (shell)
   static const feed        = '/feed';
+  static const catalog     = '/catalog';
   static const favourites  = '/favourites';
   static const chats       = '/chats';
-  static const bookings    = '/bookings';
   static const profile     = '/profile';
+
+  // Outside shell
+  static const bookings    = '/bookings';
 
   // Master tabs (shell)
   static const masterDashboard = '/master/dashboard';
@@ -152,12 +156,24 @@ final appRouter = GoRouter(
       builder: (_, __) => const MasterPendingScreen(),
     ),
 
+    // ─── Bookings (outside Shell, accessed from Profile) ──────────
+    GoRoute(
+      path: AppRoutes.bookings,
+      builder: (_, __) => const BookingsScreen(),
+    ),
+
     // ─── Client Shell (5 tabs) ─────────────────────────────────────
     StatefulShellRoute.indexedStack(
       builder: (_, __, shell) => ClientShell(navigationShell: shell),
       branches: [
         StatefulShellBranch(routes: [
           GoRoute(path: AppRoutes.feed, builder: (_, __) => const FeedScreen()),
+        ]),
+        StatefulShellBranch(routes: [
+          GoRoute(
+            path: AppRoutes.catalog,
+            builder: (_, __) => const CatalogScreen(),
+          ),
         ]),
         StatefulShellBranch(routes: [
           GoRoute(
@@ -169,12 +185,6 @@ final appRouter = GoRouter(
           GoRoute(
             path: AppRoutes.chats,
             builder: (_, __) => const ChatsScreen(),
-          ),
-        ]),
-        StatefulShellBranch(routes: [
-          GoRoute(
-            path: AppRoutes.bookings,
-            builder: (_, __) => const BookingsScreen(),
           ),
         ]),
         StatefulShellBranch(routes: [

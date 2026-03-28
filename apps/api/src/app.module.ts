@@ -15,6 +15,7 @@ import { FavouritesModule } from './modules/favourites/favourites.module';
 import { ChatModule } from './modules/chat/chat.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AdminModule } from './modules/admin/admin.module';
+import { GeocodeModule } from './modules/geocode/geocode.module';
 
 @Module({
   imports: [
@@ -34,6 +35,7 @@ import { AdminModule } from './modules/admin/admin.module';
     ChatModule,
     NotificationsModule,
     AdminModule,
+    GeocodeModule,
   ],
 })
 export class AppModule {}
