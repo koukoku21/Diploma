@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
@@ -11,7 +10,6 @@ import '../../../core/network/dio_client.dart';
 import '../../../core/data/service_template.dart';
 import '../data/feed_models.dart';
 import '../providers/feed_provider.dart';
-import '../widgets/master_card.dart';
 
 class FeedScreen extends ConsumerStatefulWidget {
   const FeedScreen({super.key});
@@ -21,33 +19,12 @@ class FeedScreen extends ConsumerStatefulWidget {
 }
 
 class _FeedScreenState extends ConsumerState<FeedScreen> {
-  final _swiperCtrl = CardSwiperController();
-
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ref.read(feedProvider.notifier).init(ref.read(feedFilterProvider));
     });
-  }
-
-  @override
-  void dispose() {
-    _swiperCtrl.dispose();
-    super.dispose();
-  }
-
-  void _onSkip() => _swiperCtrl.swipe(CardSwiperDirection.left);
-  void _onBook(FeedMaster master) =>
-      context.push(AppRoutes.masterPublicProfile(master.id));
-
-  bool _onSwipe(int prev, int? next, CardSwiperDirection dir) {
-    // Defer state update to post-frame so the swiper animation finishes
-    // cleanly before the widget tree rebuilds (avoids setState-after-dispose).
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (mounted) ref.read(feedProvider.notifier).removeTop();
-    });
-    return true;
   }
 
   @override
@@ -59,8 +36,13 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       appBar: AppBar(
         backgroundColor: kBgPrimary,
         centerTitle: true,
-        title: Text('MIRAKU',
-            style: AppTextStyles.title.copyWith(letterSpacing: 4, color: kGold)),
+        title: Text(
+          'MIRAKU',
+          style: AppTextStyles.title.copyWith(
+            letterSpacing: 4,
+            color: kGold,
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.tune_rounded, color: kTextSecondary),
@@ -86,67 +68,58 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           children: [
             const Icon(Icons.search_off_rounded, color: kTextTertiary, size: 64),
             const SizedBox(height: AppSpacing.md),
-            Text('Мастеров не найдено',
-                style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)),
+            Text(
+              'Мастеров не найдено',
+              style: AppTextStyles.subtitle.copyWith(color: kTextSecondary),
+            ),
             const SizedBox(height: AppSpacing.sm),
-            Text('Попробуйте увеличить радиус поиска',
-                style: AppTextStyles.caption),
+            Text(
+              'Попробуйте изменить фильтры',
+              style: AppTextStyles.caption,
+            ),
           ],
         ),
       );
     }
 
-    return Column(
-      children: [
-        // ─── Карточки ───────────────────────────────────────────
-        Expanded(
-          child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.lg),
-            child: CardSwiper(
-              controller: _swiperCtrl,
-              cardsCount: state.cards.length,
-              onSwipe: _onSwipe,
-              numberOfCardsDisplayed: (state.cards.length - 1).clamp(1, 3),
-              backCardOffset: const Offset(0, 20),
-              padding: const EdgeInsets.only(top: 8, bottom: 8),
-              cardBuilder: (ctx, index, _, __) {
-                // Guard against library bug: swiper may request out-of-bounds
-                // indices during swipe animation transitions
-                if (index >= state.cards.length) return const SizedBox.shrink();
-                final master = state.cards[index];
-                return GestureDetector(
-                  onTap: () =>
-                      context.push(AppRoutes.masterPublicProfile(master.id)),
-                  child: MasterCard(master: master),
-                );
-              },
-            ),
-          ),
-        ),
-
-        // ─── Три кнопки действий ────────────────────────────────
-        _ActionBar(
-          onSkip: _onSkip,
-          onFavourite: () => _handleFavourite(state.cards.first),
-          onBook: () => _onBook(state.cards.first),
-        ),
-        const SizedBox(height: AppSpacing.xl),
-      ],
+    return RefreshIndicator(
+      color: kGold,
+      backgroundColor: kBgSecondary,
+      onRefresh: () async {
+        await ref.read(feedProvider.notifier).reload(ref.read(feedFilterProvider));
+      },
+      child: ListView.separated(
+        padding: const EdgeInsets.all(AppSpacing.screenH),
+        itemCount: state.cards.length,
+        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+        itemBuilder: (_, index) {
+          final master = state.cards[index];
+          return _MasterListCard(
+            master: master,
+            onTap: () => context.push(AppRoutes.masterPublicProfile(master.id)),
+            onFavourite: () => _handleFavourite(master),
+            onBook: () => context.push(AppRoutes.masterPublicProfile(master.id)),
+          );
+        },
+      ),
     );
   }
 
   Future<void> _handleFavourite(FeedMaster master) async {
-    _swiperCtrl.swipe(CardSwiperDirection.top);
     try {
       await createDio().post('/favourites/${master.id}');
     } catch (_) {
-      // ignore — favourite may already exist
+      // ignore
     }
+
     if (!mounted) return;
+
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('${master.name} добавлен в избранное',
-            style: AppTextStyles.caption.copyWith(color: kTextPrimary)),
+        content: Text(
+          '${master.name} добавлен в избранное',
+          style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+        ),
         backgroundColor: kBgSecondary,
         duration: const Duration(seconds: 2),
       ),
@@ -165,89 +138,130 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   }
 }
 
-// ─── Три кнопки: ✕  ♡  📅 ────────────────────────────────────────
-class _ActionBar extends StatelessWidget {
-  const _ActionBar({
-    required this.onSkip,
+class _MasterListCard extends StatelessWidget {
+  const _MasterListCard({
+    required this.master,
+    required this.onTap,
     required this.onFavourite,
     required this.onBook,
   });
 
-  final VoidCallback onSkip;
+  final FeedMaster master;
+  final VoidCallback onTap;
   final VoidCallback onFavourite;
   final VoidCallback onBook;
-
-  @override
-  Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
-      child: Row(
-        children: [
-          // ✕ Пропустить
-          _CircleBtn(
-            onTap: onSkip,
-            icon: Icons.close_rounded,
-            color: kTextSecondary,
-          ),
-          const SizedBox(width: AppSpacing.md),
-
-          // ♡ Избранное
-          _CircleBtn(
-            onTap: onFavourite,
-            icon: Icons.favorite_border_rounded,
-            color: kRose,
-          ),
-          const SizedBox(width: AppSpacing.md),
-
-          // 📅 Записаться (шире)
-          Expanded(
-            child: SizedBox(
-              height: 52,
-              child: ElevatedButton.icon(
-                onPressed: onBook,
-                icon: const Icon(Icons.calendar_month_outlined, size: 18),
-                label: const Text('Записаться'),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: kGold,
-                  foregroundColor: kBgPrimary,
-                  shape: const StadiumBorder(),
-                  textStyle: AppTextStyles.label
-                      .copyWith(fontWeight: FontWeight.w700, color: kBgPrimary),
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _CircleBtn extends StatelessWidget {
-  const _CircleBtn({required this.onTap, required this.icon, required this.color});
-  final VoidCallback onTap;
-  final IconData icon;
-  final Color color;
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: 52,
-        height: 52,
         decoration: BoxDecoration(
-          shape: BoxShape.circle,
           color: kBgSecondary,
-          border: Border.all(color: kBorder2),
+          borderRadius: BorderRadius.circular(AppRadius.lg),
+          border: Border.all(color: kBorder),
         ),
-        child: Icon(icon, color: color, size: 24),
+        clipBehavior: Clip.antiAlias,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            SizedBox(
+              height: 180,
+              width: double.infinity,
+              child: master.coverUrl != null
+                  ? Image.network(
+                      master.coverUrl!,
+                      fit: BoxFit.cover,
+                      errorBuilder: (_, __, ___) => _placeholder(),
+                    )
+                  : _placeholder(),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(AppSpacing.md),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(master.name, style: AppTextStyles.subtitle),
+                  const SizedBox(height: 4),
+                  if (master.specializations.isNotEmpty)
+                    Text(
+                      master.specializations.take(3).join(' · '),
+                      style: AppTextStyles.caption.copyWith(color: kGold),
+                    ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Text(
+                    master.address,
+                    style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: AppSpacing.sm),
+                  Row(
+                    children: [
+                      if (master.rating != null) ...[
+                        const Icon(Icons.star_rounded, color: kGold, size: 14),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${master.rating!.toStringAsFixed(1)} (${master.reviewCount})',
+                          style: AppTextStyles.caption,
+                        ),
+                        const SizedBox(width: AppSpacing.md),
+                      ],
+                      const Icon(
+                        Icons.location_on_outlined,
+                        color: kTextTertiary,
+                        size: 14,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(master.distanceLabel, style: AppTextStyles.caption),
+                      const Spacer(),
+                      if (master.minPrice != null)
+                        Text(
+                          'от ${master.minPrice}₸',
+                          style: AppTextStyles.label.copyWith(color: kGold),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: OutlinedButton.icon(
+                          onPressed: onFavourite,
+                          icon: const Icon(Icons.favorite_border_rounded, size: 18),
+                          label: const Text('Избранное'),
+                        ),
+                      ),
+                      const SizedBox(width: AppSpacing.sm),
+                      Expanded(
+                        child: ElevatedButton.icon(
+                          onPressed: onBook,
+                          icon: const Icon(Icons.calendar_month_outlined, size: 18),
+                          label: const Text('Записаться'),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _placeholder() {
+    return Container(
+      color: kBgTertiary,
+      child: const Center(
+        child: Icon(Icons.person_outline, color: kTextTertiary, size: 56),
       ),
     );
   }
 }
 
-// ─── Боттом-шит фильтров (C-1a) ──────────────────────────────────
+// ─── Боттом-шит фильтров ─────────────────────────────────────────
 class _FilterSheet extends ConsumerStatefulWidget {
   const _FilterSheet();
 
@@ -310,7 +324,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Ручка
           Center(
             child: Container(
               width: 36,
@@ -322,26 +335,26 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               ),
             ),
           ),
-
           Row(
             children: [
               Text('Фильтры', style: AppTextStyles.title),
               const Spacer(),
               TextButton(
                 onPressed: _reset,
-                child: Text('Сбросить',
-                    style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                child: Text(
+                  'Сбросить',
+                  style: AppTextStyles.caption.copyWith(color: kTextTertiary),
+                ),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
-
-          // ─── Услуга ─────────────────────────────────────────────
           Text('Услуга', style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           templatesAsync.when(
-            loading: () =>
-                const Center(child: CircularProgressIndicator(color: kGold)),
+            loading: () => const Center(
+              child: CircularProgressIndicator(color: kGold),
+            ),
             error: (_, __) => const SizedBox.shrink(),
             data: (templates) => _ServiceDropdown(
               templates: templates,
@@ -350,8 +363,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-
-          // ─── Цена до ────────────────────────────────────────────
           Text('Максимальная цена (₸)', style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           TextField(
@@ -381,8 +392,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             ),
           ),
           const SizedBox(height: AppSpacing.lg),
-
-          // ─── Радиус ─────────────────────────────────────────────
           Text('Радиус поиска', style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.xs),
           Slider(
@@ -393,10 +402,10 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             activeColor: kGold,
             inactiveColor: kBorder2,
             label: '${(_local.radius / 1000).toStringAsFixed(1)} км',
-            onChanged: (v) =>
-                setState(() => _local = _local.copyWith(radius: v.round())),
+            onChanged: (v) {
+              setState(() => _local = _local.copyWith(radius: v.round()));
+            },
           ),
-
           const SizedBox(height: AppSpacing.xl),
           SizedBox(
             width: double.infinity,
@@ -408,9 +417,13 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
                 foregroundColor: kBgPrimary,
                 shape: const StadiumBorder(),
               ),
-              child: Text('Применить',
-                  style: AppTextStyles.label
-                      .copyWith(fontWeight: FontWeight.w700, color: kBgPrimary)),
+              child: Text(
+                'Применить',
+                style: AppTextStyles.label.copyWith(
+                  fontWeight: FontWeight.w700,
+                  color: kBgPrimary,
+                ),
+              ),
             ),
           ),
         ],
@@ -419,7 +432,6 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
   }
 }
 
-// ─── Дропдаун услуг ──────────────────────────────────────────────
 class _ServiceDropdown extends StatelessWidget {
   const _ServiceDropdown({
     required this.templates,
@@ -435,7 +447,9 @@ class _ServiceDropdown extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.symmetric(
-          horizontal: AppSpacing.md, vertical: AppSpacing.xs),
+        horizontal: AppSpacing.md,
+        vertical: AppSpacing.xs,
+      ),
       decoration: BoxDecoration(
         color: kBgTertiary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -448,20 +462,24 @@ class _ServiceDropdown extends StatelessWidget {
           dropdownColor: kBgSecondary,
           style: AppTextStyles.body,
           icon: const Icon(Icons.expand_more, color: kTextTertiary, size: 20),
-          hint: Text('Любая услуга',
-              style: AppTextStyles.body.copyWith(color: kTextTertiary)),
+          hint: Text(
+            'Любая услуга',
+            style: AppTextStyles.body.copyWith(color: kTextTertiary),
+          ),
           items: [
-            // Пункт "Любая" — сбрасывает фильтр
             DropdownMenuItem<ServiceTemplate?>(
               value: null,
-              child: Text('Любая услуга',
-                  style: AppTextStyles.body.copyWith(color: kTextTertiary)),
+              child: Text(
+                'Любая услуга',
+                style: AppTextStyles.body.copyWith(color: kTextTertiary),
+              ),
             ),
-            // Разделитель по категориям
-            ...templates.map((t) => DropdownMenuItem<ServiceTemplate?>(
-                  value: t,
-                  child: Text(t.name, style: AppTextStyles.body),
-                )),
+            ...templates.map(
+              (t) => DropdownMenuItem<ServiceTemplate?>(
+                value: t,
+                child: Text(t.name, style: AppTextStyles.body),
+              ),
+            ),
           ],
           onChanged: onChanged,
         ),
