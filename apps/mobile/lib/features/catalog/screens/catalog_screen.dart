@@ -465,10 +465,12 @@ class _CatalogFilterSheetState extends State<_CatalogFilterSheet> {
             height: 52,
             child: ElevatedButton(
               onPressed: () {
-                widget.onApply(_CatalogFilter(
-                  serviceTemplate: _selectedTemplate,
-                  maxPrice: int.tryParse(_maxPriceCtrl.text.trim()),
-                ));
+                widget.onApply(
+                  widget.current.copyWith(
+                    serviceTemplate: _selectedTemplate,
+                    maxPrice: int.tryParse(_maxPriceCtrl.text.trim()),
+                  ),
+                );
                 Navigator.pop(context);
               },
               style: ElevatedButton.styleFrom(
