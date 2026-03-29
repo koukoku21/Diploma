@@ -1,10 +1,22 @@
+import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dio/dio.dart';
 import '../auth/token_storage.dart';
 
-const _baseUrl = String.fromEnvironment(
-  'API_URL',
-  defaultValue: 'http://localhost:4040/api/v1',
-);
+String get _baseUrl {
+  const envUrl = String.fromEnvironment('API_URL');
+  if (envUrl.isNotEmpty) return envUrl;
+
+  if (kIsWeb) {
+    return 'http://localhost:4040/api/v1';
+  }
+
+  if (Platform.isAndroid) {
+    return 'http://10.0.2.2:4040/api/v1';
+  }
+
+  return 'http://localhost:4040/api/v1';
+}
 
 Dio createDio() {
   final dio = Dio(
