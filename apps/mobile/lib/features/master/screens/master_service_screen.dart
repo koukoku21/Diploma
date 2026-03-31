@@ -10,17 +10,17 @@ import '../../../core/widgets/buttons/primary_button.dart';
 import '../../../core/widgets/inputs/app_text_field.dart';
 import '../../../core/network/dio_client.dart';
 
-const _categories = [
-  'Маникюр',
-  'Педикюр',
-  'Стрижка',
-  'Окрашивание',
-  'Макияж',
-  'Брови',
-  'Ресницы',
-  'Массаж',
-  'Другое',
-];
+const _categories = <String, String>{
+  'Маникюр': 'MANICURE',
+  'Педикюр': 'PEDICURE',
+  'Стрижка': 'HAIRCUT',
+  'Окрашивание': 'COLORING',
+  'Макияж': 'MAKEUP',
+  'Брови': 'BROWS',
+  'Ресницы': 'LASHES',
+  'Массаж': 'OTHER',
+  'Другое': 'OTHER',
+};
 
 // M-4: Добавить первую услугу
 class MasterServiceScreen extends ConsumerStatefulWidget {
@@ -33,7 +33,7 @@ class MasterServiceScreen extends ConsumerStatefulWidget {
 class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
   final _nameCtrl  = TextEditingController();
   final _priceCtrl = TextEditingController();
-  String _category = _categories.first;
+  String _categoryLabel = _categories.keys.first;
   int _duration = 60;
   bool _loading = false;
 
@@ -52,7 +52,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
     try {
       await createDio().post('/master/services', data: {
         'name': _nameCtrl.text.trim(),
-        'category': _category,
+        'category': _categories[_categoryLabel],
         'price': double.tryParse(_priceCtrl.text.trim()) ?? 0,
         'duration': _duration,
       });
@@ -106,7 +106,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
             Text('Категория', style: AppTextStyles.label),
             const SizedBox(height: AppSpacing.sm),
             DropdownButtonFormField<String>(
-              value: _category,
+              value: _categoryLabel,
               dropdownColor: kBgSecondary,
               style: AppTextStyles.body,
               decoration: InputDecoration(
@@ -121,11 +121,11 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
                   borderSide: const BorderSide(color: kBorder),
                 ),
               ),
-              items: _categories.map((c) => DropdownMenuItem(
-                value: c,
-                child: Text(c, style: AppTextStyles.body),
+              items: _categories.keys.map((label) => DropdownMenuItem(
+                value: label,
+                child: Text(label, style: AppTextStyles.body),
               )).toList(),
-              onChanged: (v) => setState(() => _category = v!),
+              onChanged: (v) => setState(() => _categoryLabel = v!),
             ),
             const SizedBox(height: AppSpacing.lg),
 
