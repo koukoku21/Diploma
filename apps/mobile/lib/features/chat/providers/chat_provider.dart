@@ -51,7 +51,7 @@ class ChatSocketNotifier extends StateNotifier<List<ChatMessage>> {
     final token = await storage.read(key: 'access_token');
 
     _socket = io.io(
-      'http://10.0.2.2:3000/chat',
+      '$socketBaseUrl/chat',
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})

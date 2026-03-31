@@ -3,25 +3,28 @@ import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:dio/dio.dart';
 import '../auth/token_storage.dart';
 
-String get _baseUrl {
+String get apiBaseUrl {
   const envUrl = String.fromEnvironment('API_URL');
   if (envUrl.isNotEmpty) return envUrl;
 
-  if (kIsWeb) {
-    return 'http://localhost:4040/api/v1';
-  }
-
-  if (Platform.isAndroid) {
-    return 'http://10.0.2.2:4040/api/v1';
-  }
-
+  if (kIsWeb) return 'http://localhost:4040/api/v1';
+  if (Platform.isAndroid) return 'http://10.0.2.2:4040/api/v1';
   return 'http://localhost:4040/api/v1';
+}
+
+String get socketBaseUrl {
+  const envUrl = String.fromEnvironment('SOCKET_URL');
+  if (envUrl.isNotEmpty) return envUrl;
+
+  if (kIsWeb) return 'http://localhost:4040';
+  if (Platform.isAndroid) return 'http://10.0.2.2:4040';
+  return 'http://localhost:4040';
 }
 
 Dio createDio() {
   final dio = Dio(
     BaseOptions(
-      baseUrl: _baseUrl,
+      baseUrl: apiBaseUrl,
       connectTimeout: const Duration(seconds: 10),
       receiveTimeout: const Duration(seconds: 10),
       headers: {'Content-Type': 'application/json'},
@@ -73,7 +76,7 @@ class _AuthInterceptor extends Interceptor {
       }
 
       // Запрос к refresh без interceptor (чтобы не зациклиться)
-      final refreshDio = Dio(BaseOptions(baseUrl: _baseUrl));
+      final refreshDio = Dio(BaseOptions(baseUrl: apiBaseUrl));
       final res = await refreshDio.post(
         '/auth/refresh',
         data: {'refreshToken': refreshToken},
