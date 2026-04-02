@@ -11,6 +11,7 @@ class FeedMaster {
     this.rating,
     this.minPrice,
     this.coverUrl,
+    this.isBoosted = false,
   });
 
   final String id;
@@ -24,6 +25,7 @@ class FeedMaster {
   final int? minPrice;
   final String? coverUrl;
   final List<String> specializations;
+  final bool isBoosted;
 
   String get distanceLabel {
     if (distanceM < 1000) return '$distanceMм';
@@ -41,10 +43,51 @@ class FeedMaster {
         distanceM: j['distanceM'] as int? ?? 0,
         minPrice: j['minPrice'] as int?,
         coverUrl: j['coverUrl'] as String?,
+        isBoosted: j['isBoosted'] as bool? ?? false,
         specializations: (j['specializations'] as List?)
                 ?.map((e) => e.toString())
                 .toList() ??
             [],
+      );
+}
+
+// ─── Story ────────────────────────────────────────────────────────
+
+class StoryItem {
+  const StoryItem({
+    required this.id,
+    required this.mediaUrl,
+    required this.salonName,
+    this.caption,
+    this.category,
+    this.salonLogoUrl,
+    this.isPaid = false,
+    this.expiresAt,
+    this.viewCount = 0,
+  });
+
+  final String id;
+  final String mediaUrl;
+  final String salonName;
+  final String? caption;
+  final String? category;
+  final String? salonLogoUrl;
+  final bool isPaid;
+  final DateTime? expiresAt;
+  final int viewCount;
+
+  factory StoryItem.fromJson(Map<String, dynamic> j) => StoryItem(
+        id: j['id'] as String,
+        mediaUrl: j['mediaUrl'] as String,
+        salonName: j['salonName'] as String? ?? 'Салон',
+        caption: j['caption'] as String?,
+        category: j['category'] as String?,
+        salonLogoUrl: j['salonLogoUrl'] as String?,
+        isPaid: j['isPaid'] as bool? ?? false,
+        expiresAt: j['expiresAt'] != null
+            ? DateTime.tryParse(j['expiresAt'] as String)
+            : null,
+        viewCount: j['viewCount'] as int? ?? 0,
       );
 }
 

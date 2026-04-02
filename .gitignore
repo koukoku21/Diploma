@@ -25,9 +25,10 @@ apps/mobile/**/*.freezed.dart
 .idea/
 *.DS_Store
 *.iml
-.CLAUDE.md
-.ARTICLE.md
-.design-system.md
+CLAUDE.md
+ARCHITECTURE.md
+design-system.md
+README.md
 
 
 # ─── Uploads (локальные файлы, в проде хранятся на R2) ───────────

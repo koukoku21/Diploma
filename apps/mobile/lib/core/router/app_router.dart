@@ -30,6 +30,8 @@ import '../../features/master/screens/master_profile_screen.dart'
     as mp show MasterProfileScreen;
 import '../shell/client_shell.dart';
 import '../shell/master_shell.dart';
+import '../../features/stories/screens/story_viewer_screen.dart';
+import '../../features/feed/data/feed_models.dart' as feed;
 
 class AppRoutes {
   // Auth
@@ -68,6 +70,7 @@ class AppRoutes {
   static String slotSelect(String masterId) => '/masters/$masterId/book/slots';
   static const bookingConfirm = '/booking/confirm';
   static String chat(String roomId) => '/chats/$roomId';
+  static const stories = '/stories';
 }
 
 final appRouter = GoRouter(
@@ -85,6 +88,18 @@ final appRouter = GoRouter(
       builder: (_, state) => NameScreen(phone: state.extra as String),
     ),
     GoRoute(path: AppRoutes.location, builder: (_, __) => const LocationScreen()),
+
+    // ─── Story viewer ─────────────────────────────────────────────
+    GoRoute(
+      path: AppRoutes.stories,
+      builder: (_, state) {
+        final extra = state.extra as Map<String, dynamic>;
+        return StoryViewerScreen(
+          stories: extra['stories'] as List<feed.StoryItem>,
+          initialIndex: extra['initialIndex'] as int? ?? 0,
+        );
+      },
+    ),
 
     // ─── Public Master Profile (outside Shell) ─────────────────────
     GoRoute(

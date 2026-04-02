@@ -8,9 +8,15 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 export class FeedController {
   constructor(private feed: FeedService) {}
 
-  // C-1: Лента мастеров
+  // C-1: только лента мастеров
   @Get()
   getFeed(@Query() query: FeedQueryDto) {
     return this.feed.getFeed(query);
+  }
+
+  // C-1: главный экран — сторисы + мастера за один запрос
+  @Get('home')
+  getHome(@Query() query: FeedQueryDto) {
+    return this.feed.getHome(query);
   }
 }
