@@ -4,6 +4,7 @@ import { StoryPackage, StoryStatus } from '@prisma/client';
 import { CreateStoryDto } from './dto/create-story.dto';
 import { RejectStoryDto } from './dto/reject-story.dto';
 import { StoriesFeedQueryDto } from './dto/stories-feed-query.dto';
+import { TelegramService } from '../telegram/telegram.service';
 
 const PACKAGE_DURATION_DAYS: Record<StoryPackage, number> = {
   DAY: 1,
@@ -19,7 +20,10 @@ const PACKAGE_RADIUS_KM: Record<StoryPackage, number> = {
 
 @Injectable()
 export class StoriesService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private telegram: TelegramService,
+  ) {}
 
   async create(userId: string, dto: CreateStoryDto) {
     const salon = await this.prisma.salonProfile.findUnique({
@@ -27,7 +31,7 @@ export class StoriesService {
     });
     if (!salon) throw new ForbiddenException('Salon profile not found');
 
-    return this.prisma.story.create({
+    const story = await this.prisma.story.create({
       data: {
         salonId: salon.id,
         mediaUrl: dto.mediaUrl,
@@ -39,6 +43,18 @@ export class StoriesService {
         status: StoryStatus.PENDING,
       },
     });
+
+    // Уведомление в Telegram (fire-and-forget)
+    this.telegram.notifyNewStory({
+      id: story.id,
+      salonName: salon.name,
+      packageType: story.packageType,
+      paidAmount: story.paidAmount ? Number(story.paidAmount) : null,
+      caption: story.caption,
+      mediaUrl: story.mediaUrl,
+    }).catch(() => {});
+
+    return story;
   }
 
   async getFeed(query: StoriesFeedQueryDto) {

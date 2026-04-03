@@ -5,6 +5,7 @@ import type { Response } from 'express';
 import { AdminService } from './admin.service';
 import { AdminGuard } from './guards/admin.guard';
 import { ReviewMasterDto } from './dto/review-master.dto';
+import { TelegramService } from '../telegram/telegram.service';
 
 const ADMIN_HTML = `<!DOCTYPE html>
 <html lang="ru">
@@ -611,7 +612,10 @@ document.getElementById('template-modal').addEventListener('click', function(e) 
 
 @Controller('admin')
 export class AdminController {
-  constructor(private admin: AdminService) {}
+  constructor(
+    private admin: AdminService,
+    private telegram: TelegramService,
+  ) {}
 
   // ─── UI страница (без гарда — защищена паролем на стороне браузера) ──
   @Get()
@@ -702,5 +706,54 @@ export class AdminController {
   @Delete('service-templates/:id')
   deleteServiceTemplate(@Param('id') id: string) {
     return this.admin.deleteServiceTemplate(id);
+  }
+
+  // ─── Telegram webhook ─────────────────────────────────────────────
+
+  // Зарегистрировать webhook в Telegram (вызвать один раз после деплоя)
+  @UseGuards(AdminGuard)
+  @Post('telegram/setup-webhook')
+  async setupWebhook(@Body('url') url: string) {
+    return this.telegram.setWebhook(url);
+  }
+
+  // Telegram шлёт сюда callback_query когда нажимают кнопки
+  @Post('telegram/webhook')
+  async telegramWebhook(@Body() update: any) {
+    const cbq = update?.callback_query;
+    if (!cbq) return { ok: true };
+
+    const { id: cbqId, data, message } = cbq;
+    const chatId    = message?.chat?.id;
+    const messageId = message?.message_id;
+
+    const [action, entityId] = (data as string).split(':');
+
+    try {
+      if (action === 'approve_story') {
+        await this.admin.approveStory(entityId);
+        await this.telegram.answerCallbackQuery(cbqId, '✅ Сторис опубликован');
+        await this.telegram.editMessageText(chatId, messageId, `✅ *Сторис опубликован*\nID: ${entityId}`);
+
+      } else if (action === 'reject_story') {
+        await this.admin.rejectStory(entityId, 'Отклонено через Telegram');
+        await this.telegram.answerCallbackQuery(cbqId, '❌ Сторис отклонён');
+        await this.telegram.editMessageText(chatId, messageId, `❌ *Сторис отклонён*\nID: ${entityId}`);
+
+      } else if (action === 'approve_master') {
+        await this.admin.reviewMaster(entityId, { status: MasterStatus.APPROVED });
+        await this.telegram.answerCallbackQuery(cbqId, '✅ Мастер одобрен');
+        await this.telegram.editMessageText(chatId, messageId, `✅ *Мастер одобрен*\nID: ${entityId}`);
+
+      } else if (action === 'reject_master') {
+        await this.admin.reviewMaster(entityId, { status: MasterStatus.REJECTED });
+        await this.telegram.answerCallbackQuery(cbqId, '❌ Мастер отклонён');
+        await this.telegram.editMessageText(chatId, messageId, `❌ *Мастер отклонён*\nID: ${entityId}`);
+      }
+    } catch (_) {
+      await this.telegram.answerCallbackQuery(cbqId, 'Ошибка при обработке');
+    }
+
+    return { ok: true };
   }
 }

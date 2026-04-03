@@ -6,10 +6,14 @@ import {
 import { PrismaService } from '../../shared/prisma.service';
 import { CreateMasterDto } from './dto/create-master.dto';
 import { UpdateMasterDto } from './dto/update-master.dto';
+import { TelegramService } from '../telegram/telegram.service';
 
 @Injectable()
 export class MastersService {
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private telegram: TelegramService,
+  ) {}
 
   // ─── Онбординг мастера (из C-8 "Стать мастером") ───────────────
   async createProfile(userId: string, dto: CreateMasterDto) {
@@ -44,6 +48,18 @@ export class MastersService {
         isDayOff: false,
       })),
     });
+
+    // Уведомление в Telegram (fire-and-forget)
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (user) {
+      this.telegram.notifyNewMaster({
+        id: master.id,
+        userName: user.name ?? '—',
+        phone: user.phone,
+        address: master.address,
+        specializations: master.specializations.map((s) => s.category),
+      }).catch(() => {});
+    }
 
     return master;
   }
