@@ -257,6 +257,7 @@ model Booking {
   cancelledBy    CancelledBy?
   cancelReason   String?
   completedAt    DateTime?
+  reminderSentAt DateTime?     // Когда отправили напоминание за 1 час
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 
@@ -584,8 +585,9 @@ model MasterVisibility {
   paidAmount  Int
   startsAt    DateTime
   endsAt      DateTime
-  isActive    Boolean           @default(true)
-  createdAt   DateTime          @default(now())
+  isActive          Boolean           @default(true)
+  expiryNotifiedAt  DateTime?         // Когда отправили уведомление «заканчивается завтра»
+  createdAt         DateTime          @default(now())
 
   master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
 

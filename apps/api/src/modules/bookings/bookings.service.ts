@@ -7,6 +7,7 @@ import {
 import { BookingStatus, CancelledBy } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma.service';
 import { SlotsService } from '../slots/slots.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { CreateBookingDto } from './dto/create-booking.dto';
 import { CancelBookingDto } from './dto/cancel-booking.dto';
 
@@ -30,6 +31,7 @@ export class BookingsService {
   constructor(
     private prisma: PrismaService,
     private slots: SlotsService,
+    private notifications: NotificationsService,
   ) {}
 
   // ─── C-5: Создать запись ────────────────────────────────────────
@@ -88,6 +90,14 @@ export class BookingsService {
 
     // Инвалидируем кэш слотов
     await this.slots.invalidateCache(masterId, date);
+
+    // Push мастеру о новой записи
+    const clientUser = await this.prisma.user.findUnique({ where: { id: clientId } });
+    this.notifications.notifyNewBooking(
+      masterId, booking.id,
+      clientUser?.name ?? 'Клиент',
+      service.title,
+    ).catch(() => {});
 
     return booking;
   }
@@ -184,6 +194,22 @@ export class BookingsService {
     const dateStr = booking.startsAt.toISOString().split('T')[0];
     await this.slots.invalidateCache(booking.masterId, dateStr);
 
+    // Push уведомление противоположной стороне
+    if (cancelledBy === CancelledBy.CLIENT) {
+      const clientUser = await this.prisma.user.findUnique({ where: { id: booking.clientId } });
+      this.notifications.notifyBookingCancelledByClient(
+        booking.masterId, bookingId, clientUser?.name ?? 'Клиент',
+      ).catch(() => {});
+    } else {
+      const masterProfile = await this.prisma.masterProfile.findUnique({
+        where: { id: booking.masterId },
+        include: { user: { select: { name: true } } },
+      });
+      this.notifications.notifyBookingCancelledByMaster(
+        booking.clientId, bookingId, masterProfile?.user?.name ?? 'Мастер',
+      ).catch(() => {});
+    }
+
     return updated;
   }
 
@@ -202,12 +228,21 @@ export class BookingsService {
     });
     if (master?.id !== booking.masterId) throw new ForbiddenException();
 
-    return this.prisma.booking.update({
+    const completed = await this.prisma.booking.update({
       where: { id: bookingId },
       data: {
         status: BookingStatus.COMPLETED,
         completedAt: new Date(),
       },
+      include: { master: { include: { user: { select: { name: true } } } } },
     });
+
+    // Push клиенту с просьбой оставить отзыв
+    this.notifications.notifyReviewRequest(
+      booking.clientId, bookingId,
+      completed.master.user?.name ?? 'Мастер',
+    ).catch(() => {});
+
+    return completed;
   }
 }

@@ -18,6 +18,7 @@ import { AdminModule } from './modules/admin/admin.module';
 import { GeocodeModule } from './modules/geocode/geocode.module';
 import { StoriesModule } from './modules/stories/stories.module';
 import { VisibilityModule } from './modules/visibility/visibility.module';
+import { CronModule } from './modules/cron/cron.module';
 
 @Module({
   imports: [
@@ -40,6 +41,7 @@ import { VisibilityModule } from './modules/visibility/visibility.module';
     GeocodeModule,
     StoriesModule,
     VisibilityModule,
+    CronModule,
   ],
 })
 export class AppModule {}
