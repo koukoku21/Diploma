@@ -61,39 +61,28 @@ export class StoriesService {
     const radiusMeters = (query.radius ?? 10) * 1000;
     const now = new Date();
 
-    // Достаём ACTIVE сторисы в радиусе через JOIN с salon_profiles и PostGIS
+    // Достаём ACTIVE сторисы через JOIN с salon_profiles
+    // Prisma хранит поля как camelCase — используем кавычки в SQL
     const stories = await this.prisma.$queryRaw<any[]>`
       SELECT
         s.id,
-        s.media_url    AS "mediaUrl",
+        s."mediaUrl",
         s.caption,
         s.category,
-        s.is_paid      AS "isPaid",
-        s.expires_at   AS "expiresAt",
-        s.view_count   AS "viewCount",
+        s."isPaid",
+        s."expiresAt",
+        s."viewCount",
         sp.name        AS "salonName",
-        sp.logo_url    AS "salonLogoUrl",
-        ST_Distance(
-          sp.location::geography,
-          ST_SetSRID(ST_Point(${query.lng}, ${query.lat}), 4326)::geography
-        ) AS distance
+        sp."logoUrl"   AS "salonLogoUrl"
       FROM stories s
-      JOIN salon_profiles sp ON sp.id = s.salon_id
+      JOIN salon_profiles sp ON sp.id = s."salonId"
       WHERE s.status = 'ACTIVE'
-        AND s.expires_at > ${now}
+        AND s."expiresAt" > ${now}
         AND (
           ${query.category ?? null} IS NULL
           OR s.category = ${query.category ?? null}::"ServiceCategory"
         )
-        AND (
-          sp.location IS NULL
-          OR ST_DWithin(
-            sp.location::geography,
-            ST_SetSRID(ST_Point(${query.lng}, ${query.lat}), 4326)::geography,
-            ${radiusMeters}
-          )
-        )
-      ORDER BY s.is_paid DESC, s.expires_at ASC
+      ORDER BY s."isPaid" DESC, s."expiresAt" ASC
       LIMIT 20
     `;
 

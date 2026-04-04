@@ -568,6 +568,7 @@ class _MasterListCard extends StatelessWidget {
                           ),
                         const Spacer(),
                         SizedBox(
+                          width: 96,
                           height: 30,
                           child: ElevatedButton(
                             onPressed: () => context.push(
@@ -578,6 +579,9 @@ class _MasterListCard extends StatelessWidget {
                               foregroundColor: kBgPrimary,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12),
+                              minimumSize: Size.zero,
+                              tapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
                               shape: const StadiumBorder(),
                               textStyle: AppTextStyles.caption.copyWith(
                                 fontWeight: FontWeight.w700,
