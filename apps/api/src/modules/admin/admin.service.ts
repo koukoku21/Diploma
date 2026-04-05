@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { MasterStatus, ServiceCategory } from '@prisma/client';
+import { MasterStatus, ServiceCategory, StoryStatus } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ReviewMasterDto } from './dto/review-master.dto';
@@ -172,14 +172,67 @@ export class AdminService {
 
   // Статистика для дашборда
   async getStats() {
-    const [totalMasters, pendingMasters, totalUsers, totalBookings] =
+    const [totalMasters, pendingMasters, totalUsers, totalBookings, pendingStories] =
       await Promise.all([
         this.prisma.masterProfile.count({ where: { status: MasterStatus.APPROVED } }),
         this.prisma.masterProfile.count({ where: { status: MasterStatus.PENDING } }),
         this.prisma.user.count({ where: { deletedAt: null } }),
         this.prisma.booking.count(),
+        this.prisma.story.count({ where: { status: StoryStatus.PENDING } }),
       ]);
 
-    return { totalMasters, pendingMasters, totalUsers, totalBookings };
+    return { totalMasters, pendingMasters, totalUsers, totalBookings, pendingStories };
+  }
+
+  // ─── Сторисы ───────────────────────────────────────────────────────
+
+  async getPendingStories() {
+    return this.prisma.story.findMany({
+      where: { status: StoryStatus.PENDING },
+      include: { salon: { select: { name: true, logoUrl: true } } },
+      orderBy: { createdAt: 'asc' },
+    });
+  }
+
+  async getActiveStories() {
+    return this.prisma.story.findMany({
+      where: { status: StoryStatus.ACTIVE },
+      include: { salon: { select: { name: true, logoUrl: true } } },
+      orderBy: { expiresAt: 'asc' },
+    });
+  }
+
+  async approveStory(storyId: string) {
+    const story = await this.prisma.story.findUnique({ where: { id: storyId } });
+    if (!story) throw new NotFoundException('Сторис не найден');
+
+    const durationDays = { DAY: 1, WEEK: 7, MONTH: 30 }[story.packageType] ?? 7;
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + durationDays * 24 * 60 * 60 * 1000);
+
+    return this.prisma.story.update({
+      where: { id: storyId },
+      data: { status: StoryStatus.ACTIVE, startsAt: now, expiresAt },
+    });
+  }
+
+  async rejectStory(storyId: string, reason: string) {
+    const story = await this.prisma.story.findUnique({ where: { id: storyId } });
+    if (!story) throw new NotFoundException('Сторис не найден');
+
+    return this.prisma.story.update({
+      where: { id: storyId },
+      data: { status: StoryStatus.REJECTED, rejectReason: reason },
+    });
+  }
+
+  async deactivateStory(storyId: string) {
+    const story = await this.prisma.story.findUnique({ where: { id: storyId } });
+    if (!story) throw new NotFoundException('Сторис не найден');
+
+    return this.prisma.story.update({
+      where: { id: storyId },
+      data: { status: StoryStatus.EXPIRED },
+    });
   }
 }
