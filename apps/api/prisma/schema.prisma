@@ -57,6 +57,9 @@ model User {
   pushTokens       PushToken[]
   notifications    Notification[]
 
+  // Сторисы
+  storyViews       StoryView[]
+
   @@map("users")
 }
 
@@ -97,6 +100,7 @@ model MasterProfile {
   // ALTER TABLE master_profiles ADD COLUMN location geography(Point,4326)
   bufferMinutes  Int           @default(15)
   isActive       Boolean       @default(true)   // тогл "Принимаю записи"
+  isVisible      Boolean       @default(true)   // false → скрыт из ленты (не удалён)
   isVerified     Boolean       @default(false)
   verifiedAt     DateTime?
   status         MasterStatus  @default(PENDING)
@@ -116,6 +120,7 @@ model MasterProfile {
   favouritedBy    Favourite[]
   chatRooms       ChatRoom[]
   salonMemberships SalonMaster[]
+  visibilityPeriods MasterVisibility[]
 
   @@map("master_profiles")
 }
@@ -415,6 +420,7 @@ model SalonProfile {
   owner    User          @relation(fields: [ownerId], references: [id])
   masters  SalonMaster[]
   bookings Booking[]
+  stories  Story[]
 
   @@map("salon_profiles")
 }
@@ -502,4 +508,94 @@ enum NotificationType {
 
   // Чат
   NEW_MESSAGE
+
+  // Видимость мастера
+  VISIBILITY_EXPIRING_SOON
+  VISIBILITY_EXPIRED
+
+  // Сторисы
+  STORY_APPROVED
+  STORY_REJECTED
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 10. STORIES — Платные сторисы салонов
+// ───────────────────────────────────────────────────────────────────
+
+model Story {
+  id           String           @id @default(uuid())
+  salonId      String
+  mediaUrl     String
+  caption      String?          @db.VarChar(300)
+  category     ServiceCategory?
+  isPaid       Boolean          @default(true)
+  radiusKm     Int              @default(5)
+  packageType  StoryPackage
+  paidAmount   Int
+  status       StoryStatus      @default(PENDING)
+  startsAt     DateTime?
+  expiresAt    DateTime?
+  rejectReason String?
+  viewCount    Int              @default(0)
+  createdAt    DateTime         @default(now())
+  updatedAt    DateTime         @updatedAt
+
+  salon SalonProfile @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  views StoryView[]
+
+  @@index([status, expiresAt])
+  @@map("stories")
+}
+
+model StoryView {
+  id       String   @id @default(uuid())
+  storyId  String
+  userId   String
+  viewedAt DateTime @default(now())
+
+  story Story @relation(fields: [storyId], references: [id], onDelete: Cascade)
+  user  User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([storyId, userId])
+  @@map("story_views")
+}
+
+enum StoryStatus {
+  PENDING
+  ACTIVE
+  REJECTED
+  EXPIRED
+}
+
+enum StoryPackage {
+  DAY
+  WEEK
+  MONTH
+}
+
+// ───────────────────────────────────────────────────────────────────
+// 11. VISIBILITY — Периоды видимости мастеров
+// ───────────────────────────────────────────────────────────────────
+
+model MasterVisibility {
+  id          String            @id @default(uuid())
+  masterId    String
+  packageType VisibilityPackage
+  paidAmount  Int
+  startsAt    DateTime
+  endsAt      DateTime
+  isActive    Boolean           @default(true)
+  createdAt   DateTime          @default(now())
+
+  master MasterProfile @relation(fields: [masterId], references: [id], onDelete: Cascade)
+
+  @@index([masterId, endsAt])
+  @@index([isActive, endsAt])
+  @@map("master_visibility")
+}
+
+enum VisibilityPackage {
+  WEEK
+  MONTH
+  BOOST
 }

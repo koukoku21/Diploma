@@ -25,8 +25,20 @@ apps/mobile/**/*.freezed.dart
 .idea/
 *.DS_Store
 *.iml
+CLAUDE.md
+ARCHITECTURE.md
+design-system.md
+README.md
+
+
+# ─── Uploads (локальные файлы, в проде хранятся на R2) ───────────
+apps/api/uploads/
+
+# ─── Assets / Fonts (бинарные файлы, не в git) ───────────────────
+apps/mobile/assets/fonts/
 
 # ─── Logs ────────────────────────────────────────────────────────
 *.log
 npm-debug.log*
 .claude/
+package-lock.json

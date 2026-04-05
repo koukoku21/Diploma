@@ -106,11 +106,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   }
 
   Future<void> _handleFavourite(FeedMaster master) async {
-    try {
-      await createDio().post('/favourites/${master.id}');
-    } catch (_) {
-      // ignore
-    }
+  try {
+    await createDio().post('/favourites/${master.id}');
 
     if (!mounted) return;
 
@@ -124,7 +121,22 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         duration: const Duration(seconds: 2),
       ),
     );
+  } catch (_) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Не удалось добавить в избранное',
+          style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+        ),
+        backgroundColor: kBgSecondary,
+        duration: const Duration(seconds: 2),
+      ),
+    );
   }
+}
+
 
   void _showFilter(BuildContext context) {
     showModalBottomSheet(
