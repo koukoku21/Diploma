@@ -138,6 +138,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
       builder: (_) => _EditNameSheet(
+        ref: ref,
         currentName: _name,
         onSaved: (newName) => setState(() => _name = newName),
       ),
