@@ -104,9 +104,36 @@ class FavouritesScreen extends ConsumerWidget {
                         ),
                         GestureDetector(
                           onTap: () async {
-                            await createDio().delete('/favourites/$masterId');
+                            try {
+                              await createDio().delete('/favourites/$masterId'); 
+                            
                             // ignore: unused_result
                             ref.refresh(_favouritesProvider);
+
+                            if (!context.mounted) return;
+
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '$name удалён из избранного',
+                                  style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+                                ),
+                                backgroundColor: kBgSecondary,
+                              ),
+                            );
+                            } catch (_) {
+                              if (!context.mounted) return;
+
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    'Не удалось удалить из избранного',
+                                    style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+                                  ),
+                                  backgroundColor: kBgSecondary,
+                                ),
+                              );
+                            }
                           },
                           child: const Icon(Icons.favorite, color: kRose, size: 22),
                         ),
