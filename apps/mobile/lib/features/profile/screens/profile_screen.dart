@@ -315,6 +315,7 @@ class _EditNameSheetState extends State<_EditNameSheet> {
       await createDio().patch('/users/me', data: {'name': _ctrl.text.trim()});
       if (!mounted) return;
       widget.onSaved(_ctrl.text.trim());
+      widget.ref.invalidate(_profileProvider);
       Navigator.pop(context);
     } catch (e) {
       if (mounted) {
