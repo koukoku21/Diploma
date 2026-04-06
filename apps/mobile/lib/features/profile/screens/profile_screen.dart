@@ -158,7 +158,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           child: Column(
             children: [
               GestureDetector(
-                onTap: _pickAvatar,
+                onTap: _isUploadingAvatar ? null : _pickAvatar,
                 child: Stack(
                   children: [
                     CircleAvatar(
