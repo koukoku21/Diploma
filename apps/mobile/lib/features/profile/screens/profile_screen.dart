@@ -276,9 +276,16 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
 
 // ─── Edit name bottom sheet ───────────────────────────────────────
 class _EditNameSheet extends StatefulWidget {
-  const _EditNameSheet({required this.currentName, required this.onSaved});
+  const _EditNameSheet({
+    required this.ref,
+    required this.currentName,
+    required this.onSaved,
+  });
+
+  final WidgetRef ref;
   final String currentName;
   final ValueChanged<String> onSaved;
+
 
   @override
   State<_EditNameSheet> createState() => _EditNameSheetState();
