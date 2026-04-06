@@ -164,12 +164,23 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                     CircleAvatar(
                       radius: 48,
                       backgroundColor: kBgTertiary,
-                      backgroundImage:
-                          _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
-                      child: _avatarUrl == null
-                          ? const Icon(Icons.person_outline,
-                              color: kTextTertiary, size: 48)
-                          : null,
+                      backgroundImage: _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
+                      child: _isUploadingAvatar
+                          ? const SizedBox(
+                              width: 24,
+                              height: 24,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: kGold,
+                              ),
+                            )
+                          : _avatarUrl == null
+                              ? const Icon(
+                                  Icons.person_outline,
+                                  color: kTextTertiary,
+                                  size: 48,
+                                )
+                              : null,
                     ),
                     Positioned(
                       right: 0,
