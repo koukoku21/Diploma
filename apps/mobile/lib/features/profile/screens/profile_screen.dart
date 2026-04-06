@@ -66,6 +66,7 @@ class _ProfileBody extends ConsumerStatefulWidget {
 }
 
 class _ProfileBodyState extends ConsumerState<_ProfileBody> {
+  bool _isUploadingAvatar = false;
   final _picker = ImagePicker();
   late String _name;
   String? _avatarUrl;
@@ -78,15 +79,55 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   }
 
   Future<void> _pickAvatar() async {
-    final img = await _picker.pickImage(source: ImageSource.gallery, imageQuality: 85);
-    if (img == null) return;
+  if (_isUploadingAvatar) return;
+
+  final img = await _picker.pickImage(
+    source: ImageSource.gallery,
+    imageQuality: 85,
+  );
+  if (img == null) return;
+
+  setState(() => _isUploadingAvatar = true);
+
+  try {
     final bytes = await img.readAsBytes();
     final formData = FormData.fromMap({
       'file': MultipartFile.fromBytes(bytes, filename: img.name),
     });
+
     final res = await createDio().patch('/users/me/avatar', data: formData);
-    if (mounted) setState(() => _avatarUrl = res.data['avatarUrl'] as String?);
+
+    if (!mounted) return;
+    setState(() => _avatarUrl = res.data['avatarUrl'] as String?);
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Аватар обновлён',
+          style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+        ),
+        backgroundColor: kBgSecondary,
+      ),
+    );
+  } catch (_) {
+    if (!mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Не удалось загрузить аватар',
+          style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+        ),
+        backgroundColor: kBgSecondary,
+      ),
+    );
+  } finally {
+    if (mounted) {
+      setState(() => _isUploadingAvatar = false);
+    }
   }
+}
+
 
   void _showEditName() {
     showModalBottomSheet(
