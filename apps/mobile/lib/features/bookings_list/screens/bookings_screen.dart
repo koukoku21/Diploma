@@ -106,8 +106,36 @@ class BookingsScreen extends ConsumerWidget {
       ),
     );
     if (ok != true) return;
-    await ref.read(cancelBookingProvider.notifier).cancel(booking.id);
-    ref.invalidate(clientBookingsProvider);
+
+    try {
+      await ref.read(cancelBookingProvider.notifier).cancel(booking.id);
+      ref.invalidate(clientBookingsProvider);
+
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Запись отменена',
+            style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+          ),
+          backgroundColor: kBgSecondary,
+        ),
+      );
+    } catch (_) {
+      if (!context.mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Не удалось отменить запись',
+            style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+          ),
+          backgroundColor: kBgSecondary,
+        ),
+      );
+    }
+
   }
 
   void _showReview(BuildContext context, WidgetRef ref, BookingItem booking) {
