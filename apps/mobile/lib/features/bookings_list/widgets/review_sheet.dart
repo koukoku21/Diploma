@@ -45,7 +45,19 @@ class _ReviewSheetState extends ConsumerState<ReviewSheet> {
       Navigator.pop(context);
       widget.onDone();
     } catch (_) {
+      if (!mounted) return;
+
       setState(() => _loading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            'Не удалось отправить отзыв',
+            style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+          ),
+          backgroundColor: kBgSecondary,
+        ),
+      );
     }
   }
 
