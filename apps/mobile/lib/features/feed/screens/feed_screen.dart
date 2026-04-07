@@ -368,11 +368,24 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               child: CircularProgressIndicator(color: kGold),
             ),
             error: (_, __) => const SizedBox.shrink(),
-            data: (templates) => _ServiceDropdown(
-              templates: templates,
-              selected: _selectedTemplate,
-              onChanged: (t) => setState(() => _selectedTemplate = t),
-            ),
+            data: (templates) {
+              ServiceTemplate? selected = _selectedTemplate;
+
+              if (selected == null && _local.serviceTemplateId != null) {
+                for (final template in templates) {
+                  if (template.id == _local.serviceTemplateId) {
+                    selected = template;
+                    break;
+                  }
+                }
+              }
+
+              return _ServiceDropdown(
+                templates: templates,
+                selected: _selectedTemplate,
+                onChanged: (t) => setState(() => _selectedTemplate = t),
+              );
+            },
           ),
           const SizedBox(height: AppSpacing.lg),
           Text('Максимальная цена (₸)', style: AppTextStyles.label),
