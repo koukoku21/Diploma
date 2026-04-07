@@ -287,21 +287,56 @@ class _MetaRow extends StatelessWidget {
   }
 }
 
-Future<void> _openRoute(double lat, double lng, String address) async {
-  // 2GIS deep link — открывает приложение 2GIS с маршрутом до точки
+Future<void> _openRoute(
+  BuildContext context,
+  double lat,
+  double lng,
+  String address,
+) async {
   final dgisUri = Uri.parse(
-      'dgis://2gis.ru/routeSearch/rsType/car/to/$lng,$lat/go');
+    'dgis://2gis.ru/routeSearch/rsType/car/to/$lng,$lat/go',
+  );
 
-  if (await canLaunchUrl(dgisUri)) {
-    await launchUrl(dgisUri);
-    return;
+  try {
+    if (await canLaunchUrl(dgisUri)) {
+      await launchUrl(dgisUri);
+      return;
+    }
+
+    final webUri = Uri.parse(
+      'https://2gis.ru/directions/points/to/$lng,$lat',
+    );
+    final opened = await launchUrl(
+      webUri,
+      mode: LaunchMode.externalApplication,
+    );
+
+    if (opened || !context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Не удалось открыть маршрут',
+          style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+        ),
+        backgroundColor: kBgSecondary,
+      ),
+    );
+  } catch (_) {
+    if (!context.mounted) return;
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(
+          'Не удалось открыть маршрут',
+          style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+        ),
+        backgroundColor: kBgSecondary,
+      ),
+    );
   }
-
-  // Fallback: веб-версия 2GIS
-  final webUri = Uri.parse(
-      'https://2gis.ru/directions/points/to/$lng,$lat');
-  await launchUrl(webUri, mode: LaunchMode.externalApplication);
 }
+
 
 class _PortfolioGrid extends StatelessWidget {
   const _PortfolioGrid({required this.photos, required this.onTap});
