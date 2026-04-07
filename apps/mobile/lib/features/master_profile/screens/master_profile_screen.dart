@@ -252,7 +252,12 @@ class _MetaRow extends StatelessWidget {
             if (master.lat != null && master.lng != null) ...[
               const SizedBox(width: AppSpacing.sm),
               GestureDetector(
-                onTap: () => _openRoute(master.lat!, master.lng!, master.address),
+                onTap: () => _openRoute(
+                  context,
+                  master.lat!,
+                  master.lng!,
+                  master.address
+                ),
                 child: Container(
                   padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.sm, vertical: 4),
