@@ -138,7 +138,7 @@ class BookingConfirmScreen extends ConsumerWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: AppSpacing.md),
                 child: Text(
-                  'Ошибка: выбранное время уже занято',
+                  'Не удалось создать запись. Попробуйте ещё раз.',
                   style: AppTextStyles.caption.copyWith(color: kRose),
                   textAlign: TextAlign.center,
                 ),
