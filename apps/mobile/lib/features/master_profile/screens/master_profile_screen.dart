@@ -23,7 +23,16 @@ class MasterProfileScreen extends ConsumerWidget {
       backgroundColor: kBgPrimary,
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (_, __) => Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
+            child: Text(
+              'Не удалось загрузить профиль мастера',
+              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
         data: (master) => _ProfileBody(master: master),
       ),
     );
