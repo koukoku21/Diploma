@@ -68,7 +68,20 @@ class _ProfileBody extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 master.photos.isNotEmpty
-                    ? Image.network(master.photos.first.url, fit: BoxFit.cover)
+                    ? Image.network(
+                        master.photos.first.url,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, __, ___) => Container(
+                          color: kBgTertiary,
+                          child: const Center(
+                            child: Icon(
+                              Icons.image_not_supported_outlined,
+                              color: kTextTertiary,
+                              size: 40,
+                            ),
+                          ),
+                        ),
+                      )
                     : Container(color: kBgTertiary),
                 const DecoratedBox(
                   decoration: BoxDecoration(
