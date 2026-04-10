@@ -382,6 +382,18 @@ class _PortfolioGrid extends StatelessWidget {
               width: 100,
               height: 120,
               fit: BoxFit.cover,
+              errorBuilder: (_, __, ___) => Container(
+                width: 100,
+                height: 120,
+                color: kBgTertiary,
+                child: const Center(
+                  child: Icon(
+                    Icons.image_not_supported_outlined,
+                    color: kTextTertiary,
+                    size: 28,
+                  ),
+                ),
+              ),
             ),
           ),
         ),
