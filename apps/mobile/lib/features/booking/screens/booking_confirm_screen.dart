@@ -149,7 +149,7 @@ class BookingConfirmScreen extends ConsumerWidget {
             PrimaryButton(
               label: 'Записаться',
               loading: state.isLoading,
-              onPressed: () => _confirm(context, ref),
+              onPressed: state.isLoading ? null : () => _confirm(context, ref),
             ),
             const SizedBox(height: AppSpacing.xl),
           ],
