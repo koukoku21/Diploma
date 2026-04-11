@@ -172,11 +172,15 @@ class BookingConfirmScreen extends ConsumerWidget {
     if (state.hasError) return;
 
     // Успех → возвращаемся в ленту
+    final messenger = ScaffoldMessenger.of(context);
     context.go(AppRoutes.feed);
-    ScaffoldMessenger.of(context).showSnackBar(
+
+    messenger.showSnackBar(
       SnackBar(
-        content: Text('Запись создана! Ждём вас $date в $time',
-            style: AppTextStyles.caption.copyWith(color: kTextPrimary)),
+        content: Text(
+          'Запись создана! Ждём вас $date в $time',
+          style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+        ),
         backgroundColor: kSuccess.withValues(alpha: 0.2),
       ),
     );
