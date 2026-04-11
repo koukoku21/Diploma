@@ -79,18 +79,23 @@ class BookingConfirmScreen extends ConsumerWidget {
                     child: const Icon(Icons.person, color: kTextTertiary),
                   ),
                   const SizedBox(width: AppSpacing.md),
-                  Column(
+                  Expanded(
+                  child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(master.name, style: AppTextStyles.subtitle),
-                      Text(master.address,
-                          style: AppTextStyles.caption,
-                          overflow: TextOverflow.ellipsis),
+                      Text(
+                        master.address,
+                        style: AppTextStyles.caption,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis
+                      ),
                     ],
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
+          ),
 
             const SizedBox(height: AppSpacing.md),
 
