@@ -183,6 +183,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                                 )
                               : null,
                     ),
+                  if (!_isUploadingAvatar)
                     Positioned(
                       right: 0,
                       bottom: 0,
@@ -190,9 +191,14 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                         width: 28,
                         height: 28,
                         decoration: const BoxDecoration(
-                            color: kGold, shape: BoxShape.circle),
-                        child: const Icon(Icons.camera_alt,
-                            color: kBgPrimary, size: 16),
+                          color: kGold,
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.camera_alt,
+                          color: kBgPrimary, 
+                          size: 16
+                        ),
                       ),
                     ),
                   ],
