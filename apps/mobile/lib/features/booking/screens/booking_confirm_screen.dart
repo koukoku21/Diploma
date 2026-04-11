@@ -74,12 +74,9 @@ class BookingConfirmScreen extends ConsumerWidget {
                   CircleAvatar(
                     radius: 24,
                     backgroundColor: kBgTertiary,
-                    backgroundImage: master.avatarUrl != null
-                        ? NetworkImage(master.avatarUrl!)
-                        : null,
-                    child: master.avatarUrl == null
-                        ? const Icon(Icons.person, color: kTextTertiary)
-                        : null,
+                    foregroundImage:
+                        master.avatarUrl != null ? NetworkImage(master.avatarUrl!) : null,
+                    child: const Icon(Icons.person, color: kTextTertiary),
                   ),
                   const SizedBox(width: AppSpacing.md),
                   Column(
