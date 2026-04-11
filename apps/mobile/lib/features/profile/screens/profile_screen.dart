@@ -204,10 +204,15 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                 children: [
                   Text(_name, style: AppTextStyles.h1),
                   const SizedBox(width: AppSpacing.xs),
-                  GestureDetector(
-                    onTap: _showEditName,
-                    child: const Icon(Icons.edit_outlined,
-                        color: kTextTertiary, size: 18),
+                  IconButton(
+                    onPressed: _showEditName,
+                    icon: const Icon(
+                      Icons.edit_outlined,
+                      color: kTextTertiary,
+                      size: 18,
+                    ),
+                    visualDensity: VisualDensity.compact,
+                    splashRadius: 18,
                   ),
                 ],
               ),
