@@ -27,7 +27,16 @@ class FavouritesScreen extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (_, __) => Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
+            child: Text(
+              'Не удалось загрузить избранное. Проверьте интернет и попробуйте ещё раз.',
+              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
         data: (favs) {
           if (favs.isEmpty) {
             return Center(
