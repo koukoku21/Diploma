@@ -34,7 +34,16 @@ class MasterScheduleOverridesScreen extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-        error: (e, _) => Center(child: Text('Ошибка: $e', style: AppTextStyles.body)),
+        error: (_, __) => Center(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
+            child: Text(
+              'Не удалось загрузить исключения расписания. Проверьте интернет и попробуйте ещё раз.',
+              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              textAlign: TextAlign.center,
+            ),
+          ),
+        ),
         data: (overrides) {
           if (overrides.isEmpty) {
             return Center(
