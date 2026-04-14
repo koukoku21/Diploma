@@ -61,7 +61,10 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
+            content: Text(
+              'Не удалось сохранить услугу',
+              style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+            ),
             backgroundColor: kBgSecondary,
           ),
         );
