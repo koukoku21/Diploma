@@ -363,7 +363,13 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e'), backgroundColor: kBgSecondary),
+          SnackBar(
+            content: Text(
+              'Не удалось сохранить изменения',
+              style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+            ),
+          backgroundColor: kBgSecondary,
+        ),
         );
       }
     } finally {
