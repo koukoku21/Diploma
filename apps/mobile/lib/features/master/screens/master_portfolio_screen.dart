@@ -61,7 +61,10 @@ class _MasterPortfolioScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
+            content: Text(
+              'Не удалось загрузить фотографии', 
+              style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+              ),
             backgroundColor: kBgSecondary,
           ),
         );
