@@ -256,7 +256,13 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e'), backgroundColor: kBgSecondary),
+          SnackBar(
+            content: Text(
+              'Не удалось сохранить особый день',
+              style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+            ), 
+            backgroundColor: kBgSecondary
+          ),
         );
       }
     } finally {
