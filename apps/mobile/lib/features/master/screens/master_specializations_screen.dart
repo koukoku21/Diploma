@@ -50,7 +50,10 @@ class _MasterSpecializationsScreenState
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
+            content: Text(
+              'Не удалось сохранить специализации',
+              style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+              ),
             backgroundColor: kBgSecondary,
           ),
         );
