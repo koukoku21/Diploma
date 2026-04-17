@@ -62,8 +62,10 @@ class MasterServicesScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.sm),
                   TextButton(
                     onPressed: () => _showAddSheet(context, ref),
-                    child: Text('Добавить',
-                        style: AppTextStyles.label.copyWith(color: kGold)),
+                    child: Text(
+                      'Добавить услугу',
+                      style: AppTextStyles.label.copyWith(color: kGold),
+                    ),
                   ),
                 ],
               ),
