@@ -212,8 +212,10 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
           templatesAsync.when(
             loading: () => const Center(
                 child: CircularProgressIndicator(color: kGold)),
-            error: (e, _) => Text('Ошибка загрузки: $e',
-                style: AppTextStyles.caption.copyWith(color: kRose)),
+            error: (_, __) => Text(
+              'Не удалось загрузить список услуг',
+              style: AppTextStyles.caption.copyWith(color: kRose),
+            ),
             data: (templates) => _TemplatePicker(
               templates: templates,
               selected: _selectedTemplate,
