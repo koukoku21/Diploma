@@ -166,7 +166,10 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
+            content: Text(
+              'Не удалось добавить услугу', 
+              style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+            ),
             backgroundColor: kBgSecondary,
           ),
         );
