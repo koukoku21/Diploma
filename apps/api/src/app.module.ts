@@ -16,8 +16,6 @@ import { ChatModule } from './modules/chat/chat.module';
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { AdminModule } from './modules/admin/admin.module';
 import { GeocodeModule } from './modules/geocode/geocode.module';
-import { StoriesModule } from './modules/stories/stories.module';
-import { VisibilityModule } from './modules/visibility/visibility.module';
 
 @Module({
   imports: [
@@ -38,8 +36,6 @@ import { VisibilityModule } from './modules/visibility/visibility.module';
     NotificationsModule,
     AdminModule,
     GeocodeModule,
-    StoriesModule,
-    VisibilityModule,
   ],
 })
 export class AppModule {}

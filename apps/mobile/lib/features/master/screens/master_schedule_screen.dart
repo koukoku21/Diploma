@@ -94,7 +94,10 @@ class _MasterScheduleScreenState extends ConsumerState<MasterScheduleScreen> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
+            content: Text(
+              'Не удалось сохранить расписание', 
+              style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+            ),
             backgroundColor: kBgSecondary,
           ),
         );
