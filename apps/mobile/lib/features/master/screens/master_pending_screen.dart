@@ -56,7 +56,7 @@ class MasterPendingScreen extends StatelessWidget {
               // ─── What's next ───────────────────────────────
               _InfoRow(
                 icon: Icons.notifications_outlined,
-                text: 'Вы получите уведомление о решении',
+                text: 'Мы отправим уведомление, когда проверка завершится',
               ),
               const SizedBox(height: AppSpacing.md),
               _InfoRow(
