@@ -316,7 +316,7 @@ class _TemplatePicker extends StatelessWidget {
               children: [
                 Expanded(
                   child: Text(
-                    selected?.name ?? 'Выберите услугу...',
+                    selected?.name ?? 'Выберите услугу',
                     style: AppTextStyles.body.copyWith(
                       color: selected != null ? kTextPrimary : kTextTertiary,
                     ),
