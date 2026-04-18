@@ -61,7 +61,7 @@ class MasterPendingScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               _InfoRow(
                 icon: Icons.star_border_rounded,
-                text: 'После одобрения профиль появится в ленте',
+                text: 'После одобрения ваш профиль появится в ленте',
               ),
               const SizedBox(height: AppSpacing.md),
               _InfoRow(
