@@ -46,7 +46,7 @@ class MasterPendingScreen extends StatelessWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               Text(
-                'Наша команда проверяет ваш профиль.\nОдобрение занимает до 24 часов.',
+                'Мы проверяем ваш профиль.\nОбычно это занимает до 24 часов.',
                 style: AppTextStyles.body.copyWith(color: kTextSecondary),
                 textAlign: TextAlign.center,
               ),
