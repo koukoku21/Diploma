@@ -85,7 +85,10 @@ class _MasterScheduleScreenState extends ConsumerState<MasterScheduleScreen> {
         ref.refresh(masterScheduleProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Расписание сохранено', style: AppTextStyles.caption),
+            content: Text(
+              'Расписание сохранено', 
+              style: AppTextStyles.caption.copyWith(color: kTextPrimary),
+            ),
             backgroundColor: kBgSecondary,
           ),
         );
