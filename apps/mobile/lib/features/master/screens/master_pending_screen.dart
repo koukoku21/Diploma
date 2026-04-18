@@ -72,7 +72,7 @@ class MasterPendingScreen extends StatelessWidget {
               const Spacer(),
 
               PrimaryButton(
-                label: 'На главную',
+                label: 'Перейти на главную',
                 onPressed: () => context.go(AppRoutes.feed),
               ),
               const SizedBox(height: AppSpacing.xl),
