@@ -66,7 +66,7 @@ class MasterPendingScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               _InfoRow(
                 icon: Icons.calendar_month_outlined,
-                text: 'Настройте расписание после одобрения',
+                text: 'После одобрения вы сможете настроить расписание',
               ),
 
               const Spacer(),
