@@ -341,7 +341,10 @@ class _EditNameSheetState extends State<_EditNameSheet> {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
+            content: Text(
+              'Не удалось сохранить имя. Попробуйте ещё раз.',
+              style: AppTextStyles.caption,
+            ),
             backgroundColor: kBgSecondary,
           ),
         );
