@@ -233,10 +233,12 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
             child: async.when(
               loading: () => const Center(
                   child: CircularProgressIndicator(color: kGold)),
-              error: (e, _) => Center(
-                  child: Text('Ошибка: $e',
-                      style: AppTextStyles.caption
-                          .copyWith(color: kTextSecondary))),
+              error: (_, __) => Center(
+                child: Text(
+                  'Не удалось загрузить каталог',
+                  style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                ),
+              ),
               data: (masters) {
                 if (masters.isEmpty) {
                   return Center(
