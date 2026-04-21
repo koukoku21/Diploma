@@ -74,8 +74,11 @@ class _NameScreenState extends State<NameScreen> {
       context.go(AppRoutes.location);
     } catch (e) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('Ошибка: $e')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Не удалось сохранить имя. Попробуйте ещё раз.'),
+        ),
+      );
     } finally {
       if (mounted) setState(() => _loading = false);
     }
