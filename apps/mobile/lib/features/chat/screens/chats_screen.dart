@@ -31,7 +31,9 @@ class ChatsScreen extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (_, __) => const Center(
+          child: Text('Не удалось загрузить чаты'),
+        ),
         data: (rooms) {
           if (rooms.isEmpty) {
             return Center(
