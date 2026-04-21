@@ -38,7 +38,9 @@ class MasterProfileScreen extends ConsumerWidget {
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (_, __) => const Center(
+          child: Text('Не удалось загрузить профиль'),
+        ),
         data: (profile) => _ProfileBody(profile: profile),
       ),
     );
