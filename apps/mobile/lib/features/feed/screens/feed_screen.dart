@@ -382,7 +382,7 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
 
               return _ServiceDropdown(
                 templates: templates,
-                selected: _selectedTemplate,
+                selected: selected,
                 onChanged: (t) => setState(() => _selectedTemplate = t),
               );
             },
