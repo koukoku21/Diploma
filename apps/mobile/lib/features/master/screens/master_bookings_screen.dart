@@ -73,7 +73,9 @@ class _BookingsList extends ConsumerWidget {
 
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-      error: (e, _) => Center(child: Text('Ошибка: $e')),
+      error: (_, __) => const Center(
+        child: Text('Не удалось загрузить записи'),
+      ),
       data: (bookings) {
         if (bookings.isEmpty) {
           return Center(
