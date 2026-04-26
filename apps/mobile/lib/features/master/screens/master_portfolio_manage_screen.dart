@@ -61,7 +61,9 @@ class _MasterPortfolioManageScreenState
       appBar: AppBar(
         backgroundColor: kBgPrimary,
         title: Text('Портфолио', style: AppTextStyles.title),
-        leading: BackButton(color: kTextPrimary, onPressed: () => Navigator.pop(context)),
+        leading: BackButton(
+          color: kTextPrimary, onPressed: () => Navigator.pop(context)
+          ),
         actions: [
           if (_uploading)
             const Padding(
