@@ -26,7 +26,9 @@ class FavouritesScreen extends ConsumerWidget {
         title: Text('Избранное', style: AppTextStyles.title),
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: kGold),
+        ),
         error: (_, __) => Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
