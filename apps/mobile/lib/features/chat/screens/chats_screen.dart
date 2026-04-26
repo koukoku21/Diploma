@@ -30,7 +30,9 @@ class ChatsScreen extends ConsumerWidget {
         title: Text('Чаты', style: AppTextStyles.title),
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: kGold),
+        ),
         error: (_, __) => const Center(
           child: Text('Не удалось загрузить чаты'),
         ),
