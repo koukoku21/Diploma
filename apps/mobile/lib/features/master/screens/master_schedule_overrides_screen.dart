@@ -24,7 +24,9 @@ class MasterScheduleOverridesScreen extends ConsumerWidget {
       appBar: AppBar(
         backgroundColor: kBgPrimary,
         title: Text('Особые дни', style: AppTextStyles.title),
-        leading: BackButton(color: kTextPrimary, onPressed: () => Navigator.pop(context)),
+        leading: BackButton(
+          color: kTextPrimary, onPressed: () => Navigator.pop(context)
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: kGold),
