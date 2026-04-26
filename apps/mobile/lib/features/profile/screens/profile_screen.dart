@@ -38,7 +38,9 @@ class ProfileScreen extends ConsumerWidget {
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: kGold),
+        ),
         error: (_, __) => Center(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
