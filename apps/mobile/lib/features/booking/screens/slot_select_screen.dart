@@ -120,7 +120,7 @@ class _SlotSelectScreenState extends ConsumerState<SlotSelectScreen> {
             child: slotsAsync.when(
               loading: () =>
                   const Center(child: CircularProgressIndicator(color: kGold)),
-              error: (e, _) => Center(
+              error: (_, __) => Center( 
                   child: Text('Ошибка загрузки слотов',
                       style:
                           AppTextStyles.body.copyWith(color: kTextSecondary))),
