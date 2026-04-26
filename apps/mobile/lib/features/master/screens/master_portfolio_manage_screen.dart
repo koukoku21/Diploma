@@ -80,7 +80,9 @@ class _MasterPortfolioManageScreenState
         ],
       ),
       body: async.when(
-        loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: kGold),
+        ),
         error: (_, __) => const Center(
           child: Text('Не удалось загрузить портфолио'),
         ),
