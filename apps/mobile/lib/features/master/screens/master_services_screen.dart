@@ -27,7 +27,8 @@ class MasterServicesScreen extends ConsumerWidget {
         backgroundColor: kBgPrimary,
         title: Text('Услуги', style: AppTextStyles.title),
         leading: BackButton(
-            color: kTextPrimary, onPressed: () => Navigator.pop(context)),
+            color: kTextPrimary, onPressed: () => Navigator.pop(context)
+            ),
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: kGold),
