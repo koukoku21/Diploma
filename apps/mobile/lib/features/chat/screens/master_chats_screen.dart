@@ -30,7 +30,8 @@ class MasterChatsScreen extends ConsumerWidget {
         backgroundColor: kBgPrimary,
         title: Text('Сообщения', style: AppTextStyles.title),
         leading: BackButton(
-            color: kTextPrimary, onPressed: () => Navigator.pop(context)),
+          color: kTextPrimary, onPressed: () => Navigator.pop(context),
+        ),
       ),
       body: async.when(
         loading: () =>
