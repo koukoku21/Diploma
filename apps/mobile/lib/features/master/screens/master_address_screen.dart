@@ -134,7 +134,9 @@ class _MasterAddressScreenState extends State<MasterAddressScreen> {
       appBar: AppBar(
         backgroundColor: kBgPrimary,
         title: Text('Адрес работы', style: AppTextStyles.title),
-        leading: BackButton(color: kTextPrimary, onPressed: () => context.pop()),
+        leading: BackButton(
+          color: kTextPrimary, onPressed: () => context.pop(),
+        ),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
