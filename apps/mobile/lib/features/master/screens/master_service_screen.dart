@@ -81,7 +81,9 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
       appBar: AppBar(
         backgroundColor: kBgPrimary,
         title: Text('Первая услуга', style: AppTextStyles.title),
-        leading: BackButton(color: kTextPrimary, onPressed: () => context.pop()),
+        leading: BackButton(
+          color: kTextPrimary, onPressed: () => context.pop(),
+        ),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
