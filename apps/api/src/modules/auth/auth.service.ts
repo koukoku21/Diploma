@@ -42,7 +42,11 @@ export class AuthService {
     await this.redis.set(otpKey, code, OTP_TTL_SECONDS);
     await this.redis.set(rateLimitKey, '1', OTP_RATE_LIMIT_TTL);
 
-    await this.mobizon.sendOtp(dto.phone, code);
+    if (this.config.get('NODE_ENV') !== 'production') {
+      console.log(`[DEV OTP] ${dto.phone} → ${code}`);
+    } else {
+      await this.mobizon.sendOtp(dto.phone, code);
+    }
 
     return { message: 'Код отправлен' };
   }

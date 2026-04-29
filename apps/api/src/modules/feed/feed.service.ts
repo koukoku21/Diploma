@@ -98,7 +98,6 @@ export class FeedService {
       WHERE
         mp."isVerified" = true
         AND mp."isActive" = true
-        AND mp."isVisible" = true
         AND mp.status     = 'APPROVED'
         AND u."deletedAt" IS NULL
         AND mp.lat IS NOT NULL

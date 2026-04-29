@@ -79,8 +79,8 @@ export class StoriesService {
       WHERE s.status = 'ACTIVE'
         AND s."expiresAt" > ${now}
         AND (
-          ${query.category ?? null} IS NULL
-          OR s.category = ${query.category ?? null}::"ServiceCategory"
+          ${query.category ?? null}::text IS NULL
+          OR s.category::text = ${query.category ?? null}::text
         )
       ORDER BY s."isPaid" DESC, s."expiresAt" ASC
       LIMIT 20

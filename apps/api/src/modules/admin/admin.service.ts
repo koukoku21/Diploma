@@ -59,6 +59,7 @@ export class AdminService {
       data: {
         status: dto.status,
         isVerified: isApproved,
+        isVisible: isApproved ? true : undefined,
         verifiedAt: isApproved ? new Date() : null,
       },
     });
