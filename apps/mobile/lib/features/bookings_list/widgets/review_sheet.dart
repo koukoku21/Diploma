@@ -33,7 +33,9 @@ class _ReviewSheetState extends ConsumerState<ReviewSheet> {
   }
 
   Future<void> _submit() async {
-    if (_rating == 0) return;
+    if (_rating == 0) {
+      return;
+    }
     setState(() => _loading = true);
     try {
       await createDio().post('/reviews', data: {
