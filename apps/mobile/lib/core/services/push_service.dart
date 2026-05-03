@@ -47,7 +47,9 @@ class PushService {
   static Future<void> _registerToken(FirebaseMessaging messaging) async {
     const storage = FlutterSecureStorage();
     final accessToken = await storage.read(key: 'access_token');
-    if (accessToken == null) return; // Пользователь не авторизован
+    if (accessToken == null) {
+      return;
+    } // Пользователь не авторизован
 
     final fcmToken = await messaging.getToken();
     if (fcmToken != null) {
