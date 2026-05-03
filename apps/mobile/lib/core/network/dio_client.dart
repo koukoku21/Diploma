@@ -5,7 +5,9 @@ import '../auth/token_storage.dart';
 
 String get apiBaseUrl {
   const envUrl = String.fromEnvironment('API_URL');
-  if (envUrl.isNotEmpty) return envUrl;
+  if (envUrl.isNotEmpty) { 
+    return envUrl; 
+  }
 
   if (kIsWeb) return 'http://localhost:4040/api/v1';
   if (Platform.isAndroid) return 'http://10.0.2.2:4040/api/v1';
