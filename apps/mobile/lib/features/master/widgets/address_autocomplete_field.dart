@@ -166,7 +166,9 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
               padding: EdgeInsets.zero,
               itemCount: _suggestions.length,
               separatorBuilder: (_, __) =>
-                  const Divider(height: 1, color: kBorder),
+                  const Divider(
+                    height: 1, color: kBorder,
+                  ),
               itemBuilder: (_, i) {
                 final s = _suggestions[i];
                 return ListTile(
