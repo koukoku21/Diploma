@@ -33,7 +33,9 @@ class TokenStorage {
   }
 
   Future<String?> _read(String key) async {
-    if (kIsWeb) return (await _p).getString(key);
+    if (kIsWeb) {
+      return (await _p).getString(key);
+    }
     return _secure.read(key: key);
   }
 
