@@ -97,7 +97,9 @@ class _SlotSelectScreenState extends ConsumerState<SlotSelectScreen> {
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
               itemCount: _dates.length,
-              separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+              separatorBuilder: (_, __) => const SizedBox(
+                width: AppSpacing.sm,
+              ),
               itemBuilder: (_, i) {
                 final d = _dates[i];
                 final selected = d.day == _selectedDate.day &&
