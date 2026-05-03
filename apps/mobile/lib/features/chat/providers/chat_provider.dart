@@ -23,7 +23,9 @@ String? _parseUserId(String token) {
 final currentUserIdProvider = FutureProvider.autoDispose<String?>((ref) async {
   const storage = FlutterSecureStorage();
   final token = await storage.read(key: 'access_token');
-  if (token == null) return null;
+  if (token == null) {
+    return null;
+  }
   return _parseUserId(token);
 });
 
