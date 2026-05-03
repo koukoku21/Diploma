@@ -26,7 +26,9 @@ class FeedMaster {
   final List<String> specializations;
 
   String get distanceLabel {
-    if (distanceM < 1000) return '$distanceMм';
+    if (distanceM < 1000) {
+      return '$distanceMм';
+    }
     return '${(distanceM / 1000).toStringAsFixed(1)}км';
   }
 
