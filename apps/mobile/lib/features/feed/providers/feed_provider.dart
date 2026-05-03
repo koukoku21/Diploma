@@ -92,7 +92,9 @@ class FeedNotifier extends StateNotifier<FeedState> {
 
   // Убрать верхнюю карточку (свайп или кнопка ✕)
   void removeTop() {
-    if (state.cards.isEmpty) return;
+    if (state.cards.isEmpty) {
+      return;
+    }
     final remaining = state.cards.sublist(1);
     state = state.copyWith(cards: remaining);
     // Подгружаем ещё если осталось мало
