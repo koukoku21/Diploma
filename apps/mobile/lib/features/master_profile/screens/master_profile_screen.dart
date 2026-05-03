@@ -372,7 +372,9 @@ class _PortfolioGrid extends StatelessWidget {
       child: ListView.separated(
         scrollDirection: Axis.horizontal,
         itemCount: photos.length,
-        separatorBuilder: (_, __) => const SizedBox(width: AppSpacing.sm),
+        separatorBuilder: (_, __) => const SizedBox(
+          width: AppSpacing.sm,
+        ),
         itemBuilder: (_, i) => GestureDetector(
           onTap: () => onTap(i),
           child: ClipRRect(
