@@ -64,7 +64,9 @@ class FavouritesScreen extends ConsumerWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(AppSpacing.screenH),
               itemCount: favs.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+              separatorBuilder: (_, __) => const SizedBox(
+                height: AppSpacing.sm,
+              ),
               itemBuilder: (_, i) {
                 final fav    = favs[i];
                 final master = fav['master'] as Map<String, dynamic>;
