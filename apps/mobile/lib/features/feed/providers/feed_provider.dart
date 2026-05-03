@@ -102,7 +102,9 @@ class FeedNotifier extends StateNotifier<FeedState> {
   }
 
   Future<void> _load({required bool reset}) async {
-    if (state.loading) return;
+    if (state.loading) {
+      return;
+    }
     state = state.copyWith(loading: true);
 
     try {
