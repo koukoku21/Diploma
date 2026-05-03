@@ -91,7 +91,9 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
       child: ListView.separated(
         padding: const EdgeInsets.all(AppSpacing.screenH),
         itemCount: state.cards.length,
-        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
+        separatorBuilder: (_, __) => const SizedBox(
+          height: AppSpacing.md,
+        ),
         itemBuilder: (_, index) {
           final master = state.cards[index];
           return _MasterListCard(
