@@ -9,8 +9,12 @@ String get apiBaseUrl {
     return envUrl; 
   }
 
-  if (kIsWeb) return 'http://localhost:4040/api/v1';
-  if (Platform.isAndroid) return 'http://10.0.2.2:4040/api/v1';
+  if (kIsWeb) {
+    return 'http://localhost:4040/api/v1';
+  }
+  if (Platform.isAndroid) {
+    return 'http://10.0.2.2:4040/api/v1';
+  }
   return 'http://localhost:4040/api/v1';
 }
 
