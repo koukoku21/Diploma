@@ -32,7 +32,8 @@ class ServiceSelectScreen extends StatelessWidget {
       body: ListView.separated(
         padding: const EdgeInsets.all(AppSpacing.screenH),
         itemCount: master.services.length,
-        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+        separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm,
+        ),
         itemBuilder: (_, i) {
           final s = master.services[i];
           return GestureDetector(
