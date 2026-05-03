@@ -69,7 +69,9 @@ class AllReviewsScreen extends StatelessWidget {
             child: ListView.separated(
               padding: const EdgeInsets.all(AppSpacing.screenH),
               itemCount: reviews.length,
-              separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.sm),
+              separatorBuilder: (_, __) => const SizedBox(
+                height: AppSpacing.sm,
+              ),
               itemBuilder: (_, i) => _ReviewCard(review: reviews[i]),
             ),
           ),
