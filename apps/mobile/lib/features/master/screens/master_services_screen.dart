@@ -57,9 +57,11 @@ class MasterServicesScreen extends ConsumerWidget {
                   const Icon(Icons.content_cut_outlined,
                       color: kTextTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Нет услуг',
+                  Text(
+                    'Услуги пока не добавлены',
                       style: AppTextStyles.subtitle
-                          .copyWith(color: kTextSecondary)),
+                          .copyWith(color: kTextSecondary)
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                   TextButton(
                     onPressed: () => _showAddSheet(context, ref),
