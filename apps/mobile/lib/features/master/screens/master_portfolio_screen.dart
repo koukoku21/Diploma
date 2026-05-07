@@ -96,7 +96,7 @@ class _MasterPortfolioScreenState
             Text('Добавьте фото работ', style: AppTextStyles.h1),
             const SizedBox(height: AppSpacing.sm),
             Text(
-              'Минимум 3 фото. Первое фото станет обложкой профиля.',
+              'Добавьте минимум 3 фото. Первое фото станет обложкой профиля.',
               style: AppTextStyles.body.copyWith(color: kTextSecondary),
             ),
             const SizedBox(height: AppSpacing.xl),
