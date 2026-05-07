@@ -108,7 +108,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // Category
-            Text('Категория', style: AppTextStyles.label),
+            Text('Категория услуг', style: AppTextStyles.label),
             const SizedBox(height: AppSpacing.sm),
             DropdownButtonFormField<String>(
               value: _categoryLabel,
