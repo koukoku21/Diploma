@@ -206,7 +206,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
                   color: kBorder2, borderRadius: BorderRadius.circular(2)),
             ),
           ),
-          Text('Новая услуга', style: AppTextStyles.title),
+          Text('Добавить услугу', style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.lg),
 
           // ─── Выбор услуги из справочника ──────────────────────
