@@ -137,7 +137,7 @@ class _MasterPortfolioScreenState
 
             const SizedBox(height: AppSpacing.md),
             PrimaryButton(
-              label: 'Загрузить (${_photos.length})',
+              label: 'Загрузить фото (${_photos.length})',
               onPressed: _upload,
               loading: _loading,
               enabled: canContinue,
