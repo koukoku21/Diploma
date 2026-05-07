@@ -34,7 +34,7 @@ class MasterProfileScreen extends ConsumerWidget {
       backgroundColor: kBgPrimary,
       appBar: AppBar(
         backgroundColor: kBgPrimary,
-        title: Text('Профиль', style: AppTextStyles.title),
+        title: Text('Профиль мастера', style: AppTextStyles.title),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
