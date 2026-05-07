@@ -131,7 +131,7 @@ class _ScheduleEditor extends StatelessWidget {
       children: [
         const SizedBox(height: AppSpacing.md),
         Text(
-          'Укажите рабочие часы для каждого дня недели',
+          'Укажите часы работы на каждый день недели',
           style: AppTextStyles.caption.copyWith(color: kTextSecondary),
         ),
         const SizedBox(height: AppSpacing.lg),
