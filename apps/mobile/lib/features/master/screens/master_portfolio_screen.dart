@@ -93,7 +93,7 @@ class _MasterPortfolioScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: AppSpacing.xl),
-            Text('Добавьте работы', style: AppTextStyles.h1),
+            Text('Добавьте фото работ', style: AppTextStyles.h1),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Минимум 3 фото. Первое фото станет обложкой профиля.',
