@@ -237,7 +237,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         // ─── Переключить роль ──────────────────────────────────
         _MenuItem(
           icon: Icons.swap_horiz_rounded,
-          label: 'Режим клиента',
+          label: 'Перейти в режим клиента',
           onTap: () => context.go(AppRoutes.feed),
         ),
 
