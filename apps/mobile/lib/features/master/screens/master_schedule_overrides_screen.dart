@@ -57,8 +57,10 @@ class MasterScheduleOverridesScreen extends ConsumerWidget {
                   const Icon(Icons.event_available_outlined,
                       color: kTextTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Нет особых дней',
-                      style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)),
+                  Text(
+                    'Особые дни не добавлены',
+                    style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)
+                  ),
                   const SizedBox(height: AppSpacing.sm),
                   Text('Нажмите + чтобы заблокировать дату\nили изменить часы работы',
                       style: AppTextStyles.caption.copyWith(color: kTextTertiary),
