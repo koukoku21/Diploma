@@ -71,7 +71,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     super.initState();
     final user = widget.profile['user'] as Map<String, dynamic>? ?? {};
     _avatarUrl = user['avatarUrl'] as String?;
-    _name    = user['name'] as String? ?? '—';
+    _name    = user['name'] as String? ?? 'Без имени';
     _bio     = widget.profile['bio'] as String? ?? '';
     _address = widget.profile['address'] as String? ?? '';
   }
