@@ -129,7 +129,7 @@ class _DashboardBody extends ConsumerWidget {
           ],
 
           // ─── Доход ────────────────────────────────────────
-          Text('Доход', style: AppTextStyles.label),
+          Text('Доходы', style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [
