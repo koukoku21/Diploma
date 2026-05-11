@@ -35,7 +35,7 @@ class PushService {
       messaging.onTokenRefresh.listen(_sendTokenToServer);
 
       // Foreground уведомления — показываем как banner
-      FirebaseMessaging.onMessage.listen((RemoteMessage message) {
+      FirebaseMessaging.onMessage.listen((_) {
         // Можно показать in-app SnackBar или overlay
         // Пока полагаемся на system notification
       });
