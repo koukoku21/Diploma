@@ -96,7 +96,7 @@ class _DashboardBody extends ConsumerWidget {
                       Text(
                         isActive
                             ? 'Вы видны в ленте клиентов'
-                            : 'Вы скрыты из ленты',
+                            : 'Ваш профиль скрыт из ленты',
                         style: AppTextStyles.caption
                             .copyWith(color: kTextSecondary),
                       ),
