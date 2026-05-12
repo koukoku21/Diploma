@@ -75,7 +75,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Попробуйте изменить фильтры',
-              style: AppTextStyles.caption,
+              style: AppTextStyles.caption.copyWith(color: kTextSecondary),
             ),
           ],
         ),
