@@ -564,8 +564,10 @@ class _SettingsSheet extends StatelessWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.logout_rounded, color: kRose),
-            title: Text('Выйти',
-                style: AppTextStyles.body.copyWith(color: kRose)),
+            title: Text(
+              'Выйти из аккаунта',
+              style: AppTextStyles.body.copyWith(color: kRose)
+            ),
             onTap: () async {
               Navigator.pop(context);
               await TokenStorage().clear();
