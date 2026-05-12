@@ -216,7 +216,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                       ),
                     if (filter.maxPrice != null)
                       _ActiveChip(
-                        label: 'до ${filter.maxPrice} ₸',
+                        label: 'До ${filter.maxPrice} ₸',
                         onRemove: () => ref
                             .read(_catalogFilterProvider.notifier)
                             .update((s) => s.copyWith(maxPrice: null)),
