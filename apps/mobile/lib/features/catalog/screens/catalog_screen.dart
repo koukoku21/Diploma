@@ -125,7 +125,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
       backgroundColor: kBgPrimary,
       appBar: AppBar(
         backgroundColor: kBgPrimary,
-        title: Text('Каталог', style: AppTextStyles.title),
+        title: Text('Каталог мастеров', style: AppTextStyles.title),
         actions: [
           templatesAsync.whenData((templates) => IconButton(
                 icon: Badge(
