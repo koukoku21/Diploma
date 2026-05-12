@@ -231,7 +231,7 @@ class _MasterListCard extends StatelessWidget {
                       const Spacer(),
                       if (master.minPrice != null)
                         Text(
-                          'от ${master.minPrice}₸',
+                          'От ${master.minPrice}₸',
                           style: AppTextStyles.label.copyWith(color: kGold),
                         ),
                     ],
