@@ -142,7 +142,7 @@ class _DashboardBody extends ConsumerWidget {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: _IncomeCard(
-                  label: 'Этот месяц',
+                  label: 'За месяц',
                   amount: '${fmt.format(dashboard.monthIncome)} ₸',
                 ),
               ),
