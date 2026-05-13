@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import '../../features/auth/screens/splash_screen.dart';
 import '../../features/auth/screens/phone_screen.dart';
@@ -14,6 +15,7 @@ import '../../features/favourites/screens/favourites_screen.dart';
 import '../../features/chat/screens/chats_screen.dart';
 import '../../features/chat/screens/chat_screen.dart';
 import '../../features/bookings_list/screens/bookings_screen.dart';
+import '../../features/bookings_list/screens/booking_detail_screen.dart';
 import '../../features/catalog/screens/catalog_screen.dart';
 import '../../features/profile/screens/profile_screen.dart';
 // Master onboarding
@@ -32,6 +34,8 @@ import '../shell/client_shell.dart';
 import '../shell/master_shell.dart';
 import '../../features/stories/screens/story_viewer_screen.dart';
 import '../../features/feed/data/feed_models.dart' as feed;
+import '../../core/network/dio_client.dart' as dio_client;
+import '../../core/theme/app_colors.dart';
 
 class AppRoutes {
   // Auth
@@ -69,8 +73,49 @@ class AppRoutes {
   static String serviceSelect(String masterId) => '/masters/$masterId/book';
   static String slotSelect(String masterId) => '/masters/$masterId/book/slots';
   static const bookingConfirm = '/booking/confirm';
+  static String bookingDetail(String id) => '/bookings/$id';
   static String chat(String roomId) => '/chats/$roomId';
   static const stories = '/stories';
+
+  // Deep links
+  static String masterByUsername(String username) => '/p/$username';
+}
+
+// Резолвит @username → masterId через публичный API и открывает профиль
+class _MasterByUsernameScreen extends StatefulWidget {
+  const _MasterByUsernameScreen({required this.username});
+  final String username;
+
+  @override
+  State<_MasterByUsernameScreen> createState() => _MasterByUsernameScreenState();
+}
+
+class _MasterByUsernameScreenState extends State<_MasterByUsernameScreen> {
+  @override
+  void initState() {
+    super.initState();
+    _resolve();
+  }
+
+  Future<void> _resolve() async {
+    try {
+      final res = await dio_client.createDio().get('/p/${widget.username}');
+      final masterId = res.data['id'] as String?;
+      if (masterId != null && mounted) {
+        context.replace(AppRoutes.masterPublicProfile(masterId));
+      }
+    } catch (_) {
+      if (mounted) context.replace(AppRoutes.feed);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      backgroundColor: kBgPrimary,
+      body: Center(child: CircularProgressIndicator(color: kGold)),
+    );
+  }
 }
 
 final appRouter = GoRouter(
@@ -99,6 +144,13 @@ final appRouter = GoRouter(
           initialIndex: extra['initialIndex'] as int? ?? 0,
         );
       },
+    ),
+
+    // ─── Deep link: miraku.kz/p/:username ────────────────────────────
+    GoRoute(
+      path: '/p/:username',
+      builder: (_, state) =>
+          _MasterByUsernameScreen(username: state.pathParameters['username']!),
     ),
 
     // ─── Public Master Profile (outside Shell) ─────────────────────
@@ -175,6 +227,11 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.bookings,
       builder: (_, __) => const BookingsScreen(),
+    ),
+    GoRoute(
+      path: '/bookings/:id',
+      builder: (_, state) =>
+          BookingDetailScreen(bookingId: state.pathParameters['id']!),
     ),
 
     // ─── Client Shell (5 tabs) ─────────────────────────────────────

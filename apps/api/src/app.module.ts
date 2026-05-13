@@ -19,6 +19,7 @@ import { GeocodeModule } from './modules/geocode/geocode.module';
 import { StoriesModule } from './modules/stories/stories.module';
 import { VisibilityModule } from './modules/visibility/visibility.module';
 import { CronModule } from './modules/cron/cron.module';
+import { BookingPageModule } from './modules/booking-page/booking-page.module';
 
 @Module({
   imports: [
@@ -42,6 +43,7 @@ import { CronModule } from './modules/cron/cron.module';
     StoriesModule,
     VisibilityModule,
     CronModule,
+    BookingPageModule,
   ],
 })
 export class AppModule {}

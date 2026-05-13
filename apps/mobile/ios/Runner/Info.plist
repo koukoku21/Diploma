@@ -48,6 +48,12 @@
 	<key>LSApplicationQueriesSchemes</key>
 	<array>
 		<string>dgis</string>
+		<string>whatsapp</string>
+		<string>tg</string>
+	</array>
+	<key>NSUserActivityTypes</key>
+	<array>
+		<string>NSUserActivityTypeBrowsingWeb</string>
 	</array>
 </dict>
 </plist>

@@ -185,6 +185,8 @@ const ADMIN_HTML = `<!DOCTYPE html>
       <button class="tab" onclick="switchTab('REJECTED')">Отклонённые</button>
       <button class="tab" onclick="switchTab('USERS')">Аккаунты</button>
       <button class="tab" onclick="switchTab('TEMPLATES')">Справочник услуг</button>
+      <button class="tab" onclick="switchTab('STORIES_PENDING')">Сторисы</button>
+      <button class="tab" onclick="switchTab('STORIES_ACTIVE')">Активные сторисы</button>
     </div>
     <div id="cards" class="cards">
       <div class="loading">Загрузка...</div>
@@ -287,11 +289,14 @@ async function loadStats() {
 
 function switchTab(status) {
   currentTab = status;
+  const tabKeys = ['PENDING','APPROVED','REJECTED','USERS','TEMPLATES','STORIES_PENDING','STORIES_ACTIVE'];
   document.querySelectorAll('.tab').forEach((t, i) => {
-    t.classList.toggle('active', ['PENDING','APPROVED','REJECTED','USERS','TEMPLATES'][i] === status);
+    t.classList.toggle('active', tabKeys[i] === status);
   });
   if (status === 'USERS') loadUsers();
   else if (status === 'TEMPLATES') loadTemplates();
+  else if (status === 'STORIES_PENDING') loadStories('PENDING');
+  else if (status === 'STORIES_ACTIVE') loadStories('ACTIVE');
   else loadMasters(status);
 }
 
@@ -606,6 +611,85 @@ async function deleteTemplate(id) {
 document.getElementById('template-modal').addEventListener('click', function(e) {
   if (e.target === this) closeTemplateModal();
 });
+
+// ── Stories ──────────────────────────────────────────────────────────
+async function loadStories(status) {
+  const el = document.getElementById('cards');
+  el.innerHTML = '<div class="loading">Загрузка...</div>';
+  try {
+    const stories = await api('GET', '/admin/stories?status=' + status);
+    if (!stories.length) {
+      el.innerHTML = '<div class="empty"><div class="empty-icon">' +
+        (status === 'PENDING' ? '📋' : '✓') + '</div>' +
+        (status === 'PENDING' ? 'Новых сторисов нет' : 'Активных сторисов нет') + '</div>';
+      return;
+    }
+    el.innerHTML = stories.map(s => renderStoryCard(s, status)).join('');
+  } catch {
+    el.innerHTML = '<div class="empty">Ошибка загрузки</div>';
+  }
+}
+
+function renderStoryCard(s, status) {
+  const salon = s.salon ? s.salon.name : 'Неизвестный салон';
+  const created = new Date(s.createdAt).toLocaleDateString('ru-RU');
+  const expires = s.expiresAt ? new Date(s.expiresAt).toLocaleDateString('ru-RU') : '—';
+  const isVideo = s.mediaUrl && /\\.(mp4|mov|webm)$/i.test(s.mediaUrl);
+  const mediaHtml = s.mediaUrl
+    ? (isVideo
+        ? '<video src="' + s.mediaUrl + '" controls style="width:100%;max-height:280px;border-radius:8px;object-fit:cover;margin-bottom:12px"></video>'
+        : '<img src="' + s.mediaUrl + '" loading="lazy" style="width:100%;max-height:280px;border-radius:8px;object-fit:cover;margin-bottom:12px;cursor:pointer" onclick="window.open(\\'' + s.mediaUrl + '\\',\\'_blank\\')">')
+    : '';
+  const categoryLabel = SPEC_LABELS[s.category] || s.category || '—';
+  const actions = status === 'PENDING'
+    ? '<button class="btn-approve btn-sm" onclick="approveStory(\\''+s.id+'\\')">✓ Опубликовать</button>' +
+      '<button class="btn-reject btn-sm" onclick="rejectStoryPrompt(\\''+s.id+'\\')">✕ Отклонить</button>'
+    : '<button class="btn-reject btn-sm" onclick="deactivateStory(\\''+s.id+'\\')">Снять с публикации</button>';
+  return '<div class="card" id="scard-' + s.id + '">' +
+    '<div class="card-header">' +
+      '<div class="avatar">🏪</div>' +
+      '<div>' +
+        '<div class="master-name">' + salon + '</div>' +
+        '<div class="master-meta">Создан: ' + created +
+          (status === 'ACTIVE' ? ' · Истекает: ' + expires : '') + '</div>' +
+      '</div>' +
+    '</div>' +
+    mediaHtml +
+    (s.caption ? '<div style="font-size:14px;margin-bottom:12px;color:#ccc">' + s.caption + '</div>' : '') +
+    '<div class="info-row">' +
+      '<div class="info-item"><strong>Категория:</strong> ' + categoryLabel + '</div>' +
+      '<div class="info-item"><strong>Платный:</strong> ' + (s.isPaid ? 'Да' : 'Нет') + '</div>' +
+      (s.viewCount != null ? '<div class="info-item"><strong>Просмотров:</strong> ' + s.viewCount + '</div>' : '') +
+    '</div>' +
+    '<div class="card-actions">' + actions + '</div>' +
+  '</div>';
+}
+
+async function approveStory(id) {
+  try {
+    await api('PATCH', '/admin/stories/' + id + '/approve');
+    loadStories('PENDING');
+    loadStats();
+  } catch { alert('Ошибка при публикации'); }
+}
+
+async function rejectStoryPrompt(id) {
+  const reason = prompt('Причина отклонения (необязательно):') || 'Отклонено администратором';
+  try {
+    await api('PATCH', '/admin/stories/' + id + '/reject', { reason });
+    loadStories('PENDING');
+    loadStats();
+  } catch { alert('Ошибка при отклонении'); }
+}
+
+async function deactivateStory(id) {
+  if (!confirm('Снять сторис с публикации?')) return;
+  try {
+    await api('PATCH', '/admin/stories/' + id + '/deactivate');
+    loadStories('ACTIVE');
+    loadStats();
+  } catch { alert('Ошибка при деактивации'); }
+}
 </script>
 </body>
 </html>`;
@@ -706,6 +790,34 @@ export class AdminController {
   @Delete('service-templates/:id')
   deleteServiceTemplate(@Param('id') id: string) {
     return this.admin.deleteServiceTemplate(id);
+  }
+
+  // ─── Сторисы ─────────────────────────────────────────────────────
+
+  @UseGuards(AdminGuard)
+  @Get('stories')
+  getStories(@Query('status') status: 'PENDING' | 'ACTIVE' = 'PENDING') {
+    return status === 'ACTIVE'
+      ? this.admin.getActiveStories()
+      : this.admin.getPendingStories();
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('stories/:id/approve')
+  approveStory(@Param('id') id: string) {
+    return this.admin.approveStory(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('stories/:id/reject')
+  rejectStory(@Param('id') id: string, @Body('reason') reason: string) {
+    return this.admin.rejectStory(id, reason || 'Отклонено администратором');
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('stories/:id/deactivate')
+  deactivateStory(@Param('id') id: string) {
+    return this.admin.deactivateStory(id);
   }
 
   // ─── Telegram webhook ─────────────────────────────────────────────

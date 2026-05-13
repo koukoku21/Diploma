@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { MasterStatus, ServiceCategory, StoryStatus } from '@prisma/client';
+import * as crypto from 'crypto';
 import { PrismaService } from '../../shared/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { ReviewMasterDto } from './dto/review-master.dto';
@@ -54,6 +55,12 @@ export class AdminService {
 
     const isApproved = dto.status === MasterStatus.APPROVED;
 
+    // Генерируем bookingSlug при первом одобрении (если ещё нет)
+    const bookingSlug =
+      isApproved && !master.bookingSlug
+        ? crypto.randomBytes(4).toString('hex')
+        : undefined;
+
     await this.prisma.masterProfile.update({
       where: { id: masterId },
       data: {
@@ -61,6 +68,7 @@ export class AdminService {
         isVerified: isApproved,
         isVisible: isApproved ? true : undefined,
         verifiedAt: isApproved ? new Date() : null,
+        ...(bookingSlug ? { bookingSlug } : {}),
       },
     });
 

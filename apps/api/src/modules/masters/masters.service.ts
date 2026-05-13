@@ -3,6 +3,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma.service';
 import { CreateMasterDto } from './dto/create-master.dto';
 import { UpdateMasterDto } from './dto/update-master.dto';
@@ -111,10 +112,18 @@ export class MastersService {
 
     const { specializations, ...rest } = dto;
 
-    const updated = await this.prisma.masterProfile.update({
-      where: { id: master.id },
-      data: rest,
-    });
+    let updated;
+    try {
+      updated = await this.prisma.masterProfile.update({
+        where: { id: master.id },
+        data: rest,
+      });
+    } catch (e) {
+      if (e instanceof Prisma.PrismaClientKnownRequestError && e.code === 'P2002') {
+        throw new BadRequestException('Этот @username уже занят');
+      }
+      throw e;
+    }
 
     // Заменяем специализации если переданы
     if (specializations) {

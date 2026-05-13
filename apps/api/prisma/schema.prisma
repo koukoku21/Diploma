@@ -35,6 +35,7 @@ model User {
   name        String
   avatarUrl   String?
   lang        Lang     @default(RU)
+  isGuest     Boolean  @default(false) // создан через PWA без полной регистрации
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   deletedAt   DateTime? // soft delete
@@ -98,6 +99,9 @@ model MasterProfile {
   lng            Float
   // location — PostGIS Geography хранится через raw SQL миграцию
   // ALTER TABLE master_profiles ADD COLUMN location geography(Point,4326)
+  username             String?       @unique      // @handle для публичной ссылки
+  bookingSlug          String?       @unique      // 8 символов, генерируется при верификации
+  isBookingLinkActive  Boolean       @default(true) // тогл «принимать записи по ссылке»
   bufferMinutes  Int           @default(15)
   isActive       Boolean       @default(true)   // тогл "Принимаю записи"
   isVisible      Boolean       @default(true)   // false → скрыт из ленты (не удалён)
@@ -253,6 +257,7 @@ model Booking {
   startsAt       DateTime
   endsAt         DateTime      // startsAt + durationMin + bufferMin
   status         BookingStatus @default(CONFIRMED)
+  source         BookingSource @default(APP)
   priceSnapshot  Int           // Фиксируем цену на момент записи
   cancelledBy    CancelledBy?
   cancelReason   String?
@@ -289,6 +294,12 @@ enum CancelledBy {
   CLIENT
   MASTER
   SYSTEM
+}
+
+enum BookingSource {
+  APP        // Запись через мобильное приложение
+  PWA_LINK   // Запись через персональную ссылку мастера
+  ADMIN      // Создана администратором
 }
 
 // CRM: расчёт комиссий по завершённой записи

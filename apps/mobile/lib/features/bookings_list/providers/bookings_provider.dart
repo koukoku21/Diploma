@@ -10,6 +10,14 @@ final clientBookingsProvider = FutureProvider.autoDispose<List<BookingItem>>((re
       .toList();
 });
 
+// Детали конкретной записи
+final bookingDetailProvider =
+    FutureProvider.autoDispose.family<BookingDetail, String>((ref, id) async {
+  final dio = createDio();
+  final res = await dio.get('/bookings/$id');
+  return BookingDetail.fromJson(res.data as Map<String, dynamic>);
+});
+
 // Отмена записи
 class CancelBookingNotifier extends AutoDisposeAsyncNotifier<void> {
   @override

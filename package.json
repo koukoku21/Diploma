@@ -3,12 +3,15 @@
   "version": "1.0.0",
   "private": true,
   "workspaces": [
-    "apps/api"
+    "apps/api",
+    "apps/web"
   ],
   "scripts": {
     "api": "npm run start:dev --workspace=apps/api",
     "api:build": "npm run build --workspace=apps/api",
     "api:migrate": "npm run prisma:migrate --workspace=apps/api",
-    "api:studio": "npm run prisma:studio --workspace=apps/api"
+    "api:studio": "npm run prisma:studio --workspace=apps/api",
+    "web": "npm run dev --workspace=apps/web",
+    "web:build": "npm run build --workspace=apps/web"
   }
 }
