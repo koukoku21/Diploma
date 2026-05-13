@@ -235,8 +235,9 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                   child: CircularProgressIndicator(color: kGold)),
               error: (_, __) => Center(
                 child: Text(
-                  'Не удалось загрузить каталог',
+                  'Не удалось загрузить каталог. Попробуйте ещё раз.',
                   style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                  textAlign: TextAlign.center,
                 ),
               ),
               data: (masters) {
