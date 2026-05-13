@@ -1,8 +1,8 @@
-import { IsOptional, IsPhoneNumber, IsString, Length } from 'class-validator';
+import { IsOptional, IsString, Length, Matches } from 'class-validator';
 
 export class VerifyOtpDto {
   @IsString()
-  @IsPhoneNumber('KZ')
+  @Matches(/^\+7\d{10}$/, { message: 'Введите корректный номер телефона (+7XXXXXXXXXX)' })
   phone: string;
 
   @IsString()
