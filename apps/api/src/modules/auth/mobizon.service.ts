@@ -31,7 +31,6 @@ export class MobizonService {
           params: {
             recipient: phone.replace('+', ''),
             text,
-            from: this.sender,
             apiKey: this.apiKey,
             output: 'json',
             api: 1,
