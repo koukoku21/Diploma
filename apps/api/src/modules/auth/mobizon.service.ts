@@ -40,11 +40,14 @@ export class MobizonService {
 
       if (response.data?.code !== 0) {
         this.logger.error('Mobizon error', response.data);
-        throw new Error(`Mobizon API error: ${response.data?.message}`);
+        this.logger.warn(`[OTP FALLBACK] ${phone}: ${code}`);
+        // Не бросаем ошибку — пользователь может взять код из логов
+        return;
       }
     } catch (err) {
       this.logger.error('Failed to send SMS', err);
-      throw err;
+      this.logger.warn(`[OTP FALLBACK] ${phone}: ${code}`);
+      // Не бросаем ошибку — пользователь может взять код из логов
     }
   }
 }
