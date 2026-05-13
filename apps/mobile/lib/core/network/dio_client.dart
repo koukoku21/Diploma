@@ -3,7 +3,7 @@ import '../auth/token_storage.dart';
 
 const _baseUrl = String.fromEnvironment(
   'API_URL',
-  defaultValue: 'http://localhost:4040/api/v1',
+  defaultValue: 'https://diploma-production-92be.up.railway.app/api/v1',
 );
 
 Dio createDio() {
