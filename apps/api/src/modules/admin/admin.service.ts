@@ -15,7 +15,11 @@ export class AdminService {
   // Список заявок мастеров на верификацию
   async getPendingMasters(status: MasterStatus = MasterStatus.PENDING) {
     return this.prisma.masterProfile.findMany({
-      where: { status },
+      where: {
+        status,
+        services: { some: { isEnabled: true } },   // только с хотя бы одной услугой
+        address: { not: 'Астана' },                 // адрес должен быть заполнен
+      },
       include: {
         user: { select: { id: true, name: true, phone: true, avatarUrl: true } },
         specializations: true,

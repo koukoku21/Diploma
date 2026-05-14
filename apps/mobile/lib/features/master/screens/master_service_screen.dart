@@ -48,6 +48,29 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
       _nameCtrl.text.trim().length >= 2 && _priceCtrl.text.trim().isNotEmpty;
 
   Future<void> _save() async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: kBgSecondary,
+        title: Text('Отправить заявку?', style: AppTextStyles.h1),
+        content: Text(
+          'После отправки заявка уйдёт на проверку. Убедитесь, что данные заполнены верно.',
+          style: AppTextStyles.body.copyWith(color: kTextSecondary),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, false),
+            child: Text('Отмена', style: AppTextStyles.label.copyWith(color: kTextSecondary)),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(ctx, true),
+            child: Text('Отправить', style: AppTextStyles.label.copyWith(color: kGold)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
     setState(() => _loading = true);
     try {
       await createDio().post('/master/services', data: {
