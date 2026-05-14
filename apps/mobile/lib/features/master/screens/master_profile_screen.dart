@@ -11,6 +11,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/network/dio_client.dart';
+import '../../../core/providers/settings_provider.dart';
 import '../../../core/widgets/inputs/app_text_field.dart';
 import '../widgets/address_autocomplete_field.dart';
 import '../../chat/screens/master_chats_screen.dart';
@@ -264,6 +265,12 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           label: 'Режим клиента',
           onTap: () => context.go(AppRoutes.feed),
         ),
+
+        // ─── Тема ─────────────────────────────────────────────
+        _ThemeTile(),
+
+        // ─── Язык ─────────────────────────────────────────────
+        _LanguageTile(),
 
         // ─── Выйти ────────────────────────────────────────────
         ListTile(
@@ -1097,6 +1104,69 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             ),
           ),
         ],
+      ),
+    );
+  }
+}
+
+// ─── Тема ────────────────────────────────────────────────────────
+
+class _ThemeTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(themeProvider);
+    final labels = {
+      ThemeMode.dark:   'Тёмная',
+      ThemeMode.light:  'Светлая',
+      ThemeMode.system: 'Системная',
+    };
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(
+        mode == ThemeMode.light ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
+        color: kGold,
+      ),
+      title: Text('Тема', style: AppTextStyles.body),
+      trailing: DropdownButton<ThemeMode>(
+        value: mode,
+        underline: const SizedBox(),
+        dropdownColor: kBgSecondary,
+        style: AppTextStyles.body.copyWith(color: kTextSecondary),
+        items: ThemeMode.values.map((m) => DropdownMenuItem(
+          value: m,
+          child: Text(labels[m]!),
+        )).toList(),
+        onChanged: (m) => ref.read(themeProvider.notifier).set(m!),
+      ),
+    );
+  }
+}
+
+// ─── Язык ────────────────────────────────────────────────────────
+
+class _LanguageTile extends ConsumerWidget {
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final locale = ref.watch(localeProvider);
+    const langs = {
+      'ru': '🇷🇺  Русский',
+      'kk': '🇰🇿  Қазақша',
+      'en': '🇬🇧  English',
+    };
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: const Icon(Icons.language_rounded, color: kGold),
+      title: Text('Язык', style: AppTextStyles.body),
+      trailing: DropdownButton<String>(
+        value: locale.languageCode,
+        underline: const SizedBox(),
+        dropdownColor: kBgSecondary,
+        style: AppTextStyles.body.copyWith(color: kTextSecondary),
+        items: langs.entries.map((e) => DropdownMenuItem(
+          value: e.key,
+          child: Text(e.value),
+        )).toList(),
+        onChanged: (code) => ref.read(localeProvider.notifier).set(Locale(code!)),
       ),
     );
   }
