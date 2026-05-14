@@ -7,6 +7,8 @@ import '../../../core/theme/app_spacing.dart';
 import '../providers/master_providers.dart';
 import '../data/master_dashboard_models.dart';
 import '../../../core/widgets/bell_button.dart';
+import '../../../core/router/app_router.dart';
+import 'package:go_router/go_router.dart';
 
 // M-6: Дашборд мастера
 class MasterDashboardScreen extends ConsumerWidget {
@@ -123,7 +125,18 @@ class _DashboardBody extends ConsumerWidget {
           ],
 
           // ─── Доход ────────────────────────────────────────
-          Text('Доход', style: AppTextStyles.label),
+          Row(
+            children: [
+              Text('Доход', style: AppTextStyles.label),
+              const Spacer(),
+              GestureDetector(
+                onTap: () => context.push(AppRoutes.masterStats),
+                child: Text('Статистика →',
+                    style: AppTextStyles.caption
+                        .copyWith(color: kGold, fontWeight: FontWeight.w600)),
+              ),
+            ],
+          ),
           const SizedBox(height: AppSpacing.sm),
           Row(
             children: [

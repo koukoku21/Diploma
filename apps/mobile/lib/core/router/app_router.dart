@@ -26,6 +26,7 @@ import '../../features/master/screens/master_service_screen.dart';
 import '../../features/master/screens/master_pending_screen.dart';
 // Master app
 import '../../features/master/screens/master_dashboard_screen.dart';
+import '../../features/master/screens/master_stats_screen.dart';
 import '../../features/master/screens/master_bookings_screen.dart';
 import '../../features/master/screens/master_schedule_screen.dart';
 import '../../features/master/screens/master_profile_screen.dart'
@@ -77,7 +78,8 @@ class AppRoutes {
   static String bookingDetail(String id) => '/bookings/$id';
   static String chat(String roomId) => '/chats/$roomId';
   static const stories       = '/stories';
-  static const notifications = '/notifications';
+  static const notifications  = '/notifications';
+  static const masterStats    = '/master/stats';
 
   // Deep links
   static String masterByUsername(String username) => '/p/$username';
@@ -140,6 +142,12 @@ final appRouter = GoRouter(
     GoRoute(
       path: AppRoutes.notifications,
       builder: (_, __) => const NotificationsScreen(),
+    ),
+
+    // ─── Master stats ─────────────────────────────────────────────
+    GoRoute(
+      path: AppRoutes.masterStats,
+      builder: (_, __) => const MasterStatsScreen(),
     ),
 
     // ─── Story viewer ─────────────────────────────────────────────

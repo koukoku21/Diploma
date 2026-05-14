@@ -51,6 +51,13 @@ export class MastersController {
     return this.masters.updateProfile(user.id, dto);
   }
 
+  // Статистика мастера (M-stats)
+  @UseGuards(JwtAuthGuard)
+  @Get('me/stats')
+  getStats(@CurrentUser() user: { id: string }) {
+    return this.masters.getStats(user.id);
+  }
+
   // Повторная отправка заявки после отклонения
   @UseGuards(JwtAuthGuard)
   @Post('me/resubmit')

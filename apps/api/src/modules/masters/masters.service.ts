@@ -169,6 +169,87 @@ export class MastersService {
     return updated;
   }
 
+  // ─── Статистика мастера ─────────────────────────────────────────
+  async getStats(userId: string) {
+    const master = await this.prisma.masterProfile.findUnique({
+      where: { userId },
+      select: { id: true, rating: true, reviewCount: true },
+    });
+    if (!master) throw new NotFoundException('Профиль мастера не найден');
+
+    const now = new Date();
+    const startOfWeek = new Date(now);
+    startOfWeek.setDate(now.getDate() - now.getDay() + 1);
+    startOfWeek.setHours(0, 0, 0, 0);
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    // Последние 7 дней для графика
+    const days: { date: string; revenue: number; bookings: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      const dEnd = new Date(d);
+      dEnd.setHours(23, 59, 59, 999);
+
+      const agg = await this.prisma.booking.aggregate({
+        where: {
+          masterId: master.id,
+          status: 'COMPLETED',
+          completedAt: { gte: d, lte: dEnd },
+        },
+        _sum: { priceSnapshot: true },
+        _count: true,
+      });
+
+      days.push({
+        date: d.toISOString().split('T')[0],
+        revenue: agg._sum.priceSnapshot ?? 0,
+        bookings: agg._count,
+      });
+    }
+
+    const [weekAgg, monthAgg, allAgg, cancelledCount] = await Promise.all([
+      this.prisma.booking.aggregate({
+        where: { masterId: master.id, status: 'COMPLETED', completedAt: { gte: startOfWeek } },
+        _sum: { priceSnapshot: true },
+        _count: true,
+      }),
+      this.prisma.booking.aggregate({
+        where: { masterId: master.id, status: 'COMPLETED', completedAt: { gte: startOfMonth } },
+        _sum: { priceSnapshot: true },
+        _count: true,
+      }),
+      this.prisma.booking.aggregate({
+        where: { masterId: master.id, status: 'COMPLETED' },
+        _sum: { priceSnapshot: true },
+        _count: true,
+      }),
+      this.prisma.booking.count({
+        where: { masterId: master.id, status: 'CANCELLED' },
+      }),
+    ]);
+
+    return {
+      rating: master.rating,
+      reviewCount: master.reviewCount,
+      week: {
+        revenue: weekAgg._sum.priceSnapshot ?? 0,
+        bookings: weekAgg._count,
+      },
+      month: {
+        revenue: monthAgg._sum.priceSnapshot ?? 0,
+        bookings: monthAgg._count,
+      },
+      allTime: {
+        revenue: allAgg._sum.priceSnapshot ?? 0,
+        bookings: allAgg._count,
+        cancelled: cancelledCount,
+      },
+      dailyChart: days,
+    };
+  }
+
   // ─── Дашборд мастера (M-6) ──────────────────────────────────────
   async getDashboard(userId: string) {
     const master = await this.prisma.masterProfile.findUnique({
