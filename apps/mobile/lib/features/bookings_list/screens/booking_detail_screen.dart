@@ -99,6 +99,8 @@ class _Body extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final canCancel = booking.status == BookingStatus.confirmed;
     final canReview = booking.status == BookingStatus.completed && !booking.hasReview;
+    final canBookAgain = booking.status == BookingStatus.completed ||
+        booking.status == BookingStatus.cancelled;
 
     return CustomScrollView(
       slivers: [
@@ -261,6 +263,27 @@ class _Body extends ConsumerWidget {
                     ),
                   ),
                 if (canReview) const SizedBox(height: AppSpacing.md),
+
+                // Записаться снова
+                if (canBookAgain) ...[
+                  SizedBox(
+                    width: double.infinity,
+                    height: 52,
+                    child: ElevatedButton(
+                      onPressed: () => context.push(
+                          AppRoutes.masterPublicProfile(booking.masterId)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: kGold,
+                        foregroundColor: kBgPrimary,
+                        shape: const StadiumBorder(),
+                      ),
+                      child: Text('Записаться снова',
+                          style: AppTextStyles.label.copyWith(
+                              fontWeight: FontWeight.w700, color: kBgPrimary)),
+                    ),
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                ],
 
                 // Профиль мастера
                 OutlinedButton(
