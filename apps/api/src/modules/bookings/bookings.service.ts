@@ -177,6 +177,16 @@ export class BookingsService {
 
     if (!isMaster && !isClient) throw new ForbiddenException();
 
+    // Клиент может отменить только за 2+ часа до начала
+    if (isClient && !isMaster) {
+      const hoursUntil = (booking.startsAt.getTime() - Date.now()) / 3_600_000;
+      if (hoursUntil < 2) {
+        throw new BadRequestException(
+          'Отмена невозможна — до записи осталось менее 2 часов',
+        );
+      }
+    }
+
     const cancelledBy: CancelledBy = isMaster
       ? CancelledBy.MASTER
       : CancelledBy.CLIENT;

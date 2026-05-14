@@ -97,7 +97,10 @@ class _Body extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final canCancel = booking.status == BookingStatus.confirmed;
+    final isConfirmed = booking.status == BookingStatus.confirmed;
+    final hoursUntil = booking.startsAt.difference(DateTime.now()).inMinutes / 60.0;
+    final canCancel = isConfirmed && hoursUntil >= 2;
+    final tooLateToCancel = isConfirmed && hoursUntil < 2;
     final canReview = booking.status == BookingStatus.completed && !booking.hasReview;
     final canBookAgain = booking.status == BookingStatus.completed ||
         booking.status == BookingStatus.cancelled;
@@ -300,19 +303,32 @@ class _Body extends ConsumerWidget {
                 ),
 
                 // Отменить запись
-                if (canCancel) ...[
+                if (canCancel || tooLateToCancel) ...[
                   const SizedBox(height: AppSpacing.md),
                   SizedBox(
                     width: double.infinity, height: 48,
                     child: OutlinedButton(
-                      onPressed: () => _cancel(context, ref),
+                      onPressed: canCancel ? () => _cancel(context, ref) : null,
                       style: OutlinedButton.styleFrom(
                         foregroundColor: kRose,
-                        side: const BorderSide(color: kRose),
+                        disabledForegroundColor: kRose.withValues(alpha: 0.35),
+                        side: BorderSide(
+                          color: canCancel
+                              ? kRose
+                              : kRose.withValues(alpha: 0.35),
+                        ),
                         shape: const StadiumBorder(),
                       ),
-                      child: Text('Отменить запись',
-                          style: AppTextStyles.label.copyWith(color: kRose)),
+                      child: Text(
+                        tooLateToCancel
+                            ? 'Отмена недоступна (менее 2 ч.)'
+                            : 'Отменить запись',
+                        style: AppTextStyles.label.copyWith(
+                          color: canCancel
+                              ? kRose
+                              : kRose.withValues(alpha: 0.35),
+                        ),
+                      ),
                     ),
                   ),
                 ],
