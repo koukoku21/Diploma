@@ -40,8 +40,11 @@ class FeedScreen extends ConsumerStatefulWidget {
 
 class _FeedScreenState extends ConsumerState<FeedScreen> {
   final _swiperCtrl = CardSwiperController();
+  final _searchCtrl = TextEditingController();
   _FeedMode _mode = _FeedMode.list;
   String? _selectedCategory; // null = Все
+  bool _showSearch = false;
+  String _searchQuery = '';
 
   @override
   void initState() {
@@ -65,15 +68,24 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   @override
   void dispose() {
     _swiperCtrl.dispose();
+    _searchCtrl.dispose();
     super.dispose();
   }
 
   List<FeedMaster> get _filteredMasters {
-    final all = ref.watch(feedProvider).cards;
-    if (_selectedCategory == null) return all;
-    return all
-        .where((m) => m.specializations.contains(_selectedCategory))
-        .toList();
+    var all = ref.watch(feedProvider).cards;
+    if (_selectedCategory != null) {
+      all = all.where((m) => m.specializations.contains(_selectedCategory)).toList();
+    }
+    final q = _searchQuery.trim().toLowerCase();
+    if (q.isNotEmpty) {
+      all = all.where((m) {
+        return m.name.toLowerCase().contains(q) ||
+            m.address.toLowerCase().contains(q) ||
+            (m.bio?.toLowerCase().contains(q) ?? false);
+      }).toList();
+    }
+    return all;
   }
 
   @override
@@ -84,6 +96,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         child: Column(
           children: [
             _buildTopBar(),
+            AnimatedSize(
+              duration: const Duration(milliseconds: 200),
+              curve: Curves.easeInOut,
+              child: _showSearch ? _buildSearchBar() : const SizedBox.shrink(),
+            ),
             _buildStoriesRow(),
             _buildToggleAndChips(),
             const Divider(color: kBorder, height: 1),
@@ -106,12 +123,80 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   .copyWith(letterSpacing: 4, color: kGold, fontSize: 18)),
           const Spacer(),
           IconButton(
+            icon: Icon(
+              _showSearch ? Icons.search_off_rounded : Icons.search_rounded,
+              color: _showSearch ? kGold : kTextSecondary,
+            ),
+            onPressed: () {
+              setState(() {
+                _showSearch = !_showSearch;
+                if (!_showSearch) {
+                  _searchCtrl.clear();
+                  _searchQuery = '';
+                }
+              });
+              if (_showSearch) {
+                Future.delayed(const Duration(milliseconds: 220), () {
+                  if (mounted) FocusScope.of(context).requestFocus(_searchFocus);
+                });
+              }
+            },
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(),
+          ),
+          const SizedBox(width: AppSpacing.sm),
+          IconButton(
             icon: const Icon(Icons.tune_rounded, color: kTextSecondary),
             onPressed: () => _showFilter(context),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
           ),
         ],
+      ),
+    );
+  }
+
+  final _searchFocus = FocusNode();
+
+  // ─── Строка поиска ───────────────────────────────────────────────
+  Widget _buildSearchBar() {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(
+          AppSpacing.screenH, 0, AppSpacing.screenH, AppSpacing.sm),
+      child: TextField(
+        controller: _searchCtrl,
+        focusNode: _searchFocus,
+        style: AppTextStyles.body,
+        onChanged: (v) => setState(() => _searchQuery = v),
+        decoration: InputDecoration(
+          hintText: 'Поиск мастера...',
+          hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
+          prefixIcon: const Icon(Icons.search_rounded, color: kTextTertiary, size: 20),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear_rounded, color: kTextTertiary, size: 20),
+                  onPressed: () => setState(() {
+                    _searchCtrl.clear();
+                    _searchQuery = '';
+                  }),
+                )
+              : null,
+          filled: true,
+          fillColor: kBgSecondary,
+          contentPadding: const EdgeInsets.symmetric(vertical: 10),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(AppRadius.pill),
+            borderSide: const BorderSide(color: kGold, width: 1),
+          ),
+        ),
       ),
     );
   }
