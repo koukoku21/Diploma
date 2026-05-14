@@ -10,6 +10,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/network/dio_client.dart';
 import '../../../core/widgets/inputs/app_text_field.dart';
+import '../../../core/providers/settings_provider.dart';
 import '../data/profile_models.dart';
 
 final _profileProvider = FutureProvider.autoDispose<UserProfile>((ref) async {
@@ -52,7 +53,7 @@ class ProfileScreen extends ConsumerWidget {
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
-      builder: (_) => _SettingsSheet(ref: ref),
+      builder: (_) => const _SettingsSheet(),
     );
   }
 }
@@ -451,12 +452,25 @@ class _MenuItem extends StatelessWidget {
 }
 
 // ─── Settings bottom sheet ────────────────────────────────────────
-class _SettingsSheet extends StatelessWidget {
-  const _SettingsSheet({required this.ref});
-  final WidgetRef ref;
+class _SettingsSheet extends ConsumerWidget {
+  const _SettingsSheet();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final themeMode = ref.watch(themeProvider);
+    final locale = ref.watch(localeProvider);
+
+    const themeLabels = {
+      ThemeMode.dark: 'Тёмная',
+      ThemeMode.light: 'Светлая',
+      ThemeMode.system: 'Системная',
+    };
+    const langLabels = {
+      'ru': '🇷🇺  Русский',
+      'kk': '🇰🇿  Қазақша',
+      'en': '🇬🇧  English',
+    };
+
     return Padding(
       padding: const EdgeInsets.all(AppSpacing.screenH),
       child: Column(
@@ -474,7 +488,53 @@ class _SettingsSheet extends StatelessWidget {
             ),
           ),
           Text('Настройки', style: AppTextStyles.title),
-          const SizedBox(height: AppSpacing.xl),
+          const SizedBox(height: AppSpacing.lg),
+          // ─── Тема ─────────────────────────────────────────────
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: Icon(
+              themeMode == ThemeMode.light
+                  ? Icons.light_mode_rounded
+                  : Icons.dark_mode_rounded,
+              color: kGold,
+            ),
+            title: Text('Тема', style: AppTextStyles.body),
+            trailing: DropdownButton<ThemeMode>(
+              value: themeMode,
+              underline: const SizedBox(),
+              dropdownColor: kBgSecondary,
+              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              items: ThemeMode.values
+                  .map((m) => DropdownMenuItem(
+                        value: m,
+                        child: Text(themeLabels[m]!),
+                      ))
+                  .toList(),
+              onChanged: (m) => ref.read(themeProvider.notifier).set(m!),
+            ),
+          ),
+          // ─── Язык ─────────────────────────────────────────────
+          ListTile(
+            contentPadding: EdgeInsets.zero,
+            leading: const Icon(Icons.language_rounded, color: kGold),
+            title: Text('Язык', style: AppTextStyles.body),
+            trailing: DropdownButton<String>(
+              value: locale.languageCode,
+              underline: const SizedBox(),
+              dropdownColor: kBgSecondary,
+              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              items: langLabels.entries
+                  .map((e) => DropdownMenuItem(
+                        value: e.key,
+                        child: Text(e.value),
+                      ))
+                  .toList(),
+              onChanged: (code) =>
+                  ref.read(localeProvider.notifier).set(Locale(code!)),
+            ),
+          ),
+          const Divider(color: kBorder),
+          // ─── Выйти ────────────────────────────────────────────
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.logout_rounded, color: kRose),
