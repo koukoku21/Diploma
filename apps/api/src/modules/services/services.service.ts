@@ -51,29 +51,44 @@ export class ServicesService {
   async create(userId: string, dto: CreateServiceDto) {
     const master = await this.getMasterOrThrow(userId);
 
-    const template = await this.prisma.serviceTemplate.findUnique({
-      where: { id: dto.templateId },
-    });
-    if (!template || !template.isActive) {
-      throw new NotFoundException('Шаблон услуги не найден');
-    }
+    const priceFrom = dto.priceFrom ?? dto.price ?? 0;
+    const durationMin = dto.durationMin ?? dto.duration ?? 60;
 
-    // Проверяем уникальность: один мастер — одна услуга из шаблона
-    const existing = await this.prisma.service.findFirst({
-      where: { masterId: master.id, templateId: dto.templateId },
-    });
-    if (existing) {
-      throw new BadRequestException('Эта услуга уже добавлена');
+    let title: string;
+    let category: any;
+    let templateId: string | undefined;
+
+    if (dto.templateId) {
+      const template = await this.prisma.serviceTemplate.findUnique({
+        where: { id: dto.templateId },
+      });
+      if (!template || !template.isActive) {
+        throw new NotFoundException('Шаблон услуги не найден');
+      }
+      const existing = await this.prisma.service.findFirst({
+        where: { masterId: master.id, templateId: dto.templateId },
+      });
+      if (existing) {
+        throw new BadRequestException('Эта услуга уже добавлена');
+      }
+      title = template.name;
+      category = template.category;
+      templateId = dto.templateId;
+    } else if (dto.name && dto.category) {
+      title = dto.name;
+      category = dto.category;
+    } else {
+      throw new BadRequestException('Укажите templateId или name+category');
     }
 
     return this.prisma.service.create({
       data: {
         masterId: master.id,
-        templateId: dto.templateId,
-        title: template.name,       // снапшот названия
-        category: template.category, // снапшот категории
-        priceFrom: dto.priceFrom,
-        durationMin: dto.durationMin,
+        templateId,
+        title,
+        category,
+        priceFrom,
+        durationMin,
       },
       include: { template: { select: { name: true, nameKz: true, category: true } } },
     });

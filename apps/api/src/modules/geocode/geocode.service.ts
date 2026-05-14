@@ -56,7 +56,12 @@ export class GeocodeService {
         .slice(0, 7)
         .map((item) => {
           const fullName: string = item.full_name ?? item.name ?? '';
-          const name = item.name ?? fullName.replace(/^Астана,\s*/i, '');
+          // Берём только улицу + номер дома, убираем район/область
+          const raw = item.name ?? fullName;
+          const name = raw
+            .replace(/,?\s*(Целиноградский район|Акмолинская область|Астана|г\. Астана)[^,]*/gi, '')
+            .replace(/,\s*$/, '')
+            .trim() || raw;
           return { name, fullName, lat: item.point.lat, lng: item.point.lon };
         });
     } catch (err) {
