@@ -428,17 +428,37 @@ function renderUserRow(u) {
   const revokeBtn = u.masterProfile && u.masterProfile.status === 'APPROVED'
     ? '<button class="btn-revoke" onclick="revokeMaster(\\'' + u.masterProfile.id + '\\')">Убрать мастера</button> '
     : '';
+  const banBtn = u.isBanned
+    ? '<button class="btn-approve" onclick="unbanUser(\\'' + u.id + '\\')">Разблокировать</button> '
+    : '<button class="btn-revoke" onclick="banUserPrompt(\\'' + u.id + '\\')">Заблокировать</button> ';
+  const bannedBadge = u.isBanned
+    ? '<span style="color:#e05a6b;font-size:11px;font-weight:700;margin-left:6px">🚫 БАН</span>'
+    : '';
   return '<tr id="urow-' + u.id + '" data-name="' + safeName + '">' +
-    '<td><div class="user-name">' + (u.name || '—') + '</div></td>' +
+    '<td><div class="user-name">' + (u.name || '—') + bannedBadge + '</div></td>' +
     '<td class="user-phone">' + u.phone + '</td>' +
     '<td>' + masterChip + '</td>' +
     '<td style="color:#666">' + created + '</td>' +
     '<td style="text-align:right;white-space:nowrap">' +
       '<button class="btn-edit" onclick="openEditModal(\\'' + u.id + '\\',this.closest(\\'tr\\').dataset.name)">Изменить</button> ' +
       revokeBtn +
+      banBtn +
       '<button class="btn-delete" onclick="deleteUser(\\'' + u.id + '\\')">Удалить</button>' +
     '</td>' +
   '</tr>';
+}
+
+async function banUserPrompt(userId) {
+  const reason = prompt('Причина блокировки (необязательно):');
+  if (reason === null) return;
+  await api('PATCH', '/admin/users/' + userId + '/ban', { reason: reason || undefined });
+  loadUsers(document.getElementById('user-search')?.value);
+}
+
+async function unbanUser(userId) {
+  if (!confirm('Разблокировать пользователя?')) return;
+  await api('PATCH', '/admin/users/' + userId + '/unban');
+  loadUsers(document.getElementById('user-search')?.value);
 }
 
 function openEditModal(userId, name) {
@@ -755,6 +775,18 @@ export class AdminController {
   @Delete('users/:id')
   deleteUser(@Param('id') id: string) {
     return this.admin.deleteUser(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('users/:id/ban')
+  banUser(@Param('id') id: string, @Body('reason') reason?: string) {
+    return this.admin.banUser(id, reason);
+  }
+
+  @UseGuards(AdminGuard)
+  @Patch('users/:id/unban')
+  unbanUser(@Param('id') id: string) {
+    return this.admin.unbanUser(id);
   }
 
   // ─── Справочник услуг ─────────────────────────────────────────────

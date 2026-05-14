@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from '@nestjs/common';
@@ -62,10 +63,18 @@ export class AuthService {
 
     await this.redis.del(otpKey);
 
-    // Ищем активного пользователя (для определения isNewUser)
+    // Ищем активного пользователя (для определения isNewUser + проверки бана)
     const existing = await this.prisma.user.findFirst({
       where: { phone: dto.phone, deletedAt: null },
     });
+
+    if (existing?.isBanned) {
+      throw new ForbiddenException(
+        existing.banReason
+          ? `Аккаунт заблокирован: ${existing.banReason}`
+          : 'Аккаунт заблокирован',
+      );
+    }
 
     const isNewUser = !existing;
 

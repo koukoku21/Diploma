@@ -118,6 +118,26 @@ export class AdminService {
     return { userId, deleted: true };
   }
 
+  // Заблокировать пользователя
+  async banUser(userId: string, reason?: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Пользователь не найден');
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isBanned: true, banReason: reason ?? null, bannedAt: new Date() },
+    });
+    return { userId, banned: true };
+  }
+
+  // Разблокировать пользователя
+  async unbanUser(userId: string) {
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { isBanned: false, banReason: null, bannedAt: null },
+    });
+    return { userId, banned: false };
+  }
+
   // Обновить данные пользователя (имя)
   async updateUser(userId: string, name: string) {
     return this.prisma.user.update({
