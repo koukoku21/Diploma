@@ -23,7 +23,9 @@ async function bootstrap() {
   );
 
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production' ? false : '*',
+    origin: '*',
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Admin-Secret'],
   });
 
   const port = process.env.PORT ?? 3000;
