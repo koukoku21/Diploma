@@ -6,6 +6,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../providers/master_providers.dart';
 import '../data/master_dashboard_models.dart';
+import '../../../core/widgets/bell_button.dart';
 
 // M-6: Дашборд мастера
 class MasterDashboardScreen extends ConsumerWidget {
@@ -22,6 +23,10 @@ class MasterDashboardScreen extends ConsumerWidget {
         title: Text('MIRAKU',
             style: AppTextStyles.title.copyWith(letterSpacing: 4, color: kGold)),
         centerTitle: true,
+        actions: const [
+          BellButton(),
+          SizedBox(width: 12),
+        ],
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),

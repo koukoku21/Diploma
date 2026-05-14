@@ -14,6 +14,7 @@ import '../providers/feed_provider.dart';
 import '../providers/stories_provider.dart';
 import '../widgets/master_card.dart';
 import '../widgets/story_circle.dart';
+import '../../../core/widgets/bell_button.dart';
 
 // ─── Категории-чипы ──────────────────────────────────────────────
 const _kCategories = [
@@ -122,6 +123,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
               style: AppTextStyles.title
                   .copyWith(letterSpacing: 4, color: kGold, fontSize: 18)),
           const Spacer(),
+          const BellButton(),
+          const SizedBox(width: AppSpacing.xs),
           IconButton(
             icon: Icon(
               _showSearch ? Icons.search_off_rounded : Icons.search_rounded,

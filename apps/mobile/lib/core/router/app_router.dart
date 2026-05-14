@@ -33,6 +33,7 @@ import '../../features/master/screens/master_profile_screen.dart'
 import '../shell/client_shell.dart';
 import '../shell/master_shell.dart';
 import '../../features/stories/screens/story_viewer_screen.dart';
+import '../../features/notifications/screens/notifications_screen.dart';
 import '../../features/feed/data/feed_models.dart' as feed;
 import '../../core/network/dio_client.dart' as dio_client;
 import '../../core/theme/app_colors.dart';
@@ -75,7 +76,8 @@ class AppRoutes {
   static const bookingConfirm = '/booking/confirm';
   static String bookingDetail(String id) => '/bookings/$id';
   static String chat(String roomId) => '/chats/$roomId';
-  static const stories = '/stories';
+  static const stories       = '/stories';
+  static const notifications = '/notifications';
 
   // Deep links
   static String masterByUsername(String username) => '/p/$username';
@@ -133,6 +135,12 @@ final appRouter = GoRouter(
       builder: (_, state) => NameScreen(phone: state.extra as String),
     ),
     GoRoute(path: AppRoutes.location, builder: (_, __) => const LocationScreen()),
+
+    // ─── Notifications ────────────────────────────────────────────
+    GoRoute(
+      path: AppRoutes.notifications,
+      builder: (_, __) => const NotificationsScreen(),
+    ),
 
     // ─── Story viewer ─────────────────────────────────────────────
     GoRoute(
