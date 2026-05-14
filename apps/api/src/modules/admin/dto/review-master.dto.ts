@@ -8,5 +8,5 @@ export class ReviewMasterDto {
   @IsOptional()
   @IsString()
   @MaxLength(500)
-  comment?: string; // причина отклонения
+  rejectionReason?: string;
 }

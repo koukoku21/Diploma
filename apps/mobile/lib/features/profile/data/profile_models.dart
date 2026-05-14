@@ -6,6 +6,7 @@ class UserProfile {
     this.avatarUrl,
     this.masterProfileId,
     this.masterStatus,
+    this.rejectionReason,
   });
 
   final String id;
@@ -14,6 +15,7 @@ class UserProfile {
   final String? avatarUrl;
   final String? masterProfileId;
   final String? masterStatus; // PENDING | APPROVED | REJECTED
+  final String? rejectionReason;
 
   bool get isMaster => masterStatus == 'APPROVED';
   bool get hasMasterProfile => masterProfileId != null;
@@ -27,6 +29,7 @@ class UserProfile {
       avatarUrl: j['avatarUrl'] as String?,
       masterProfileId: mp?['id'] as String?,
       masterStatus: mp?['status'] as String?,
+      rejectionReason: mp?['rejectionReason'] as String?,
     );
   }
 }

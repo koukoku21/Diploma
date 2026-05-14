@@ -107,9 +107,10 @@ model MasterProfile {
   isVisible      Boolean       @default(true)   // false → скрыт из ленты (не удалён)
   isVerified     Boolean       @default(false)
   verifiedAt     DateTime?
-  status         MasterStatus  @default(PENDING)
-  rating         Float?        // Денормализованный рейтинг (пересчитывается)
-  reviewCount    Int           @default(0)
+  status           MasterStatus  @default(PENDING)
+  rejectionReason  String?       // Причина отклонения заявки (заполняется админом)
+  rating           Float?        // Денормализованный рейтинг (пересчитывается)
+  reviewCount      Int           @default(0)
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 

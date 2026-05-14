@@ -26,6 +26,7 @@ export class UsersService {
             status: true,
             isActive: true,
             isVerified: true,
+            rejectionReason: true,
           },
         },
       },

@@ -72,6 +72,7 @@ export class AdminService {
         isVerified: isApproved,
         isVisible: isApproved ? true : undefined,
         verifiedAt: isApproved ? new Date() : null,
+        rejectionReason: dto.rejectionReason ?? null,
         ...(bookingSlug ? { bookingSlug } : {}),
       },
     });

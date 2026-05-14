@@ -82,6 +82,36 @@ export class MastersService {
     return master;
   }
 
+  // ─── Повторная отправка заявки после отклонения ─────────────────
+  async resubmit(userId: string) {
+    const master = await this.prisma.masterProfile.findUnique({
+      where: { userId },
+      include: {
+        user: { select: { name: true, phone: true } },
+        specializations: true,
+      },
+    });
+    if (!master) throw new NotFoundException('Профиль мастера не найден');
+    if (master.status !== 'REJECTED') {
+      throw new BadRequestException('Повторная отправка доступна только после отклонения');
+    }
+
+    await this.prisma.masterProfile.update({
+      where: { id: master.id },
+      data: { status: 'PENDING', rejectionReason: null },
+    });
+
+    await this.telegram.notifyNewMaster({
+      id: master.id,
+      userName: master.user.name,
+      phone: master.user.phone,
+      address: master.address,
+      specializations: master.specializations.map((s) => s.category),
+    }).catch(() => {});
+
+    return { status: 'PENDING' };
+  }
+
   // ─── Публичный профиль мастера (для клиентов) ───────────────────
   async getPublicProfile(masterId: string) {
     const master = await this.prisma.masterProfile.findFirst({

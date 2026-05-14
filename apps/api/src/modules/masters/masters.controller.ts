@@ -51,6 +51,13 @@ export class MastersController {
     return this.masters.updateProfile(user.id, dto);
   }
 
+  // Повторная отправка заявки после отклонения
+  @UseGuards(JwtAuthGuard)
+  @Post('me/resubmit')
+  resubmit(@CurrentUser() user: { id: string }) {
+    return this.masters.resubmit(user.id);
+  }
+
   // Публичный профиль (экран C-2)
   @Get(':id')
   getPublicProfile(@Param('id') id: string) {

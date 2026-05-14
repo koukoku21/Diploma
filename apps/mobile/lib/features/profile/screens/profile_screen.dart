@@ -189,11 +189,32 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
             subtitle: 'Одобрение занимает до 24 часов',
           )
         else if (profile.masterStatus == 'REJECTED')
-          const _MasterStatusCard(
-            icon: Icons.cancel_outlined,
-            color: kRose,
-            title: 'Заявка отклонена',
-            subtitle: 'Свяжитесь с поддержкой',
+          _RejectedCard(
+            reason: profile.rejectionReason,
+            onResubmit: () async {
+              try {
+                await createDio().post('/masters/me/resubmit');
+                if (context.mounted) {
+                  ref.invalidate(_profileProvider);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('Заявка отправлена на повторную проверку',
+                          style: AppTextStyles.caption),
+                      backgroundColor: kBgSecondary,
+                    ),
+                  );
+                }
+              } catch (e) {
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text(e.toString(), style: AppTextStyles.caption),
+                      backgroundColor: kBgSecondary,
+                    ),
+                  );
+                }
+              }
+            },
           ),
 
         const SizedBox(height: AppSpacing.xl),
@@ -547,6 +568,96 @@ class _SettingsSheet extends ConsumerWidget {
             },
           ),
           const SizedBox(height: AppSpacing.md),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Rejected card with reason + resubmit ────────────────────────
+class _RejectedCard extends StatefulWidget {
+  const _RejectedCard({required this.onResubmit, this.reason});
+  final String? reason;
+  final VoidCallback onResubmit;
+
+  @override
+  State<_RejectedCard> createState() => _RejectedCardState();
+}
+
+class _RejectedCardState extends State<_RejectedCard> {
+  bool _loading = false;
+
+  Future<void> _tap() async {
+    setState(() => _loading = true);
+    try {
+      widget.onResubmit();
+    } finally {
+      if (mounted) setState(() => _loading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: kBgSecondary,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: kRose.withValues(alpha: 0.3)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.cancel_outlined, color: kRose, size: 28),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text('Заявка отклонена', style: AppTextStyles.label),
+                    if (widget.reason != null && widget.reason!.isNotEmpty) ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        widget.reason!,
+                        style: AppTextStyles.caption.copyWith(color: kRose),
+                      ),
+                    ] else ...[
+                      const SizedBox(height: 4),
+                      Text(
+                        'Исправьте профиль и отправьте повторно',
+                        style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.md),
+          SizedBox(
+            width: double.infinity,
+            height: 44,
+            child: ElevatedButton(
+              onPressed: _loading ? null : _tap,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kRose,
+                foregroundColor: Colors.white,
+                disabledBackgroundColor: kRose.withValues(alpha: 0.4),
+                shape: const StadiumBorder(),
+              ),
+              child: _loading
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
+                    )
+                  : Text('Отправить повторно',
+                      style: AppTextStyles.label.copyWith(
+                          fontWeight: FontWeight.w700, color: Colors.white)),
+            ),
+          ),
         ],
       ),
     );
