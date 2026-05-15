@@ -578,7 +578,7 @@ async function deleteUser(userId) {
 async function hardDeleteUser(userId) {
   const row = document.getElementById('urow-' + userId);
   const name = row ? row.dataset.name : userId;
-  if (!confirm('⚠️ УДАЛИТЬ НАВСЕГДА: ' + name + '\n\nВсе данные будут уничтожены: профиль, заявка мастера, записи, отзывы. Восстановление невозможно.\n\nПродолжить?')) return;
+  if (!confirm('⚠️ УДАЛИТЬ НАВСЕГДА: ' + name + '\\n\\nВсе данные будут уничтожены: профиль, заявка мастера, записи, отзывы. Восстановление невозможно.\\n\\nПродолжить?')) return;
   try {
     await api('DELETE', '/admin/users/' + userId + '/hard');
     loadStats();
