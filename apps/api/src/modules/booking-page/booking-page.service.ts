@@ -9,6 +9,7 @@ import { PrismaService } from '../../shared/prisma.service';
 import { RedisService } from '../../shared/redis.service';
 import { MobizonService } from '../auth/mobizon.service';
 import { SlotsService } from '../slots/slots.service';
+import { NotificationsService } from '../notifications/notifications.service';
 import { SendOtpPwaDto } from './dto/send-otp-pwa.dto';
 import { BookSlotPwaDto } from './dto/book-slot-pwa.dto';
 
@@ -22,6 +23,7 @@ export class BookingPageService {
     private redis: RedisService,
     private mobizon: MobizonService,
     private slots: SlotsService,
+    private notifications: NotificationsService,
   ) {}
 
   // GET /p/b/:slug → resolve bookingSlug → username
@@ -186,6 +188,13 @@ export class BookingPageService {
     });
 
     await this.slots.invalidateCache(master.id, date);
+
+    await this.notifications.notifyNewBooking(
+      master.id,
+      booking.id,
+      user.name || dto.name,
+      booking.service.title,
+    );
 
     return {
       bookingId: booking.id,
