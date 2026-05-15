@@ -6,6 +6,7 @@ import 'core/theme/app_theme.dart';
 import 'core/router/app_router.dart';
 import 'core/services/push_service.dart';
 import 'core/providers/settings_provider.dart';
+import 'core/network/dio_client.dart' as network;
 import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() async {
@@ -28,6 +29,7 @@ class _MirakuAppState extends ConsumerState<MirakuApp> {
     super.initState();
     ref.read(themeProvider.notifier).init();
     ref.read(localeProvider.notifier).init();
+    network.onUnauthorized = () => appRouter.go(AppRoutes.phone);
   }
 
   @override

@@ -1,3 +1,4 @@
+import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -9,18 +10,19 @@ import '../../../core/router/app_router.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
 import '../../../core/widgets/inputs/app_text_field.dart';
 import '../../../core/network/dio_client.dart';
+import '../providers/onboarding_provider.dart';
 
-const _categories = [
-  'Маникюр',
-  'Педикюр',
-  'Стрижка',
-  'Окрашивание',
-  'Макияж',
-  'Брови',
-  'Ресницы',
-  'Массаж',
-  'Другое',
-];
+const _categories = <String, String>{
+  'Маникюр':       'MANICURE',
+  'Педикюр':       'PEDICURE',
+  'Стрижка':       'HAIRCUT',
+  'Окрашивание':   'COLORING',
+  'Макияж':        'MAKEUP',
+  'Брови':         'BROWS',
+  'Ресницы':       'LASHES',
+  'Уход за кожей': 'SKINCARE',
+  'Другое':        'OTHER',
+};
 
 // M-4: Добавить первую услугу
 class MasterServiceScreen extends ConsumerStatefulWidget {
@@ -33,7 +35,7 @@ class MasterServiceScreen extends ConsumerStatefulWidget {
 class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
   final _nameCtrl  = TextEditingController();
   final _priceCtrl = TextEditingController();
-  String _category = _categories.first;
+  String _category = _categories.keys.first;
   int _duration = 60;
   bool _loading = false;
 
@@ -73,12 +75,36 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
 
     setState(() => _loading = true);
     try {
-      await createDio().post('/master/services', data: {
-        'name': _nameCtrl.text.trim(),
-        'category': _category,
-        'price': double.tryParse(_priceCtrl.text.trim()) ?? 0,
-        'duration': _duration,
+      final onboarding = ref.read(onboardingProvider);
+      final dio = createDio();
+
+      // 1. Создать профиль мастера
+      await dio.post('/masters', data: {
+        'specializations': onboarding.specializations,
+        'address': onboarding.address,
+        'lat': onboarding.lat,
+        'lng': onboarding.lng,
       });
+
+      // 2. Загрузить фото портфолио
+      for (final photo in onboarding.photos) {
+        final formData = FormData.fromMap({
+          'file': MultipartFile.fromBytes(photo.bytes, filename: photo.filename),
+        });
+        await dio.post('/master/portfolio/upload', data: formData);
+      }
+
+      // 3. Создать первую услугу
+      await dio.post('/master/services', data: {
+        'name': _nameCtrl.text.trim(),
+        'category': _categories[_category],
+        'priceFrom': int.tryParse(_priceCtrl.text.trim()) ?? 0,
+        'durationMin': _duration,
+      });
+
+      // 4. Сбросить локальное состояние онбординга
+      ref.read(onboardingProvider.notifier).reset();
+
       if (mounted) context.pushReplacement(AppRoutes.masterPending);
     } catch (e) {
       if (mounted) {
@@ -144,7 +170,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
                   borderSide: const BorderSide(color: kBorder),
                 ),
               ),
-              items: _categories.map((c) => DropdownMenuItem(
+              items: _categories.keys.map((c) => DropdownMenuItem(
                 value: c,
                 child: Text(c, style: AppTextStyles.body),
               )).toList(),

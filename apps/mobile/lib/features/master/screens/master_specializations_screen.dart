@@ -6,7 +6,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
-import '../../../core/network/dio_client.dart';
+import '../providers/onboarding_provider.dart';
 
 // label → API enum value (ServiceCategory)
 const _specializations = <String, String>{
@@ -33,31 +33,13 @@ class MasterSpecializationsScreen extends ConsumerStatefulWidget {
 class _MasterSpecializationsScreenState
     extends ConsumerState<MasterSpecializationsScreen> {
   final _selected = <String>{};
-  bool _loading = false;
 
-  Future<void> _next() async {
+  void _next() {
     if (_selected.isEmpty) return;
-    setState(() => _loading = true);
-    try {
-      await createDio().post('/masters', data: {
-        'specializations': _selected.map((s) => _specializations[s]).toList(),
-        'address': 'Астана',          // обновляется на следующем шаге
-        'lat': 51.1801,
-        'lng': 71.4460,
-      });
-      if (mounted) context.push(AppRoutes.masterAddress);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
-            backgroundColor: kBgSecondary,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    ref.read(onboardingProvider.notifier).setSpecializations(
+      _selected.map((s) => _specializations[s]!).toList(),
+    );
+    context.push(AppRoutes.masterAddress);
   }
 
   @override
@@ -124,7 +106,6 @@ class _MasterSpecializationsScreenState
             PrimaryButton(
               label: 'Далее',
               onPressed: _next,
-              loading: _loading,
               enabled: _selected.isNotEmpty,
             ),
             const SizedBox(height: AppSpacing.xl),

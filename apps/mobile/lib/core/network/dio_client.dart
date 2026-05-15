@@ -1,6 +1,9 @@
 import 'package:dio/dio.dart';
 import '../auth/token_storage.dart';
 
+// Устанавливается в main.dart для редиректа при полной разлогинке
+void Function()? onUnauthorized;
+
 const _baseUrl = String.fromEnvironment(
   'API_URL',
   defaultValue: 'https://diploma-production-92be.up.railway.app/api/v1',
@@ -78,7 +81,8 @@ class _AuthInterceptor extends Interceptor {
       final response = await _dio.fetch(opts);
       handler.resolve(response);
     } catch (_) {
-      _clearTokens();
+      await _clearTokens();
+      onUnauthorized?.call();
       handler.next(err);
     } finally {
       _isRefreshing = false;

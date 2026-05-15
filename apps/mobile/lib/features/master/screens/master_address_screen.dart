@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -7,6 +8,7 @@ import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
 import '../../../core/network/dio_client.dart';
+import '../providers/onboarding_provider.dart';
 
 class _Suggestion {
   final String name;
@@ -28,14 +30,14 @@ class _Suggestion {
 }
 
 // M-2: Адрес работы мастера с 2GIS автоподсказкой
-class MasterAddressScreen extends StatefulWidget {
+class MasterAddressScreen extends ConsumerStatefulWidget {
   const MasterAddressScreen({super.key});
 
   @override
-  State<MasterAddressScreen> createState() => _MasterAddressScreenState();
+  ConsumerState<MasterAddressScreen> createState() => _MasterAddressScreenState();
 }
 
-class _MasterAddressScreenState extends State<MasterAddressScreen> {
+class _MasterAddressScreenState extends ConsumerState<MasterAddressScreen> {
   final _ctrl  = TextEditingController();
   final _focus = FocusNode();
 
@@ -43,7 +45,6 @@ class _MasterAddressScreenState extends State<MasterAddressScreen> {
   _Suggestion? _selected;
   Timer? _debounce;
   bool _searching = false;
-  bool _loading   = false;
 
   @override
   void initState() {
@@ -100,28 +101,14 @@ class _MasterAddressScreenState extends State<MasterAddressScreen> {
 
   bool get _canSubmit => _selected != null;
 
-  Future<void> _save() async {
+  void _save() {
     if (_selected == null) return;
-    setState(() => _loading = true);
-    try {
-      await createDio().patch('/masters/me', data: {
-        'address': _selected!.name,
-        'lat': _selected!.lat,
-        'lng': _selected!.lng,
-      });
-      if (mounted) context.push(AppRoutes.masterPortfolio);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
-            backgroundColor: kBgSecondary,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    ref.read(onboardingProvider.notifier).setAddress(
+      _selected!.name,
+      _selected!.lat,
+      _selected!.lng,
+    );
+    context.push(AppRoutes.masterPortfolio);
   }
 
   @override
@@ -243,7 +230,6 @@ class _MasterAddressScreenState extends State<MasterAddressScreen> {
             PrimaryButton(
               label: 'Далее',
               onPressed: _save,
-              loading: _loading,
               enabled: _canSubmit,
             ),
             const SizedBox(height: AppSpacing.xl),

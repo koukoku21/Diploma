@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,7 +8,7 @@ import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
 import '../../../core/widgets/buttons/primary_button.dart';
-import '../../../core/network/dio_client.dart';
+import '../providers/onboarding_provider.dart';
 
 // M-3: Загрузка портфолио (минимум 3 фото)
 class MasterPortfolioScreen extends ConsumerStatefulWidget {
@@ -26,7 +25,6 @@ class _MasterPortfolioScreenState
 
   // Храним пары (XFile, байты) — байты нужны для предпросмотра и загрузки
   final _photos = <({XFile file, Uint8List bytes})>[];
-  bool _loading = false;
 
   Future<void> _pick() async {
     final result = await _picker.pickMultiImage(imageQuality: 85);
@@ -42,33 +40,12 @@ class _MasterPortfolioScreenState
 
   void _remove(int i) => setState(() => _photos.removeAt(i));
 
-  Future<void> _upload() async {
+  void _next() {
     if (_photos.length < 3) return;
-    setState(() => _loading = true);
-    try {
-      final dio = createDio();
-      for (final photo in _photos) {
-        final formData = FormData.fromMap({
-          'file': MultipartFile.fromBytes(
-            photo.bytes,
-            filename: photo.file.name,
-          ),
-        });
-        await dio.post('/master/portfolio/upload', data: formData);
-      }
-      if (mounted) context.push(AppRoutes.masterService);
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(e.toString(), style: AppTextStyles.caption),
-            backgroundColor: kBgSecondary,
-          ),
-        );
-      }
-    } finally {
-      if (mounted) setState(() => _loading = false);
-    }
+    ref.read(onboardingProvider.notifier).setPhotos(
+      _photos.map((p) => OnboardingPhoto(filename: p.file.name, bytes: p.bytes)).toList(),
+    );
+    context.push(AppRoutes.masterService);
   }
 
   @override
@@ -134,9 +111,8 @@ class _MasterPortfolioScreenState
 
             const SizedBox(height: AppSpacing.md),
             PrimaryButton(
-              label: 'Загрузить (${_photos.length})',
-              onPressed: _upload,
-              loading: _loading,
+              label: 'Далее (${_photos.length} фото)',
+              onPressed: _next,
               enabled: canContinue,
             ),
             const SizedBox(height: AppSpacing.xl),
