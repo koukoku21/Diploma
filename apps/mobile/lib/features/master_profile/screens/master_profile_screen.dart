@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -34,6 +35,81 @@ class _ProfileBody extends StatelessWidget {
   const _ProfileBody({required this.master});
   final MasterProfile master;
 
+  void _shareProfile(BuildContext context, MasterProfile m) {
+    if (m.username == null) return;
+    final link = 'https://miraku.kz/@${m.username}';
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: kBgSecondary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (_) => Padding(
+        padding: const EdgeInsets.all(AppSpacing.screenH),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Center(
+              child: Container(
+                width: 36, height: 4,
+                margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+                decoration: BoxDecoration(
+                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+              ),
+            ),
+            Text('Поделиться профилем', style: AppTextStyles.title),
+            const SizedBox(height: AppSpacing.sm),
+            Text(link,
+                style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+            const SizedBox(height: AppSpacing.lg),
+            Row(children: [
+              Expanded(child: _ShareBtn(
+                icon: Icons.copy_rounded,
+                label: 'Скопировать',
+                onTap: () async {
+                  await Clipboard.setData(ClipboardData(text: link));
+                  Navigator.pop(context);
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Ссылка скопирована'),
+                      duration: Duration(seconds: 2),
+                    ),
+                  );
+                },
+              )),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(child: _ShareBtn(
+                icon: Icons.telegram,
+                label: 'Telegram',
+                onTap: () async {
+                  final text = Uri.encodeComponent('Запишись к мастеру:');
+                  final url = Uri.encodeComponent(link);
+                  await launchUrl(
+                    Uri.parse('https://t.me/share/url?url=$url&text=$text'),
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+              )),
+              const SizedBox(width: AppSpacing.md),
+              Expanded(child: _ShareBtn(
+                icon: Icons.message_rounded,
+                label: 'WhatsApp',
+                onTap: () async {
+                  final text = Uri.encodeComponent('Запишись к мастеру: $link');
+                  await launchUrl(
+                    Uri.parse('https://wa.me/?text=$text'),
+                    mode: LaunchMode.externalApplication,
+                  );
+                },
+              )),
+            ]),
+            const SizedBox(height: AppSpacing.xl),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return CustomScrollView(
@@ -54,6 +130,20 @@ class _ProfileBody extends StatelessWidget {
             ),
             onPressed: () => context.pop(),
           ),
+          actions: [
+            if (master.username != null)
+              IconButton(
+                icon: Container(
+                  padding: const EdgeInsets.all(6),
+                  decoration: BoxDecoration(
+                    color: kBgPrimary.withValues(alpha: 0.7),
+                    shape: BoxShape.circle,
+                  ),
+                  child: const Icon(Icons.ios_share_rounded, size: 18),
+                ),
+                onPressed: () => _shareProfile(context, master),
+              ),
+          ],
           flexibleSpace: FlexibleSpaceBar(
             background: Stack(
               fit: StackFit.expand,
@@ -423,6 +513,36 @@ class _ReviewTile extends StatelessWidget {
             Text(review.text!, style: AppTextStyles.body),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _ShareBtn extends StatelessWidget {
+  const _ShareBtn({required this.icon, required this.label, required this.onTap});
+  final IconData icon;
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
+        decoration: BoxDecoration(
+          color: kBgTertiary,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, color: kGold, size: 24),
+            const SizedBox(height: 6),
+            Text(label,
+                style: AppTextStyles.caption.copyWith(color: kTextSecondary)),
+          ],
+        ),
       ),
     );
   }

@@ -174,11 +174,18 @@ const ADMIN_HTML = `<!DOCTYPE html>
       <div class="stat"><div class="stat-value" id="s-pending">—</div><div class="stat-label">На проверке</div></div>
       <div class="stat"><div class="stat-value" id="s-masters">—</div><div class="stat-label">Активных мастеров</div></div>
       <div class="stat"><div class="stat-value" id="s-users">—</div><div class="stat-label">Пользователей</div></div>
-      <div class="stat"><div class="stat-value" id="s-bookings">—</div><div class="stat-label">Записей</div></div>
+      <div class="stat"><div class="stat-value" id="s-bookings">—</div><div class="stat-label">Всего записей</div></div>
+      <div class="stat"><div class="stat-value" id="s-completed">—</div><div class="stat-label">Завершено</div></div>
+      <div class="stat"><div class="stat-value" id="s-revenue">—</div><div class="stat-label">Выручка мес.</div></div>
     </div>
   </div>
 
   <div class="content">
+    <div id="daily-chart" style="display:none;margin-bottom:24px;background:#1a1a1a;border:1px solid #2a2a2a;border-radius:12px;padding:20px">
+      <div style="font-size:13px;color:#888;margin-bottom:12px">Активность за 7 дней</div>
+      <div id="chart-bars" style="display:flex;align-items:flex-end;gap:8px;height:80px"></div>
+      <div id="chart-labels" style="display:flex;gap:8px;margin-top:6px"></div>
+    </div>
     <div class="tabs">
       <button class="tab active" onclick="switchTab('PENDING')">На проверке</button>
       <button class="tab" onclick="switchTab('APPROVED')">Одобренные</button>
@@ -284,7 +291,38 @@ async function loadStats() {
     document.getElementById('s-masters').textContent = s.totalMasters;
     document.getElementById('s-users').textContent = s.totalUsers;
     document.getElementById('s-bookings').textContent = s.totalBookings;
+    document.getElementById('s-completed').textContent = s.completedBookings;
+    const rev = s.monthRevenue >= 1000
+      ? Math.round(s.monthRevenue / 1000) + ' тыс'
+      : s.monthRevenue;
+    document.getElementById('s-revenue').textContent = rev + ' ₸';
+    if (s.dailyStats) renderDailyChart(s.dailyStats);
   } catch {}
+}
+
+function renderDailyChart(days) {
+  const days_labels = ['Пн','Вт','Ср','Чт','Пт','Сб','Вс'];
+  const barsEl = document.getElementById('chart-bars');
+  const labelsEl = document.getElementById('chart-labels');
+  document.getElementById('daily-chart').style.display = 'block';
+  const maxBookings = Math.max(...days.map(d => d.bookings), 1);
+  barsEl.innerHTML = days.map(d => {
+    const h = Math.max(4, Math.round((d.bookings / maxBookings) * 72));
+    const dt = new Date(d.date + 'T00:00:00');
+    const isToday = dt.toDateString() === new Date().toDateString();
+    const color = isToday ? '#c9a84c' : '#3a3a2a';
+    return '<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">' +
+      (d.bookings > 0 ? '<span style="font-size:10px;color:#888">' + d.bookings + '</span>' : '<span style="font-size:10px;color:transparent">0</span>') +
+      '<div style="width:100%;height:' + h + 'px;background:' + color + ';border-radius:4px;transition:height .3s"></div>' +
+    '</div>';
+  }).join('');
+  labelsEl.innerHTML = days.map(d => {
+    const dt = new Date(d.date + 'T00:00:00');
+    const label = days_labels[(dt.getDay() + 6) % 7];
+    const isToday = dt.toDateString() === new Date().toDateString();
+    const color = isToday ? '#c9a84c' : '#555';
+    return '<div style="flex:1;text-align:center;font-size:10px;color:' + color + '">' + label + '</div>';
+  }).join('');
 }
 
 function switchTab(status) {

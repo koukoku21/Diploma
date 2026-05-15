@@ -206,16 +206,51 @@ export class AdminService {
 
   // Статистика для дашборда
   async getStats() {
-    const [totalMasters, pendingMasters, totalUsers, totalBookings, pendingStories] =
+    const now = new Date();
+    const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+
+    const [totalMasters, pendingMasters, totalUsers, totalBookings, pendingStories,
+           monthRevenue, completedBookings] =
       await Promise.all([
         this.prisma.masterProfile.count({ where: { status: MasterStatus.APPROVED } }),
         this.prisma.masterProfile.count({ where: { status: MasterStatus.PENDING } }),
         this.prisma.user.count({ where: { deletedAt: null } }),
         this.prisma.booking.count(),
         this.prisma.story.count({ where: { status: StoryStatus.PENDING } }),
+        this.prisma.booking.aggregate({
+          where: { status: 'COMPLETED', completedAt: { gte: startOfMonth } },
+          _sum: { priceSnapshot: true },
+        }),
+        this.prisma.booking.count({ where: { status: 'COMPLETED' } }),
       ]);
 
-    return { totalMasters, pendingMasters, totalUsers, totalBookings, pendingStories };
+    // Последние 7 дней: новые пользователи и записи
+    const dailyStats: { date: string; newUsers: number; bookings: number }[] = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date(now);
+      d.setDate(now.getDate() - i);
+      d.setHours(0, 0, 0, 0);
+      const dEnd = new Date(d);
+      dEnd.setHours(23, 59, 59, 999);
+
+      const [newUsers, dayBookings] = await Promise.all([
+        this.prisma.user.count({
+          where: { createdAt: { gte: d, lte: dEnd }, deletedAt: null },
+        }),
+        this.prisma.booking.count({
+          where: { createdAt: { gte: d, lte: dEnd } },
+        }),
+      ]);
+
+      dailyStats.push({ date: d.toISOString().split('T')[0], newUsers, bookings: dayBookings });
+    }
+
+    return {
+      totalMasters, pendingMasters, totalUsers, totalBookings,
+      completedBookings, pendingStories,
+      monthRevenue: monthRevenue._sum.priceSnapshot ?? 0,
+      dailyStats,
+    };
   }
 
   // ─── Сторисы ───────────────────────────────────────────────────────

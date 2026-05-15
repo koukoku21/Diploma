@@ -78,6 +78,7 @@ class MasterProfile {
     this.minPrice,
     this.lat,
     this.lng,
+    this.username,
   });
 
   final String id;
@@ -91,6 +92,7 @@ class MasterProfile {
   final int? minPrice;
   final double? lat;
   final double? lng;
+  final String? username;
   final List<String> specializations;
   final List<MasterService> services;
   final List<MasterReview> reviews;
@@ -110,6 +112,7 @@ class MasterProfile {
       minPrice: j['minPrice'] as int?,
       lat: (j['lat'] as num?)?.toDouble(),
       lng: (j['lng'] as num?)?.toDouble(),
+      username: j['username'] as String?,
       specializations: (j['specializations'] as List?)
               ?.map((e) => (e as Map)['category'].toString())
               .toList() ??
