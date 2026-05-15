@@ -51,17 +51,17 @@ export class GeocodeService {
       const data = (await res.json()) as any;
       const items: any[] = data?.result?.items ?? [];
 
+      const adminRe = /астана|нур.?султан|целиноградск|акмолинск|казахстан|область|район|округ/i;
+
       return items
         .filter((item) => item.point?.lat && item.point?.lon)
         .slice(0, 7)
         .map((item) => {
           const fullName: string = item.full_name ?? item.name ?? '';
-          // Берём только улицу + номер дома, убираем район/область
-          const raw = item.name ?? fullName;
-          const name = raw
-            .replace(/,?\s*(Целиноградский район|Акмолинская область|Астана|г\. Астана)[^,]*/gi, '')
-            .replace(/,\s*$/, '')
-            .trim() || raw;
+          // Берём только улицу + номер дома, отбрасываем административные части
+          const parts = fullName.split(', ');
+          const meaningful = parts.filter(p => p.trim() && !adminRe.test(p));
+          const name = meaningful.slice(0, 2).join(', ') || parts[0] || fullName;
           return { name, fullName, lat: item.point.lat, lng: item.point.lon };
         });
     } catch (err) {

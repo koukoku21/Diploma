@@ -61,7 +61,7 @@ class _MasterAddressScreenState extends State<MasterAddressScreen> {
 
   void _onTextChanged() {
     // Если пользователь начал редактировать после выбора — сбрасываем выбор
-    if (_selected != null && _ctrl.text != _selected!.fullName) {
+    if (_selected != null && _ctrl.text != _selected!.name) {
       setState(() => _selected = null);
     }
     _debounce?.cancel();
@@ -93,7 +93,7 @@ class _MasterAddressScreenState extends State<MasterAddressScreen> {
       _selected    = s;
       _suggestions = [];
     });
-    _ctrl.text = s.fullName;
+    _ctrl.text = s.name;
     _ctrl.selection = TextSelection.collapsed(offset: _ctrl.text.length);
     _focus.unfocus();
   }
@@ -105,7 +105,7 @@ class _MasterAddressScreenState extends State<MasterAddressScreen> {
     setState(() => _loading = true);
     try {
       await createDio().patch('/masters/me', data: {
-        'address': _selected!.fullName,
+        'address': _selected!.name,
         'lat': _selected!.lat,
         'lng': _selected!.lng,
       });
@@ -212,14 +212,13 @@ class _MasterAddressScreenState extends State<MasterAddressScreen> {
                           horizontal: AppSpacing.md, vertical: 4),
                       leading: const Icon(Icons.location_on_outlined,
                           color: kTextTertiary, size: 18),
-                      title: Text(s.name, style: AppTextStyles.label),
-                      subtitle: s.fullName != s.name
-                          ? Text(s.fullName,
-                              style: AppTextStyles.caption
-                                  .copyWith(color: kTextTertiary),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis)
-                          : null,
+                      title: Text(s.name,
+                          style: AppTextStyles.label,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      subtitle: Text('Астана',
+                          style: AppTextStyles.caption
+                              .copyWith(color: kTextTertiary)),
                       onTap: () => _select(s),
                     );
                   },
