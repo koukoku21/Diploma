@@ -215,6 +215,44 @@ const ADMIN_HTML = `<!DOCTYPE html>
   </div>
 </div>
 
+<!-- Story create modal -->
+<div class="modal-overlay" id="story-modal">
+  <div class="modal" style="max-width:480px">
+    <h3>Создать сторис</h3>
+    <label>Салон</label>
+    <select id="story-salon" style="width:100%;padding:12px 16px;background:#252525;border:1px solid #333;border-radius:10px;color:#e8e8e8;font-size:14px;outline:none;margin-bottom:12px;appearance:none">
+      <option value="">— Авто (первый салон / создать demo) —</option>
+    </select>
+    <label>Ссылка на медиа (фото/видео)</label>
+    <input type="text" id="story-media" placeholder="https://picsum.photos/seed/story1/600/1000">
+    <label>Подпись <span style="color:#555;font-weight:400">(необязательно)</span></label>
+    <input type="text" id="story-caption" placeholder="Скидка 20% на маникюр весь апрель!">
+    <label>Категория <span style="color:#555;font-weight:400">(необязательно)</span></label>
+    <select id="story-category" style="width:100%;padding:12px 16px;background:#252525;border:1px solid #333;border-radius:10px;color:#e8e8e8;font-size:14px;outline:none;margin-bottom:12px;appearance:none">
+      <option value="">— Все категории —</option>
+      <option value="MANICURE">Маникюр</option>
+      <option value="PEDICURE">Педикюр</option>
+      <option value="HAIRCUT">Стрижки</option>
+      <option value="COLORING">Окрашивание</option>
+      <option value="MAKEUP">Макияж</option>
+      <option value="LASHES">Ресницы</option>
+      <option value="BROWS">Брови</option>
+      <option value="SKINCARE">Уход</option>
+    </select>
+    <label>Пакет</label>
+    <select id="story-package" style="width:100%;padding:12px 16px;background:#252525;border:1px solid #333;border-radius:10px;color:#e8e8e8;font-size:14px;outline:none;margin-bottom:12px;appearance:none">
+      <option value="DAY">День — 2 990 ₸</option>
+      <option value="WEEK" selected>Неделя — 9 990 ₸</option>
+      <option value="MONTH">Месяц — 24 990 ₸</option>
+    </select>
+    <div id="story-error" style="color:#f44336;font-size:13px;margin-bottom:8px;display:none"></div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeStoryModal()">Отмена</button>
+      <button class="btn-save" onclick="submitCreateStory()">Создать</button>
+    </div>
+  </div>
+</div>
+
 <!-- Service template modal -->
 <div class="modal-overlay" id="template-modal">
   <div class="modal" style="max-width:460px">
@@ -676,13 +714,18 @@ async function loadStories(status) {
   el.innerHTML = '<div class="loading">Загрузка...</div>';
   try {
     const stories = await api('GET', '/admin/stories?status=' + status);
+    const createBtn = status === 'PENDING'
+      ? '<div style="display:flex;justify-content:flex-end;margin-bottom:16px">' +
+          '<button class="btn-save" onclick="openCreateStoryModal()">+ Создать сторис</button>' +
+        '</div>'
+      : '';
     if (!stories.length) {
-      el.innerHTML = '<div class="empty"><div class="empty-icon">' +
+      el.innerHTML = createBtn + '<div class="empty"><div class="empty-icon">' +
         (status === 'PENDING' ? '📋' : '✓') + '</div>' +
         (status === 'PENDING' ? 'Новых сторисов нет' : 'Активных сторисов нет') + '</div>';
       return;
     }
-    el.innerHTML = stories.map(s => renderStoryCard(s, status)).join('');
+    el.innerHTML = createBtn + stories.map(s => renderStoryCard(s, status)).join('');
   } catch {
     el.innerHTML = '<div class="empty">Ошибка загрузки</div>';
   }
@@ -748,6 +791,59 @@ async function deactivateStory(id) {
     loadStats();
   } catch { alert('Ошибка при деактивации'); }
 }
+
+async function openCreateStoryModal() {
+  document.getElementById('story-media').value = '';
+  document.getElementById('story-caption').value = '';
+  document.getElementById('story-category').value = '';
+  document.getElementById('story-package').value = 'WEEK';
+  document.getElementById('story-error').style.display = 'none';
+  // Load salons into dropdown
+  const select = document.getElementById('story-salon');
+  select.innerHTML = '<option value="">— Авто (первый салон / создать demo) —</option>';
+  try {
+    const salons = await api('GET', '/admin/salons');
+    salons.forEach(s => {
+      const opt = document.createElement('option');
+      opt.value = s.id;
+      opt.textContent = s.name;
+      select.appendChild(opt);
+    });
+  } catch {}
+  document.getElementById('story-modal').classList.add('open');
+  setTimeout(() => document.getElementById('story-media').focus(), 50);
+}
+
+function closeStoryModal() {
+  document.getElementById('story-modal').classList.remove('open');
+}
+
+async function submitCreateStory() {
+  const mediaUrl = document.getElementById('story-media').value.trim();
+  const errEl = document.getElementById('story-error');
+  if (!mediaUrl) { errEl.textContent = 'Введите ссылку на медиа'; errEl.style.display = 'block'; return; }
+  errEl.style.display = 'none';
+  const body = {
+    salonId: document.getElementById('story-salon').value || undefined,
+    mediaUrl,
+    caption: document.getElementById('story-caption').value.trim() || undefined,
+    category: document.getElementById('story-category').value || undefined,
+    packageType: document.getElementById('story-package').value,
+  };
+  try {
+    await api('POST', '/admin/stories', body);
+    closeStoryModal();
+    loadStories('PENDING');
+    loadStats();
+  } catch {
+    errEl.textContent = 'Ошибка при создании сториса';
+    errEl.style.display = 'block';
+  }
+}
+
+document.getElementById('story-modal').addEventListener('click', function(e) {
+  if (e.target === this) closeStoryModal();
+});
 </script>
 </body>
 </html>`;
@@ -888,6 +984,24 @@ export class AdminController {
   @Patch('stories/:id/deactivate')
   deactivateStory(@Param('id') id: string) {
     return this.admin.deactivateStory(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Get('salons')
+  getSalons() {
+    return this.admin.listSalons();
+  }
+
+  @UseGuards(AdminGuard)
+  @Post('stories')
+  createStory(
+    @Body('salonId') salonId: string | undefined,
+    @Body('mediaUrl') mediaUrl: string,
+    @Body('caption') caption: string | undefined,
+    @Body('category') category: ServiceCategory | undefined,
+    @Body('packageType') packageType: 'DAY' | 'WEEK' | 'MONTH',
+  ) {
+    return this.admin.createStory({ salonId, mediaUrl, caption, category, packageType: packageType as any });
   }
 
   // ─── Telegram webhook ─────────────────────────────────────────────

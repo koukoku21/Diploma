@@ -1,5 +1,5 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
-import { MasterStatus, ServiceCategory, StoryStatus } from '@prisma/client';
+import { MasterStatus, ServiceCategory, StoryPackage, StoryStatus } from '@prisma/client';
 import * as crypto from 'crypto';
 import { PrismaService } from '../../shared/prisma.service';
 import { NotificationsService } from '../notifications/notifications.service';
@@ -302,6 +302,56 @@ export class AdminService {
     return this.prisma.story.update({
       where: { id: storyId },
       data: { status: StoryStatus.EXPIRED },
+    });
+  }
+
+  async listSalons() {
+    return this.prisma.salonProfile.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: 'asc' },
+    });
+  }
+
+  async createStory(dto: {
+    salonId?: string;
+    mediaUrl: string;
+    caption?: string;
+    category?: ServiceCategory;
+    packageType: StoryPackage;
+  }) {
+    let salonId = dto.salonId;
+
+    if (!salonId) {
+      let salon = await this.prisma.salonProfile.findFirst();
+      if (!salon) {
+        const demoUser = await this.prisma.user.upsert({
+          where: { phone: '+77000000000' },
+          create: { phone: '+77000000000', name: 'Demo Salon' },
+          update: {},
+        });
+        salon = await this.prisma.salonProfile.upsert({
+          where: { ownerId: demoUser.id },
+          create: { ownerId: demoUser.id, name: 'Demo Salon', address: 'Астана' },
+          update: {},
+        });
+      }
+      salonId = salon.id;
+    }
+
+    const paidAmounts: Record<StoryPackage, number> = { DAY: 2990, WEEK: 9990, MONTH: 24990 };
+
+    return this.prisma.story.create({
+      data: {
+        salonId,
+        mediaUrl: dto.mediaUrl,
+        caption: dto.caption ?? null,
+        category: dto.category ?? null,
+        packageType: dto.packageType,
+        paidAmount: paidAmounts[dto.packageType],
+        isPaid: true,
+        status: StoryStatus.PENDING,
+      },
+      include: { salon: { select: { name: true } } },
     });
   }
 }
