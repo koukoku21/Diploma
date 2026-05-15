@@ -88,9 +88,8 @@ export class FeedService {
           LIMIT 1
         )                   AS cover_url,
         ARRAY(
-          SELECT DISTINCT st.category::text
+          SELECT DISTINCT s.category::text
           FROM services s
-          JOIN service_templates st ON st.id = s."templateId"
           WHERE s."masterId" = mp.id AND s."isEnabled" = true
         )                   AS specializations
       FROM master_profiles mp

@@ -11,67 +11,73 @@ import * as crypto from 'crypto';
 const prisma = new PrismaClient();
 
 // ─── Photos ───────────────────────────────────────────────────────────────────
+// picsum.photos: стабильные фото без CORS, seed = детерминированный результат
 
 const PHOTOS = {
   manicure: [
-    'https://images.unsplash.com/photo-1604654894610-df63bc536371?w=600&q=80',
-    'https://images.unsplash.com/photo-1604654894607-7d3e9756f3b3?w=600&q=80',
-    'https://images.unsplash.com/photo-1604654894604-f46f18fc6fd3?w=600&q=80',
-    'https://images.unsplash.com/photo-1604654894601-4b9dd1b6a9e1?w=600&q=80',
-    'https://images.unsplash.com/photo-1604654894598-a5a7c8a7b6e1?w=600&q=80',
+    'https://picsum.photos/seed/nail1/600/600',
+    'https://picsum.photos/seed/nail2/600/600',
+    'https://picsum.photos/seed/nail3/600/600',
+    'https://picsum.photos/seed/nail4/600/600',
+    'https://picsum.photos/seed/nail5/600/600',
   ],
   hair: [
-    'https://images.unsplash.com/photo-1560869713-7d0a29430803?w=600&q=80',
-    'https://images.unsplash.com/photo-1522337360788-8b13dee7a37e?w=600&q=80',
-    'https://images.unsplash.com/photo-1595476108010-b4d1f102b1b1?w=600&q=80',
-    'https://images.unsplash.com/photo-1562322140-8baeececf3df?w=600&q=80',
-    'https://images.unsplash.com/photo-1500840216050-6ffa99d75160?w=600&q=80',
+    'https://picsum.photos/seed/hair1/600/600',
+    'https://picsum.photos/seed/hair2/600/600',
+    'https://picsum.photos/seed/hair3/600/600',
+    'https://picsum.photos/seed/hair4/600/600',
+    'https://picsum.photos/seed/hair5/600/600',
   ],
   makeup: [
-    'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80',
-    'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=600&q=80',
-    'https://images.unsplash.com/photo-1503236823255-94609f598e71?w=600&q=80',
-    'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=600&q=80',
-    'https://images.unsplash.com/photo-1583241800698-e8ab01830a22?w=600&q=80',
+    'https://picsum.photos/seed/mkp1/600/600',
+    'https://picsum.photos/seed/mkp2/600/600',
+    'https://picsum.photos/seed/mkp3/600/600',
+    'https://picsum.photos/seed/mkp4/600/600',
+    'https://picsum.photos/seed/mkp5/600/600',
   ],
   skincare: [
-    'https://images.unsplash.com/photo-1598440947619-2c35fc9aa908?w=600&q=80',
-    'https://images.unsplash.com/photo-1570172619644-dfd03ed5d881?w=600&q=80',
-    'https://images.unsplash.com/photo-1556228578-8c89e6adf883?w=600&q=80',
-    'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&q=80',
-    'https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?w=600&q=80',
+    'https://picsum.photos/seed/skin1/600/600',
+    'https://picsum.photos/seed/skin2/600/600',
+    'https://picsum.photos/seed/skin3/600/600',
+    'https://picsum.photos/seed/skin4/600/600',
+    'https://picsum.photos/seed/skin5/600/600',
   ],
   lashes: [
-    'https://images.unsplash.com/photo-1583241800698-e8ab01830a22?w=600&q=80',
-    'https://images.unsplash.com/photo-1487412947147-5cebf100ffc2?w=600&q=80',
-    'https://images.unsplash.com/photo-1526045612212-70caf35c14df?w=600&q=80',
-    'https://images.unsplash.com/photo-1512496015851-a90fb38ba796?w=600&q=80',
-    'https://images.unsplash.com/photo-1503236823255-94609f598e71?w=600&q=80',
+    'https://picsum.photos/seed/lash1/600/600',
+    'https://picsum.photos/seed/lash2/600/600',
+    'https://picsum.photos/seed/lash3/600/600',
+    'https://picsum.photos/seed/lash4/600/600',
+    'https://picsum.photos/seed/lash5/600/600',
   ],
 };
 
+// ui-avatars.com: генерирует аватар по имени, работает без CORS
+function uiAvatar(name: string) {
+  return `https://ui-avatars.com/api/?name=${encodeURIComponent(name)}&size=300&background=D4AF37&color=fff&bold=true`;
+}
+
 const MASTER_AVATARS = [
-  'https://i.pravatar.cc/300?img=47',
-  'https://i.pravatar.cc/300?img=49',
-  'https://i.pravatar.cc/300?img=44',
-  'https://i.pravatar.cc/300?img=48',
-  'https://i.pravatar.cc/300?img=45',
-  'https://i.pravatar.cc/300?img=43',
-  'https://i.pravatar.cc/300?img=46',
-  'https://i.pravatar.cc/300?img=41',
-  'https://i.pravatar.cc/300?img=42',
-  'https://i.pravatar.cc/300?img=40',
+  uiAvatar('Айгерим С'),
+  uiAvatar('Дана Б'),
+  uiAvatar('Гульнур А'),
+  uiAvatar('Меруерт Д'),
+  uiAvatar('Айнур К'),
+  uiAvatar('Зарина Н'),
+  uiAvatar('Самал А'),
+  uiAvatar('Карина И'),
+  uiAvatar('Жанар У'),
+  uiAvatar('Арайлым С'),
 ];
 
 const CLIENT_AVATARS = [
-  'https://i.pravatar.cc/300?img=1',
-  'https://i.pravatar.cc/300?img=2',
-  'https://i.pravatar.cc/300?img=3',
-  'https://i.pravatar.cc/300?img=5',
-  'https://i.pravatar.cc/300?img=6',
-  'https://i.pravatar.cc/300?img=7',
-  'https://i.pravatar.cc/300?img=8',
-  'https://i.pravatar.cc/300?img=9',
+  uiAvatar('Алия Ж'),
+  uiAvatar('Мадина С'),
+  uiAvatar('Диана Л'),
+  uiAvatar('Сауле Н'),
+  uiAvatar('Камилла А'),
+  uiAvatar('Виктория П'),
+  uiAvatar('Аяулым Е'),
+  uiAvatar('Наргиза У'),
 ];
 
 // ─── Review texts ─────────────────────────────────────────────────────────────
@@ -680,7 +686,7 @@ async function main() {
     // Проверяем, есть ли уже профиль
     const existing = await prisma.masterProfile.findUnique({ where: { userId: user.id } });
     if (existing) {
-      // Если нет записей — добавляем
+      // Добавляем записи если их нет
       const bookingCount = await prisma.booking.count({ where: { masterId: existing.id } });
       if (bookingCount === 0) {
         console.log(`  + записи для ${m.name}...`);
