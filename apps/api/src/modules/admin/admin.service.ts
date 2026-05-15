@@ -118,6 +118,25 @@ export class AdminService {
     return { userId, deleted: true };
   }
 
+  // Удалить аккаунт навсегда (hard delete) — без возможности восстановления
+  async hardDeleteUser(userId: string) {
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new NotFoundException('Пользователь не найден');
+
+    await this.prisma.$transaction(async (tx) => {
+      // Удаляем записи без cascade на User
+      await tx.chatMessage.deleteMany({ where: { senderId: userId } });
+      await tx.booking.deleteMany({ where: { clientId: userId } });
+      await tx.review.deleteMany({ where: { clientId: userId } });
+      await tx.salonProfile.deleteMany({ where: { ownerId: userId } });
+      // Остальное (MasterProfile→cascade, RefreshToken, PushToken,
+      // Notification, ChatRoomUser, Favourite, StoryView) удаляется автоматически
+      await tx.user.delete({ where: { id: userId } });
+    });
+
+    return { userId, hardDeleted: true };
+  }
+
   // Заблокировать пользователя
   async banUser(userId: string, reason?: string) {
     const user = await this.prisma.user.findUnique({ where: { id: userId } });

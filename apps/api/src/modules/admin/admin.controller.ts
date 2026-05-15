@@ -139,6 +139,8 @@ const ADMIN_HTML = `<!DOCTYPE html>
     padding: 5px 12px; font-size: 12px; }
   .btn-delete { background: #3a1a1a; color: #f44336; border: 1px solid #5a2a2a;
     padding: 5px 12px; font-size: 12px; }
+  .btn-hard-delete { background: #5a0000; color: #ff6b6b; border: 1px solid #8a0000;
+    padding: 5px 12px; font-size: 12px; }
 
   /* ── Modal ── */
   .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.7);
@@ -519,7 +521,8 @@ function renderUserRow(u) {
       '<button class="btn-edit" onclick="openEditModal(\\'' + u.id + '\\',this.closest(\\'tr\\').dataset.name)">Изменить</button> ' +
       revokeBtn +
       banBtn +
-      '<button class="btn-delete" onclick="deleteUser(\\'' + u.id + '\\')">Удалить</button>' +
+      '<button class="btn-delete" onclick="deleteUser(\\'' + u.id + '\\')">Удалить</button> ' +
+      '<button class="btn-hard-delete" onclick="hardDeleteUser(\\'' + u.id + '\\')">☠ Навсегда</button>' +
     '</td>' +
   '</tr>';
 }
@@ -562,9 +565,22 @@ async function saveUser() {
 }
 
 async function deleteUser(userId) {
-  if (!confirm('Удалить аккаунт? Это действие необратимо.')) return;
+  if (!confirm('Удалить аккаунт? Пользователь сможет восстановить его при повторном входе.')) return;
   try {
     await api('DELETE', '/admin/users/' + userId);
+    loadStats();
+    loadUsers(document.getElementById('user-search')?.value || '');
+  } catch {
+    alert('Ошибка при удалении');
+  }
+}
+
+async function hardDeleteUser(userId) {
+  const row = document.getElementById('urow-' + userId);
+  const name = row ? row.dataset.name : userId;
+  if (!confirm('⚠️ УДАЛИТЬ НАВСЕГДА: ' + name + '\n\nВсе данные будут уничтожены: профиль, заявка мастера, записи, отзывы. Восстановление невозможно.\n\nПродолжить?')) return;
+  try {
+    await api('DELETE', '/admin/users/' + userId + '/hard');
     loadStats();
     loadUsers(document.getElementById('user-search')?.value || '');
   } catch {
@@ -909,6 +925,12 @@ export class AdminController {
   @Delete('users/:id')
   deleteUser(@Param('id') id: string) {
     return this.admin.deleteUser(id);
+  }
+
+  @UseGuards(AdminGuard)
+  @Delete('users/:id/hard')
+  hardDeleteUser(@Param('id') id: string) {
+    return this.admin.hardDeleteUser(id);
   }
 
   @UseGuards(AdminGuard)
