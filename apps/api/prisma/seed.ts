@@ -717,12 +717,16 @@ async function main() {
       },
     });
 
-    // PostGIS location
-    await prisma.$executeRaw`
-      UPDATE master_profiles
-      SET location = ST_SetSRID(ST_MakePoint(${m.lng}, ${m.lat}), 4326)::geography
-      WHERE id = ${master.id}
-    `;
+    // PostGIS location (опционально — если расширение установлено)
+    try {
+      await prisma.$executeRaw`
+        UPDATE master_profiles
+        SET location = ST_SetSRID(ST_MakePoint(${m.lng}, ${m.lat}), 4326)::geography
+        WHERE id = ${master.id}
+      `;
+    } catch {
+      // PostGIS недоступен — lat/lng уже сохранены в основных полях
+    }
 
     // Portfolio photos
     await prisma.portfolioPhoto.createMany({
