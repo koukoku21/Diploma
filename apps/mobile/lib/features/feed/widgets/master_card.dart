@@ -12,9 +12,9 @@ class MasterCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.lg),
-        border: Border.all(color: kBorder2),
+        border: Border.all(color: context.colors.border2),
       ),
       clipBehavior: Clip.antiAlias,
       child: Column(
@@ -30,9 +30,9 @@ class MasterCard extends StatelessWidget {
                     ? Image.network(
                         master.coverUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _photoPlaceholder(),
+                        errorBuilder: (ctx, __, ___) => _photoPlaceholder(ctx),
                       )
-                    : _photoPlaceholder(),
+                    : _photoPlaceholder(context),
 
                 // Градиент снизу
                 Positioned(
@@ -41,17 +41,17 @@ class MasterCard extends StatelessWidget {
                   right: 0,
                   height: 120,
                   child: DecoratedBox(
-                    decoration: const BoxDecoration(
+                    decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.topCenter,
                         end: Alignment.bottomCenter,
-                        colors: [Colors.transparent, kBgPrimary],
+                        colors: [Colors.transparent, context.colors.bgPrimary],
                       ),
                     ),
                   ),
                 ),
 
-                // Бейдж "Верифицирован"
+                // Бейдж context.l10n.masterVerified
                 Positioned(
                   top: AppSpacing.md,
                   left: AppSpacing.md,
@@ -104,11 +104,11 @@ class MasterCard extends StatelessWidget {
                 if (master.minPrice != null)
                   Text(
                     'от ${master.minPrice}₸',
-                    style: AppTextStyles.label.copyWith(color: kTextPrimary),
+                    style: AppTextStyles.label.copyWith(color: context.colors.textPrimary),
                   ),
                 const Spacer(),
-                const Icon(Icons.location_on_outlined,
-                    color: kTextSecondary, size: 14),
+                Icon(Icons.location_on_outlined,
+                    color: context.colors.textSecondary, size: 14),
                 const SizedBox(width: 2),
                 Text(
                   master.distanceLabel,
@@ -122,10 +122,10 @@ class MasterCard extends StatelessWidget {
     );
   }
 
-  Widget _photoPlaceholder() => Container(
-        color: kBgTertiary,
-        child: const Center(
-          child: Icon(Icons.person_outline, color: kTextTertiary, size: 64),
+  Widget _photoPlaceholder(BuildContext context) => Container(
+        color: context.colors.bgTertiary,
+        child: Center(
+          child: Icon(Icons.person_outline, color: context.colors.textTertiary, size: 64),
         ),
       );
 
@@ -158,7 +158,7 @@ class _VerifiedBadge extends StatelessWidget {
           const Icon(Icons.verified, color: kSuccess, size: 12),
           const SizedBox(width: 4),
           Text(
-            'Верифицирован',
+            context.l10n.masterVerified,
             style: AppTextStyles.caption.copyWith(color: kSuccess, fontSize: 11),
           ),
         ],

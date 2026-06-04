@@ -39,14 +39,14 @@ class BookingConfirmScreen extends ConsumerWidget {
     final state = ref.watch(createBookingProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
+        backgroundColor: context.colors.bgPrimary,
         title: Column(
           children: [
-            Text('Подтверждение', style: AppTextStyles.title),
+            Text(context.l10n.confirmationTitle, style: AppTextStyles.title),
             Text('Шаг 3 из 3',
-                style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
           ],
         ),
         leading: IconButton(
@@ -65,20 +65,20 @@ class BookingConfirmScreen extends ConsumerWidget {
             Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: kBgSecondary,
+                color: context.colors.bgSecondary,
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: kBorder),
+                border: Border.all(color: context.colors.border),
               ),
               child: Row(
                 children: [
                   CircleAvatar(
                     radius: 24,
-                    backgroundColor: kBgTertiary,
+                    backgroundColor: context.colors.bgTertiary,
                     backgroundImage: master.avatarUrl != null
                         ? NetworkImage(master.avatarUrl!)
                         : null,
                     child: master.avatarUrl == null
-                        ? const Icon(Icons.person, color: kTextTertiary)
+                        ? Icon(Icons.person, color: context.colors.textTertiary)
                         : null,
                   ),
                   const SizedBox(width: AppSpacing.md),
@@ -98,13 +98,13 @@ class BookingConfirmScreen extends ConsumerWidget {
             const SizedBox(height: AppSpacing.md),
 
             // Детали записи
-            _DetailRow(label: 'Услуга', value: service.title),
-            _DetailRow(label: 'Дата', value: _dateLabel),
-            _DetailRow(label: 'Время', value: time),
+            _DetailRow(label: context.l10n.serviceLabel, value: service.title),
+            _DetailRow(label: context.l10n.dateLabel, value: _dateLabel),
+            _DetailRow(label: context.l10n.timeLabel, value: time),
             _DetailRow(
-                label: 'Длительность', value: '${service.durationMin} мин'),
+                label: context.l10n.durationLabel, value: '${service.durationMin} мин'),
             _DetailRow(
-                label: 'Стоимость',
+                label: context.l10n.costLabel,
                 value: 'от ${service.priceFrom}₸',
                 valueColor: kGold),
 
@@ -123,9 +123,9 @@ class BookingConfirmScreen extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.sm),
                   Expanded(
                     child: Text(
-                      'Оплата мастеру наличными или Kaspi QR',
+                      context.l10n.paymentNote,
                       style:
-                          AppTextStyles.caption.copyWith(color: kTextSecondary),
+                          AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
                     ),
                   ),
                 ],
@@ -145,7 +145,7 @@ class BookingConfirmScreen extends ConsumerWidget {
               ),
 
             PrimaryButton(
-              label: 'Записаться',
+              label: context.l10n.bookBtn,
               loading: state.isLoading,
               onPressed: () => _confirm(context, ref),
             ),
@@ -173,8 +173,8 @@ class BookingConfirmScreen extends ConsumerWidget {
     context.go(AppRoutes.feed);
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Запись создана! Ждём вас $date в $time',
-            style: AppTextStyles.caption.copyWith(color: kTextPrimary)),
+        content: Text(context.l10n.bookingCreated(date, time),
+            style: AppTextStyles.caption.copyWith(color: context.colors.textPrimary)),
         backgroundColor: kSuccess.withValues(alpha: 0.2),
       ),
     );
@@ -194,11 +194,11 @@ class _DetailRow extends StatelessWidget {
       child: Row(
         children: [
           Text(label,
-              style: AppTextStyles.body.copyWith(color: kTextSecondary)),
+              style: AppTextStyles.body.copyWith(color: context.colors.textSecondary)),
           const Spacer(),
           Text(value,
               style: AppTextStyles.label
-                  .copyWith(color: valueColor ?? kTextPrimary)),
+                  .copyWith(color: valueColor ?? context.colors.textPrimary)),
         ],
       ),
     );

@@ -20,11 +20,11 @@ class MasterScheduleOverridesScreen extends ConsumerWidget {
     final async = ref.watch(_overridesProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Особые дни', style: AppTextStyles.title),
-        leading: BackButton(color: kTextPrimary, onPressed: () => Navigator.pop(context)),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.specialDays, style: AppTextStyles.title),
+        leading: BackButton(color: context.colors.textPrimary, onPressed: () => Navigator.pop(context)),
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: kGold),
@@ -41,14 +41,14 @@ class MasterScheduleOverridesScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.event_available_outlined,
-                      color: kTextTertiary, size: 56),
+                  Icon(Icons.event_available_outlined,
+                      color: context.colors.textTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Нет особых дней',
-                      style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)),
+                  Text(context.l10n.noSpecialDays,
+                      style: AppTextStyles.subtitle.copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
                   Text('Нажмите + чтобы заблокировать дату\nили изменить часы работы',
-                      style: AppTextStyles.caption.copyWith(color: kTextTertiary),
+                      style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
                       textAlign: TextAlign.center),
                 ],
               ),
@@ -79,7 +79,7 @@ class MasterScheduleOverridesScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -114,9 +114,9 @@ class _OverrideCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: isDayOff ? kRose.withValues(alpha: 0.3) : kBorder),
+        border: Border.all(color: isDayOff ? kRose.withValues(alpha: 0.3) : context.colors.border),
       ),
       child: Row(
         children: [
@@ -143,17 +143,17 @@ class _OverrideCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   isDayOff
-                      ? 'Выходной день'
-                      : 'Изменённые часы: ${startTime ?? ''} – ${endTime ?? ''}',
+                      ? context.l10n.dayOff
+                      : context.l10n.changedHours(startTime ?? '', endTime ?? ''),
                   style: AppTextStyles.caption.copyWith(
-                      color: isDayOff ? kRose : kTextSecondary),
+                      color: isDayOff ? kRose : context.colors.textSecondary),
                 ),
               ],
             ),
           ),
           GestureDetector(
             onTap: onDelete,
-            child: const Icon(Icons.delete_outline, color: kTextTertiary, size: 20),
+            child: Icon(Icons.delete_outline, color: context.colors.textTertiary, size: 20),
           ),
         ],
       ),
@@ -185,7 +185,7 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
       lastDate: DateTime.now().add(const Duration(days: 365)),
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(primary: kGold, surface: kBgSecondary),
+          colorScheme: ColorScheme.dark(primary: kGold, surface: context.colors.bgSecondary),
         ),
         child: child!,
       ),
@@ -200,7 +200,7 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
       initialTime: initial,
       builder: (ctx, child) => Theme(
         data: Theme.of(ctx).copyWith(
-          colorScheme: const ColorScheme.dark(primary: kGold, surface: kBgSecondary),
+          colorScheme: ColorScheme.dark(primary: kGold, surface: context.colors.bgSecondary),
         ),
         child: child!,
       ),
@@ -247,7 +247,7 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e'), backgroundColor: kBgSecondary),
+          SnackBar(content: Text('Ошибка: $e'), backgroundColor: context.colors.bgSecondary),
         );
       }
     } finally {
@@ -274,15 +274,15 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
               width: 36, height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
               decoration: BoxDecoration(
-                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+                  color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
             ),
           ),
 
-          Text('Добавить особый день', style: AppTextStyles.title),
+          Text(context.l10n.addSpecialDay, style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.lg),
 
           // Дата
-          Text('Дата', style: AppTextStyles.label),
+          Text(context.l10n.dateLabel, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           GestureDetector(
             onTap: _pickDate,
@@ -291,16 +291,16 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
               padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md, vertical: AppSpacing.md),
               decoration: BoxDecoration(
-                color: kBgTertiary,
+                color: context.colors.bgTertiary,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                border: Border.all(color: kBorder),
+                border: Border.all(color: context.colors.border),
               ),
               child: Row(
                 children: [
                   Text(_fmtDate(_date), style: AppTextStyles.body),
                   const Spacer(),
-                  const Icon(Icons.calendar_today_outlined,
-                      color: kTextTertiary, size: 18),
+                  Icon(Icons.calendar_today_outlined,
+                      color: context.colors.textTertiary, size: 18),
                 ],
               ),
             ),
@@ -318,15 +318,15 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: _isDayOff ? kRose.withValues(alpha: 0.12) : kBgTertiary,
+                      color: _isDayOff ? kRose.withValues(alpha: 0.12) : context.colors.bgTertiary,
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                       border: Border.all(
-                          color: _isDayOff ? kRose.withValues(alpha: 0.5) : kBorder),
+                          color: _isDayOff ? kRose.withValues(alpha: 0.5) : context.colors.border),
                     ),
                     child: Center(
                       child: Text('Выходной',
                           style: AppTextStyles.label.copyWith(
-                              color: _isDayOff ? kRose : kTextSecondary)),
+                              color: _isDayOff ? kRose : context.colors.textSecondary)),
                     ),
                   ),
                 ),
@@ -338,15 +338,15 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
                   child: Container(
                     padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: !_isDayOff ? kGold.withValues(alpha: 0.12) : kBgTertiary,
+                      color: !_isDayOff ? kGold.withValues(alpha: 0.12) : context.colors.bgTertiary,
                       borderRadius: BorderRadius.circular(AppRadius.sm),
                       border: Border.all(
-                          color: !_isDayOff ? kGold.withValues(alpha: 0.5) : kBorder),
+                          color: !_isDayOff ? kGold.withValues(alpha: 0.5) : context.colors.border),
                     ),
                     child: Center(
                       child: Text('Другие часы',
                           style: AppTextStyles.label.copyWith(
-                              color: !_isDayOff ? kGold : kTextSecondary)),
+                              color: !_isDayOff ? kGold : context.colors.textSecondary)),
                     ),
                   ),
                 ),
@@ -368,7 +368,7 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
                   ),
                 ),
                 const SizedBox(width: AppSpacing.sm),
-                const Icon(Icons.arrow_forward, color: kTextTertiary, size: 16),
+                Icon(Icons.arrow_forward, color: context.colors.textTertiary, size: 16),
                 const SizedBox(width: AppSpacing.sm),
                 Expanded(
                   child: GestureDetector(
@@ -389,15 +389,15 @@ class _AddOverrideSheetState extends State<_AddOverrideSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGold,
                 disabledBackgroundColor: kGold.withValues(alpha: 0.4),
-                foregroundColor: kBgPrimary,
+                foregroundColor: context.colors.bgPrimary,
                 shape: const StadiumBorder(),
               ),
               child: _loading
-                  ? const SizedBox(width: 20, height: 20,
-                      child: CircularProgressIndicator(color: kBgPrimary, strokeWidth: 2))
-                  : Text('Сохранить',
+                  ? SizedBox(width: 20, height: 20,
+                      child: CircularProgressIndicator(color: context.colors.bgPrimary, strokeWidth: 2))
+                  : Text(context.l10n.saveBtn,
                       style: AppTextStyles.label
-                          .copyWith(fontWeight: FontWeight.w700, color: kBgPrimary)),
+                          .copyWith(fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
             ),
           ),
         ],
@@ -417,14 +417,14 @@ class _TimeButton extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md, vertical: AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgTertiary,
+        color: context.colors.bgTertiary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Column(
         children: [
           Text(label,
-              style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+              style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
           const SizedBox(height: 2),
           Text(time, style: AppTextStyles.label),
         ],

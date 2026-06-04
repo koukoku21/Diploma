@@ -100,7 +100,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg, style: AppTextStyles.caption.copyWith(color: kTextPrimary)),
+        content: Text(msg, style: AppTextStyles.caption.copyWith(color: context.colors.textPrimary)),
         backgroundColor: kRose.withValues(alpha: 0.2),
       ),
     );
@@ -111,9 +111,9 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
     final loading = ref.watch(verifyOtpProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
+        backgroundColor: context.colors.bgPrimary,
         elevation: 0,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_new, size: 20),
@@ -128,11 +128,11 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
             children: [
               const SizedBox(height: 32),
 
-              Text('Введите код', style: AppTextStyles.display),
+              Text(context.l10n.enterCode, style: AppTextStyles.display),
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Отправили SMS на\n${widget.phone}',
-                style: AppTextStyles.body.copyWith(color: kTextSecondary),
+                style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
               ),
 
               const SizedBox(height: 40),
@@ -150,7 +150,7 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
               const SizedBox(height: 40),
 
               PrimaryButton(
-                label: 'Подтвердить',
+                label: context.l10n.confirm,
                 onPressed: _submit,
                 loading: loading,
                 enabled: _complete,
@@ -163,12 +163,12 @@ class _OtpScreenState extends ConsumerState<OtpScreen> {
                 child: _secondsLeft > 0
                     ? Text(
                         'Отправить повторно через $_secondsLeft сек',
-                        style: AppTextStyles.caption.copyWith(color: kTextTertiary),
+                        style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
                       )
                     : TextButton(
                         onPressed: _resend,
                         child: Text(
-                          'Отправить повторно',
+                          context.l10n.resendCode,
                           style: AppTextStyles.label.copyWith(color: kGold),
                         ),
                       ),
@@ -210,14 +210,14 @@ class _OtpCell extends StatelessWidget {
         decoration: InputDecoration(
           counterText: '',
           filled: true,
-          fillColor: kBgTertiary,
+          fillColor: context.colors.bgTertiary,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.sm),
-            borderSide: const BorderSide(color: kBorder),
+            borderSide: BorderSide(color: context.colors.border),
           ),
           enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.sm),
-            borderSide: const BorderSide(color: kBorder),
+            borderSide: BorderSide(color: context.colors.border),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.sm),

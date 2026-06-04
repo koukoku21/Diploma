@@ -53,7 +53,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       body: Center(
         child: FadeTransition(
           opacity: _fade,
@@ -83,13 +83,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 const SizedBox(height: 20),
                 Text('MIRAKU', style: AppTextStyles.title.copyWith(
                   letterSpacing: 6,
-                  color: kTextPrimary,
+                  color: context.colors.textPrimary,
                 )),
                 const SizedBox(height: 8),
                 Text(
                   'бьюти рядом с тобой',
                   style: AppTextStyles.caption.copyWith(
-                    color: kTextSecondary,
+                    color: context.colors.textSecondary,
                     letterSpacing: 1,
                   ),
                 ),

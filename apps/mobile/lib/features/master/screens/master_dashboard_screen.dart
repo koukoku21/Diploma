@@ -19,9 +19,9 @@ class MasterDashboardScreen extends ConsumerWidget {
     final async = ref.watch(masterDashboardProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
+        backgroundColor: context.colors.bgPrimary,
         title: Text('MIRAKU',
             style: AppTextStyles.title.copyWith(letterSpacing: 4, color: kGold)),
         centerTitle: true,
@@ -52,22 +52,22 @@ class _DashboardBody extends ConsumerWidget {
 
     return RefreshIndicator(
       color: kGold,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       onRefresh: () => ref.refresh(masterDashboardProvider.future),
       child: ListView(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
         children: [
           const SizedBox(height: AppSpacing.xl),
 
-          // ─── Тогл "Принимаю записи" ────────────────────────
+          // ─── Тогл context.l10n.acceptingBookings ────────────────────────
           Container(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md, vertical: AppSpacing.sm),
             decoration: BoxDecoration(
-              color: kBgSecondary,
+              color: context.colors.bgSecondary,
               borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(
-                color: isActive ? kGold.withValues(alpha: 0.4) : kBorder,
+                color: isActive ? kGold.withValues(alpha: 0.4) : context.colors.border,
               ),
             ),
             child: Row(
@@ -77,7 +77,7 @@ class _DashboardBody extends ConsumerWidget {
                   height: 10,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isActive ? kGold : kTextTertiary,
+                    color: isActive ? kGold : context.colors.textTertiary,
                   ),
                 ),
                 const SizedBox(width: AppSpacing.md),
@@ -86,15 +86,15 @@ class _DashboardBody extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        isActive ? 'Принимаю записи' : 'Не принимаю записи',
+                        isActive ? context.l10n.acceptingBookings : context.l10n.notAcceptingBookings,
                         style: AppTextStyles.label,
                       ),
                       Text(
                         isActive
-                            ? 'Вы видны в ленте клиентов'
-                            : 'Вы скрыты из ленты',
+                            ? context.l10n.visibleInFeedMsg
+                            : context.l10n.hiddenFromFeedMsg,
                         style: AppTextStyles.caption
-                            .copyWith(color: kTextSecondary),
+                            .copyWith(color: context.colors.textSecondary),
                       ),
                     ],
                   ),
@@ -107,8 +107,8 @@ class _DashboardBody extends ConsumerWidget {
                           .read(masterActiveProvider(dashboard.isActive).notifier)
                           .toggle(v),
                   activeColor: kGold,
-                  inactiveThumbColor: kTextTertiary,
-                  inactiveTrackColor: kBorder2,
+                  inactiveThumbColor: context.colors.textTertiary,
+                  inactiveTrackColor: context.colors.border2,
                 ),
               ],
             ),
@@ -118,7 +118,7 @@ class _DashboardBody extends ConsumerWidget {
 
           // ─── Следующая запись ──────────────────────────────
           if (dashboard.nextBooking != null) ...[
-            Text('Следующая запись', style: AppTextStyles.label),
+            Text(context.l10n.nextBooking, style: AppTextStyles.label),
             const SizedBox(height: AppSpacing.sm),
             _NextBookingCard(booking: dashboard.nextBooking!),
             const SizedBox(height: AppSpacing.xl),
@@ -127,11 +127,11 @@ class _DashboardBody extends ConsumerWidget {
           // ─── Доход ────────────────────────────────────────
           Row(
             children: [
-              Text('Доход', style: AppTextStyles.label),
+              Text(context.l10n.income, style: AppTextStyles.label),
               const Spacer(),
               GestureDetector(
                 onTap: () => context.push(AppRoutes.masterStats),
-                child: Text('Статистика →',
+                child: Text(context.l10n.statistics,
                     style: AppTextStyles.caption
                         .copyWith(color: kGold, fontWeight: FontWeight.w600)),
               ),
@@ -142,14 +142,14 @@ class _DashboardBody extends ConsumerWidget {
             children: [
               Expanded(
                 child: _IncomeCard(
-                  label: 'Сегодня',
+                  label: context.l10n.todayLabel,
                   amount: '${fmt.format(dashboard.todayIncome)} ₸',
                 ),
               ),
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: _IncomeCard(
-                  label: 'Этот месяц',
+                  label: context.l10n.thisMonth,
                   amount: '${fmt.format(dashboard.monthIncome)} ₸',
                 ),
               ),
@@ -195,9 +195,9 @@ class _NextBookingCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Row(
         children: [
@@ -218,7 +218,7 @@ class _NextBookingCard extends StatelessWidget {
                 Text(booking.clientName, style: AppTextStyles.label),
                 const SizedBox(height: 2),
                 Text(booking.serviceName,
-                    style: AppTextStyles.caption.copyWith(color: kTextSecondary)),
+                    style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary)),
               ],
             ),
           ),
@@ -240,15 +240,15 @@ class _IncomeCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(label,
-              style: AppTextStyles.caption.copyWith(color: kTextSecondary)),
+              style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary)),
           const SizedBox(height: AppSpacing.xs),
           Text(amount, style: AppTextStyles.subtitle),
         ],

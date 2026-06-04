@@ -35,19 +35,19 @@ class _MasterBookingsScreenState extends ConsumerState<MasterBookingsScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
+        backgroundColor: context.colors.bgPrimary,
         title: Text('Записи', style: AppTextStyles.title),
         bottom: TabBar(
           controller: _tabs,
           indicatorColor: kGold,
           labelColor: kGold,
-          unselectedLabelColor: kTextSecondary,
+          unselectedLabelColor: context.colors.textSecondary,
           labelStyle: AppTextStyles.label,
-          tabs: const [
-            Tab(text: 'Предстоящие'),
-            Tab(text: 'Завершённые'),
+          tabs: [
+            Tab(text: context.l10n.upcoming),
+            Tab(text: context.l10n.completed),
           ],
         ),
       ),
@@ -73,18 +73,18 @@ class _BookingsList extends ConsumerWidget {
 
     return async.when(
       loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-      error: (e, _) => Center(child: Text('Ошибка: $e')),
+      error: (e, _) => Center(child: Text(context.l10n.errorWithDetails(e.toString()))),
       data: (bookings) {
         if (bookings.isEmpty) {
           return Center(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                const Icon(Icons.calendar_today_outlined,
-                    color: kTextTertiary, size: 56),
+                Icon(Icons.calendar_today_outlined,
+                    color: context.colors.textTertiary, size: 56),
                 const SizedBox(height: AppSpacing.md),
-                Text('Нет записей',
-                    style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)),
+                Text(context.l10n.noBookings,
+                    style: AppTextStyles.subtitle.copyWith(color: context.colors.textSecondary)),
               ],
             ),
           );
@@ -92,13 +92,13 @@ class _BookingsList extends ConsumerWidget {
 
         return RefreshIndicator(
           color: kGold,
-          backgroundColor: kBgSecondary,
+          backgroundColor: context.colors.bgSecondary,
           onRefresh: () => widgetRef.refresh(masterBookingsProvider(status).future),
           child: ListView.separated(
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
             itemCount: bookings.length,
             separatorBuilder: (_, __) =>
-                const Divider(height: 1, color: kBorder, indent: 16, endIndent: 16),
+                Divider(height: 1, color: context.colors.border, indent: 16, endIndent: 16),
             itemBuilder: (_, i) =>
                 _MasterBookingTile(booking: bookings[i], ref: widgetRef),
           ),
@@ -122,7 +122,7 @@ class _MasterBookingTile extends StatelessWidget {
       contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.screenH, vertical: AppSpacing.sm),
       leading: CircleAvatar(
-        backgroundColor: kBgTertiary,
+        backgroundColor: context.colors.bgTertiary,
         child: Text(
           booking.clientName.isNotEmpty ? booking.clientName[0] : '?',
           style: AppTextStyles.label,
@@ -133,9 +133,9 @@ class _MasterBookingTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(booking.serviceName,
-              style: AppTextStyles.caption.copyWith(color: kTextSecondary)),
+              style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary)),
           Text(fmt.format(booking.startTime),
-              style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+              style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
         ],
       ),
       trailing: isPending
@@ -156,8 +156,8 @@ class _ActionMenu extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return PopupMenuButton<String>(
-      color: kBgSecondary,
-      icon: const Icon(Icons.more_vert, color: kTextSecondary),
+      color: context.colors.bgSecondary,
+      icon: Icon(Icons.more_vert, color: context.colors.textSecondary),
       onSelected: (v) async {
         if (v == 'complete') {
           await createDio().patch('/bookings/${booking.id}/complete');
@@ -175,7 +175,7 @@ class _ActionMenu extends StatelessWidget {
       itemBuilder: (_) => [
         PopupMenuItem(
           value: 'complete',
-          child: Text('Завершить', style: AppTextStyles.body),
+          child: Text(context.l10n.completeAction, style: AppTextStyles.body),
         ),
         PopupMenuItem(
           value: 'cancel',

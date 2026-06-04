@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { Prisma } from '@prisma/client';
 import { PrismaService } from '../../shared/prisma.service';
 import { StoriesService } from '../stories/stories.service';
 import { FeedQueryDto } from './dto/feed-query.dto';
@@ -33,25 +34,34 @@ export class FeedService {
   ) {}
 
   async getFeed(query: FeedQueryDto) {
-    const { lat, lng, radius, serviceTemplateId, maxPrice, offset } = query;
+    const { lat, lng, radius, serviceTemplateId, maxPrice, offset, q } = query;
 
     const templateFilter = serviceTemplateId
-      ? `AND EXISTS (
+      ? Prisma.sql`AND EXISTS (
            SELECT 1 FROM services s
            WHERE s."masterId" = mp.id
              AND s."isEnabled" = true
-             AND s."templateId" = '${serviceTemplateId}'
+             AND s."templateId" = ${serviceTemplateId}
          )`
-      : '';
+      : Prisma.empty;
 
     const priceFilter = maxPrice !== undefined
-      ? `AND (
+      ? Prisma.sql`AND (
            SELECT MIN("priceFrom") FROM services s
            WHERE s."masterId" = mp.id AND s."isEnabled" = true
          ) <= ${maxPrice}`
-      : '';
+      : Prisma.empty;
 
-    const rows = await this.prisma.$queryRaw<FeedMasterRow[]>`
+    const term = q?.trim();
+    const searchFilter = term
+      ? Prisma.sql`AND (
+           u.name ILIKE ${'%' + term + '%'}
+           OR COALESCE(mp.bio, '') ILIKE ${'%' + term + '%'}
+           OR mp.address ILIKE ${'%' + term + '%'}
+         )`
+      : Prisma.empty;
+
+    const rows = await this.prisma.$queryRaw<FeedMasterRow[]>(Prisma.sql`
       SELECT
         mp.id,
         u.name              AS user_name,
@@ -107,10 +117,13 @@ export class FeedService {
             POWER(SIN(RADIANS((mp.lng - ${lng}) / 2)), 2)
           ))
         ) <= ${radius}
+        ${templateFilter}
+        ${priceFilter}
+        ${searchFilter}
       ORDER BY is_boosted DESC, distance_m ASC
       LIMIT ${PAGE_SIZE}
       OFFSET ${offset}
-    `;
+    `);
 
     return {
       items: rows.map((r) => ({

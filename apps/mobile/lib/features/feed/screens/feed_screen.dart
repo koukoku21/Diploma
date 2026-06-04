@@ -18,7 +18,7 @@ import '../../../core/widgets/bell_button.dart';
 
 // ─── Категории-чипы ──────────────────────────────────────────────
 const _kCategories = [
-  (label: 'Все',         code: null),
+  (label: 'Все',              code: null),
   (label: 'Маникюр',    code: 'MANICURE'),
   (label: 'Педикюр',    code: 'PEDICURE'),
   (label: 'Стрижка',    code: 'HAIRCUT'),
@@ -42,6 +42,7 @@ class FeedScreen extends ConsumerStatefulWidget {
 class _FeedScreenState extends ConsumerState<FeedScreen> {
   final _swiperCtrl = CardSwiperController();
   final _searchCtrl = TextEditingController();
+  final _scrollCtrl = ScrollController();
   _FeedMode _mode = _FeedMode.list;
   String? _selectedCategory; // null = Все
   bool _showSearch = false;
@@ -50,11 +51,21 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   @override
   void initState() {
     super.initState();
+    _scrollCtrl.addListener(_onScroll);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final filter = ref.read(feedFilterProvider);
       ref.read(feedProvider.notifier).init(filter);
       _loadStories();
     });
+  }
+
+  void _onScroll() {
+    if (_scrollCtrl.position.pixels >= _scrollCtrl.position.maxScrollExtent - 300) {
+      final feedState = ref.read(feedProvider);
+      if (!feedState.loading && feedState.hasMore) {
+        ref.read(feedProvider.notifier).loadMore();
+      }
+    }
   }
 
   Future<void> _loadStories() async {
@@ -70,6 +81,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   void dispose() {
     _swiperCtrl.dispose();
     _searchCtrl.dispose();
+    _scrollCtrl.dispose();
     super.dispose();
   }
 
@@ -92,7 +104,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       body: SafeArea(
         child: Column(
           children: [
@@ -104,7 +116,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
             ),
             _buildStoriesRow(),
             _buildToggleAndChips(),
-            const Divider(color: kBorder, height: 1),
+            Divider(color: context.colors.border, height: 1),
             Expanded(child: _buildBody()),
           ],
         ),
@@ -128,7 +140,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           IconButton(
             icon: Icon(
               _showSearch ? Icons.search_off_rounded : Icons.search_rounded,
-              color: _showSearch ? kGold : kTextSecondary,
+              color: _showSearch ? kGold : context.colors.textSecondary,
             ),
             onPressed: () {
               setState(() {
@@ -149,7 +161,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
           ),
           const SizedBox(width: AppSpacing.sm),
           IconButton(
-            icon: const Icon(Icons.tune_rounded, color: kTextSecondary),
+            icon: Icon(Icons.tune_rounded, color: context.colors.textSecondary),
             onPressed: () => _showFilter(context),
             padding: EdgeInsets.zero,
             constraints: const BoxConstraints(),
@@ -173,11 +185,11 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         onChanged: (v) => setState(() => _searchQuery = v),
         decoration: InputDecoration(
           hintText: 'Поиск мастера...',
-          hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
-          prefixIcon: const Icon(Icons.search_rounded, color: kTextTertiary, size: 20),
+          hintStyle: AppTextStyles.body.copyWith(color: context.colors.textTertiary),
+          prefixIcon: Icon(Icons.search_rounded, color: context.colors.textTertiary, size: 20),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: const Icon(Icons.clear_rounded, color: kTextTertiary, size: 20),
+                  icon: Icon(Icons.clear_rounded, color: context.colors.textTertiary, size: 20),
                   onPressed: () => setState(() {
                     _searchCtrl.clear();
                     _searchQuery = '';
@@ -185,7 +197,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                 )
               : null,
           filled: true,
-          fillColor: kBgSecondary,
+          fillColor: context.colors.bgSecondary,
           contentPadding: const EdgeInsets.symmetric(vertical: 10),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -288,15 +300,15 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
                   padding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md, vertical: 6),
                   decoration: BoxDecoration(
-                    color: isSelected ? kGold : kBgSecondary,
+                    color: isSelected ? kGold : context.colors.bgSecondary,
                     borderRadius: BorderRadius.circular(AppRadius.pill),
                     border: Border.all(
-                        color: isSelected ? kGold : kBorder2),
+                        color: isSelected ? kGold : context.colors.border2),
                   ),
                   child: Text(
                     cat.label,
                     style: AppTextStyles.caption.copyWith(
-                      color: isSelected ? kBgPrimary : kTextSecondary,
+                      color: isSelected ? context.colors.bgPrimary : context.colors.textSecondary,
                       fontWeight: isSelected
                           ? FontWeight.w700
                           : FontWeight.w400,
@@ -326,14 +338,14 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            const Icon(Icons.search_off_rounded,
-                color: kTextTertiary, size: 56),
+            Icon(Icons.search_off_rounded,
+                color: context.colors.textTertiary, size: 56),
             const SizedBox(height: AppSpacing.md),
-            Text('Мастеров не найдено',
+            Text(context.l10n.noMasters,
                 style: AppTextStyles.subtitle
-                    .copyWith(color: kTextSecondary)),
+                    .copyWith(color: context.colors.textSecondary)),
             const SizedBox(height: AppSpacing.sm),
-            Text('Попробуйте другую категорию или увеличьте радиус',
+            Text(context.l10n.increasRadius,
                 style: AppTextStyles.caption,
                 textAlign: TextAlign.center),
           ],
@@ -348,12 +360,23 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
 
   // ─── Режим Лента ─────────────────────────────────────────────────
   Widget _buildListMode(List<FeedMaster> masters) {
+    final feedState = ref.watch(feedProvider);
+    final showLoader = feedState.loading || feedState.hasMore;
     return ListView.separated(
+      controller: _scrollCtrl,
       padding: const EdgeInsets.fromLTRB(
           AppSpacing.screenH, AppSpacing.md, AppSpacing.screenH, AppSpacing.xl),
-      itemCount: masters.length,
+      itemCount: masters.length + (showLoader ? 1 : 0),
       separatorBuilder: (_, __) => const SizedBox(height: AppSpacing.md),
-      itemBuilder: (_, i) => _MasterListCard(master: masters[i]),
+      itemBuilder: (_, i) {
+        if (i == masters.length) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+            child: Center(child: CircularProgressIndicator(color: kGold, strokeWidth: 2)),
+          );
+        }
+        return _MasterListCard(master: masters[i]);
+      },
     );
   }
 
@@ -411,8 +434,8 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('${master.name} добавлен в избранное',
-            style: AppTextStyles.caption.copyWith(color: kTextPrimary)),
-        backgroundColor: kBgSecondary,
+            style: AppTextStyles.caption.copyWith(color: context.colors.textPrimary)),
+        backgroundColor: context.colors.bgSecondary,
         duration: const Duration(seconds: 2),
       ),
     );
@@ -421,7 +444,7 @@ class _FeedScreenState extends ConsumerState<FeedScreen> {
   void _showFilter(BuildContext context) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius:
             BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
@@ -443,22 +466,22 @@ class _ModeToggle extends StatelessWidget {
       height: 32,
       padding: const EdgeInsets.all(2),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.xs),
-        border: Border.all(color: kBorder2),
+        border: Border.all(color: context.colors.border2),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           _ToggleBtn(
             icon: Icons.list_rounded,
-            label: 'Лента',
+            label: context.l10n.listMode,
             active: mode == _FeedMode.list,
             onTap: () => onChanged(_FeedMode.list),
           ),
           _ToggleBtn(
             icon: Icons.swap_horiz_rounded,
-            label: 'Свайп',
+            label: context.l10n.swipeMode,
             active: mode == _FeedMode.swipe,
             onTap: () => onChanged(_FeedMode.swipe),
           ),
@@ -497,12 +520,12 @@ class _ToggleBtn extends StatelessWidget {
           children: [
             Icon(icon,
                 size: 14,
-                color: active ? kBgPrimary : kTextSecondary),
+                color: active ? context.colors.bgPrimary : context.colors.textSecondary),
             const SizedBox(width: 4),
             Text(label,
                 style: AppTextStyles.caption.copyWith(
                   fontSize: 11,
-                  color: active ? kBgPrimary : kTextSecondary,
+                  color: active ? context.colors.bgPrimary : context.colors.textSecondary,
                   fontWeight:
                       active ? FontWeight.w700 : FontWeight.w400,
                 )),
@@ -531,9 +554,9 @@ class _MasterListCard extends StatelessWidget {
       onTap: () => context.push(AppRoutes.masterPublicProfile(master.id)),
       child: Container(
         decoration: BoxDecoration(
-          color: kBgSecondary,
+          color: context.colors.bgSecondary,
           borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: kBorder),
+          border: Border.all(color: context.colors.border),
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -552,9 +575,9 @@ class _MasterListCard extends StatelessWidget {
                           width: 110,
                           height: 130,
                           fit: BoxFit.cover,
-                          errorBuilder: (_, __, ___) => _photoPlaceholder(),
+                          errorBuilder: (ctx, __, ___) => _photoPlaceholder(ctx),
                         )
-                      : _photoPlaceholder(),
+                      : _photoPlaceholder(context),
                 ),
                 if (master.isBoosted)
                   Positioned(
@@ -567,7 +590,7 @@ class _MasterListCard extends StatelessWidget {
                         color: kGold,
                         borderRadius: BorderRadius.circular(4),
                       ),
-                      child: const Text('ТОП',
+                      child: Text(context.l10n.topBadge,
                           style: TextStyle(
                               fontFamily: 'Mulish',
                               fontSize: 9,
@@ -629,11 +652,11 @@ class _MasterListCard extends StatelessWidget {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: kBgTertiary,
+                                    color: context.colors.bgTertiary,
                                     borderRadius:
                                         BorderRadius.circular(4),
                                     border:
-                                        Border.all(color: kBorder2),
+                                        Border.all(color: context.colors.border2),
                                   ),
                                   child: Text(
                                       _catLabels[s] ?? s,
@@ -652,7 +675,7 @@ class _MasterListCard extends StatelessWidget {
                           Text(
                             'от ${master.minPrice} ₸',
                             style: AppTextStyles.caption.copyWith(
-                                color: kTextSecondary),
+                                color: context.colors.textSecondary),
                           ),
                         const Spacer(),
                         SizedBox(
@@ -664,7 +687,7 @@ class _MasterListCard extends StatelessWidget {
                                     master.id)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: kGold,
-                              foregroundColor: kBgPrimary,
+                              foregroundColor: context.colors.bgPrimary,
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 12),
                               minimumSize: Size.zero,
@@ -673,10 +696,10 @@ class _MasterListCard extends StatelessWidget {
                               shape: const StadiumBorder(),
                               textStyle: AppTextStyles.caption.copyWith(
                                 fontWeight: FontWeight.w700,
-                                color: kBgPrimary,
+                                color: context.colors.bgPrimary,
                               ),
                             ),
-                            child: const Text('Записаться'),
+                            child: Text(context.l10n.bookBtn),
                           ),
                         ),
                       ],
@@ -691,11 +714,11 @@ class _MasterListCard extends StatelessWidget {
     );
   }
 
-  Widget _photoPlaceholder() {
+  Widget _photoPlaceholder(BuildContext context) {
     return Container(
       width: 110,
       height: 130,
-      color: kBgTertiary,
+      color: context.colors.bgTertiary,
       child: Center(
         child: Text(
           master.name.isNotEmpty ? master.name[0].toUpperCase() : 'M',
@@ -723,7 +746,7 @@ class _SwipeActionBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
       child: Row(
         children: [
-          _CircleBtn(onTap: onSkip, icon: Icons.close_rounded, color: kTextSecondary),
+          _CircleBtn(onTap: onSkip, icon: Icons.close_rounded, color: context.colors.textSecondary),
           const SizedBox(width: AppSpacing.md),
           _CircleBtn(onTap: onFavourite, icon: Icons.favorite_border_rounded, color: kRose),
           const SizedBox(width: AppSpacing.md),
@@ -733,13 +756,13 @@ class _SwipeActionBar extends StatelessWidget {
               child: ElevatedButton.icon(
                 onPressed: onBook,
                 icon: const Icon(Icons.calendar_month_outlined, size: 18),
-                label: const Text('Записаться'),
+                label: Text(context.l10n.bookBtn),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: kGold,
-                  foregroundColor: kBgPrimary,
+                  foregroundColor: context.colors.bgPrimary,
                   shape: const StadiumBorder(),
                   textStyle: AppTextStyles.label
-                      .copyWith(fontWeight: FontWeight.w700, color: kBgPrimary),
+                      .copyWith(fontWeight: FontWeight.w700, color: context.colors.bgPrimary),
                 ),
               ),
             ),
@@ -766,8 +789,8 @@ class _CircleBtn extends StatelessWidget {
         height: 52,
         decoration: BoxDecoration(
           shape: BoxShape.circle,
-          color: kBgSecondary,
-          border: Border.all(color: kBorder2),
+          color: context.colors.bgSecondary,
+          border: Border.all(color: context.colors.border2),
         ),
         child: Icon(icon, color: color, size: 24),
       ),
@@ -844,22 +867,22 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
               decoration: BoxDecoration(
-                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+                  color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
             ),
           ),
           Row(children: [
-            Text('Фильтры', style: AppTextStyles.title),
+            Text(context.l10n.filterTitle, style: AppTextStyles.title),
             const Spacer(),
             TextButton(
               onPressed: _reset,
-              child: Text('Сбросить',
+              child: Text(context.l10n.resetFilter,
                   style: AppTextStyles.caption
-                      .copyWith(color: kTextTertiary)),
+                      .copyWith(color: context.colors.textTertiary)),
             ),
           ]),
           const SizedBox(height: AppSpacing.lg),
 
-          Text('Услуга', style: AppTextStyles.label),
+          Text(context.l10n.serviceLabel, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           templatesAsync.when(
             loading: () => const Center(
@@ -883,18 +906,18 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             decoration: InputDecoration(
               hintText: 'Например: 5000',
               hintStyle:
-                  AppTextStyles.body.copyWith(color: kTextTertiary),
+                  AppTextStyles.body.copyWith(color: context.colors.textTertiary),
               suffixText: '₸',
               suffixStyle:
-                  AppTextStyles.body.copyWith(color: kTextSecondary),
+                  AppTextStyles.body.copyWith(color: context.colors.textSecondary),
               filled: true,
-              fillColor: kBgTertiary,
+              fillColor: context.colors.bgTertiary,
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  borderSide: const BorderSide(color: kBorder)),
+                  borderSide: BorderSide(color: context.colors.border)),
               enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  borderSide: const BorderSide(color: kBorder)),
+                  borderSide: BorderSide(color: context.colors.border)),
               focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   borderSide: const BorderSide(color: kGold)),
@@ -902,7 +925,7 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
           ),
           const SizedBox(height: AppSpacing.lg),
 
-          Text('Радиус поиска', style: AppTextStyles.label),
+          Text(context.l10n.searchRadius, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.xs),
           Slider(
             value: _local.radius.toDouble(),
@@ -910,7 +933,7 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
             max: 20000,
             divisions: 39,
             activeColor: kGold,
-            inactiveColor: kBorder2,
+            inactiveColor: context.colors.border2,
             label: '${(_local.radius / 1000).toStringAsFixed(1)} км',
             onChanged: (v) =>
                 setState(() => _local = _local.copyWith(radius: v.round())),
@@ -924,12 +947,12 @@ class _FilterSheetState extends ConsumerState<_FilterSheet> {
               onPressed: _apply,
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGold,
-                foregroundColor: kBgPrimary,
+                foregroundColor: context.colors.bgPrimary,
                 shape: const StadiumBorder(),
               ),
-              child: Text('Применить',
+              child: Text(context.l10n.applyFilter,
                   style: AppTextStyles.label.copyWith(
-                      fontWeight: FontWeight.w700, color: kBgPrimary)),
+                      fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
             ),
           ),
         ],
@@ -954,26 +977,26 @@ class _ServiceDropdown extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: kBgTertiary,
+        color: context.colors.bgTertiary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: selected != null ? kGold : kBorder),
+        border: Border.all(color: selected != null ? kGold : context.colors.border),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<ServiceTemplate?>(
           value: selected,
           isExpanded: true,
-          dropdownColor: kBgSecondary,
+          dropdownColor: context.colors.bgSecondary,
           style: AppTextStyles.body,
-          icon: const Icon(Icons.expand_more,
-              color: kTextTertiary, size: 20),
+          icon: Icon(Icons.expand_more,
+              color: context.colors.textTertiary, size: 20),
           hint: Text('Любая услуга',
-              style: AppTextStyles.body.copyWith(color: kTextTertiary)),
+              style: AppTextStyles.body.copyWith(color: context.colors.textTertiary)),
           items: [
             DropdownMenuItem<ServiceTemplate?>(
               value: null,
               child: Text('Любая услуга',
                   style:
-                      AppTextStyles.body.copyWith(color: kTextTertiary)),
+                      AppTextStyles.body.copyWith(color: context.colors.textTertiary)),
             ),
             ...templates.map((t) => DropdownMenuItem<ServiceTemplate?>(
                   value: t,

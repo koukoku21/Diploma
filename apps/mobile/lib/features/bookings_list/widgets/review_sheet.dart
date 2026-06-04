@@ -67,7 +67,7 @@ class _ReviewSheetState extends ConsumerState<ReviewSheet> {
               width: 36, height: 4,
               margin: const EdgeInsets.symmetric(vertical: AppSpacing.md),
               decoration: BoxDecoration(
-                color: kBorder2,
+                color: context.colors.border2,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
@@ -76,7 +76,7 @@ class _ReviewSheetState extends ConsumerState<ReviewSheet> {
           Text('Оцените визит', style: AppTextStyles.title),
           const SizedBox(height: 4),
           Text('к ${widget.masterName}',
-              style: AppTextStyles.body.copyWith(color: kTextSecondary)),
+              style: AppTextStyles.body.copyWith(color: context.colors.textSecondary)),
           const SizedBox(height: AppSpacing.xl),
 
           // Звёзды
@@ -90,7 +90,7 @@ class _ReviewSheetState extends ConsumerState<ReviewSheet> {
                   padding: const EdgeInsets.symmetric(horizontal: 6),
                   child: Icon(
                     filled ? Icons.star_rounded : Icons.star_outline_rounded,
-                    color: filled ? kGold : kTextTertiary,
+                    color: filled ? kGold : context.colors.textTertiary,
                     size: 40,
                   ),
                 ),
@@ -107,16 +107,16 @@ class _ReviewSheetState extends ConsumerState<ReviewSheet> {
             style: AppTextStyles.body,
             decoration: InputDecoration(
               hintText: 'Расскажите о визите (необязательно)',
-              hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
+              hintStyle: AppTextStyles.body.copyWith(color: context.colors.textTertiary),
               filled: true,
-              fillColor: kBgTertiary,
+              fillColor: context.colors.bgTertiary,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                borderSide: const BorderSide(color: kBorder),
+                borderSide: BorderSide(color: context.colors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                borderSide: const BorderSide(color: kBorder),
+                borderSide: BorderSide(color: context.colors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -133,15 +133,15 @@ class _ReviewSheetState extends ConsumerState<ReviewSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGold,
                 disabledBackgroundColor: kGold.withValues(alpha: 0.4),
-                foregroundColor: kBgPrimary,
+                foregroundColor: context.colors.bgPrimary,
                 shape: const StadiumBorder(),
               ),
               child: _loading
-                  ? const SizedBox(width: 20, height: 20,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: kBgPrimary))
+                  ? SizedBox(width: 20, height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: context.colors.bgPrimary))
                   : Text('Отправить отзыв',
                       style: AppTextStyles.label.copyWith(
-                          fontWeight: FontWeight.w700, color: kBgPrimary)),
+                          fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
             ),
           ),
         ],

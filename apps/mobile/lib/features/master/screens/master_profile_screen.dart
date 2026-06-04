@@ -39,10 +39,10 @@ class MasterProfileScreen extends ConsumerWidget {
     final async = ref.watch(_masterProfileProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Профиль', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.profile, style: AppTextStyles.title),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
@@ -86,7 +86,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     final result = await showModalBottomSheet<Map<String, String>?>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -130,10 +130,10 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   children: [
                     CircleAvatar(
                       radius: 48,
-                      backgroundColor: kBgTertiary,
+                      backgroundColor: context.colors.bgTertiary,
                       backgroundImage: _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
                       child: _avatarUrl == null
-                          ? const Icon(Icons.person_outline, color: kTextTertiary, size: 48)
+                          ? Icon(Icons.person_outline, color: context.colors.textTertiary, size: 48)
                           : null,
                     ),
                     Positioned(
@@ -142,7 +142,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                         width: 28, height: 28,
                         decoration: const BoxDecoration(
                             color: kGold, shape: BoxShape.circle),
-                        child: const Icon(Icons.camera_alt, color: kBgPrimary, size: 16),
+                        child: Icon(Icons.camera_alt, color: context.colors.bgPrimary, size: 16),
                       ),
                     ),
                   ],
@@ -156,7 +156,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   const SizedBox(width: AppSpacing.sm),
                   GestureDetector(
                     onTap: _openEditSheet,
-                    child: const Icon(Icons.edit_outlined, size: 18, color: kTextTertiary),
+                    child: Icon(Icons.edit_outlined, size: 18, color: context.colors.textTertiary),
                   ),
                 ],
               ),
@@ -165,7 +165,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
               if (_bio.isNotEmpty) ...[
                 const SizedBox(height: AppSpacing.sm),
                 Text(_bio,
-                    style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                    style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
                     textAlign: TextAlign.center),
               ],
               if (_address.isNotEmpty) ...[
@@ -173,12 +173,12 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                 Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Icon(Icons.location_on_outlined, size: 12, color: kTextTertiary),
+                    Icon(Icons.location_on_outlined, size: 12, color: context.colors.textTertiary),
                     const SizedBox(width: 4),
                     Flexible(
                       child: Text(
                         _address,
-                        style: AppTextStyles.caption.copyWith(color: kTextTertiary),
+                        style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
                       ),
@@ -191,13 +191,13 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ),
 
         const SizedBox(height: AppSpacing.xl),
-        const Divider(color: kBorder),
+        Divider(color: context.colors.border),
         const SizedBox(height: AppSpacing.md),
 
         // ─── Menu ──────────────────────────────────────────────
         _MenuItem(
           icon: Icons.photo_library_outlined,
-          label: 'Портфолио',
+          label: context.l10n.portfolio,
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(
@@ -206,7 +206,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ),
         _MenuItem(
           icon: Icons.content_cut_outlined,
-          label: 'Мои услуги',
+          label: context.l10n.myServices,
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const MasterServicesScreen()),
@@ -214,7 +214,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ),
         _MenuItem(
           icon: Icons.schedule_outlined,
-          label: 'Расписание',
+          label: context.l10n.schedule,
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const MasterScheduleScreen()),
@@ -222,7 +222,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ),
         _MenuItem(
           icon: Icons.event_busy_outlined,
-          label: 'Особые дни',
+          label: context.l10n.specialDays,
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const MasterScheduleOverridesScreen()),
@@ -230,7 +230,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ),
         _MenuItem(
           icon: Icons.chat_bubble_outline_rounded,
-          label: 'Сообщения',
+          label: context.l10n.messages,
           onTap: () => Navigator.push(
             context,
             MaterialPageRoute(builder: (_) => const MasterChatsScreen()),
@@ -238,7 +238,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ),
 
         const SizedBox(height: AppSpacing.xl),
-        const Divider(color: kBorder),
+        Divider(color: context.colors.border),
         const SizedBox(height: AppSpacing.md),
 
         // ─── Моя ссылка для записи ────────────────────────────
@@ -250,19 +250,19 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ),
 
         const SizedBox(height: AppSpacing.md),
-        const Divider(color: kBorder),
+        Divider(color: context.colors.border),
         const SizedBox(height: AppSpacing.md),
 
         // ─── Видимость в ленте ────────────────────────────────
         const _VisibilityBlock(),
 
         const SizedBox(height: AppSpacing.md),
-        const Divider(color: kBorder),
+        Divider(color: context.colors.border),
 
         // ─── Переключить роль ──────────────────────────────────
         _MenuItem(
           icon: Icons.swap_horiz_rounded,
-          label: 'Режим клиента',
+          label: context.l10n.clientMode,
           onTap: () => context.go(AppRoutes.feed),
         ),
 
@@ -276,7 +276,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
         ListTile(
           contentPadding: EdgeInsets.zero,
           leading: const Icon(Icons.logout_rounded, color: kRose),
-          title: Text('Выйти',
+          title: Text(context.l10n.logout,
               style: AppTextStyles.body.copyWith(color: kRose)),
           onTap: () async {
             await TokenStorage().clear();
@@ -297,9 +297,9 @@ class _VerifiedBadge extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (text, color) = switch (status) {
-      'APPROVED' => ('Верифицирован', kGold),
-      'PENDING'  => ('На проверке', kTextSecondary),
-      _          => ('Отклонён', kRose),
+      'APPROVED' => (context.l10n.masterVerified, kGold),
+      'PENDING'  => (context.l10n.masterOnReview, context.colors.textSecondary),
+      _          => (context.l10n.masterRejected, kRose),
     };
 
     return Container(
@@ -327,9 +327,9 @@ class _MenuItem extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: kTextSecondary),
+      leading: Icon(icon, color: context.colors.textSecondary),
       title: Text(label, style: AppTextStyles.body),
-      trailing: const Icon(Icons.chevron_right, color: kTextTertiary, size: 20),
+      trailing: Icon(Icons.chevron_right, color: context.colors.textTertiary, size: 20),
     );
   }
 }
@@ -366,10 +366,10 @@ class _VisibilityBlock extends ConsumerWidget {
 
         if (isVisible) {
           final (statusText, subText) = isFreeTrial && freeTrialEndsAt != null
-              ? ('Видны клиентам', 'Бесплатный период до ${_fmt(freeTrialEndsAt)}')
+              ? (context.l10n.visibleToClients, 'Бесплатный период до ${_fmt(freeTrialEndsAt)}')
               : activeEndsAt != null
-                  ? ('Видны клиентам', 'Пакет активен до ${_fmt(activeEndsAt)}')
-                  : ('Видны клиентам', '');
+                  ? (context.l10n.visibleToClients, 'Пакет активен до ${_fmt(activeEndsAt)}')
+                  : (context.l10n.visibleToClients, '');
 
           return Column(
             children: [
@@ -384,8 +384,8 @@ class _VisibilityBlock extends ConsumerWidget {
                 _VisibilityStatusCard(
                   icon: Icons.rocket_launch_rounded,
                   color: kGold,
-                  title: 'Буст активен',
-                  subtitle: 'Вы в топе ленты на 24 часа',
+                  title: context.l10n.boostActive,
+                  subtitle: context.l10n.boostActiveDesc,
                 ),
               ],
               const SizedBox(height: AppSpacing.sm),
@@ -401,7 +401,7 @@ class _VisibilityBlock extends ConsumerWidget {
               icon: Icons.visibility_off_rounded,
               color: kRose,
               title: 'Скрыты из ленты',
-              subtitle: 'Клиенты вас не видят. Активируйте пакет.',
+              subtitle: context.l10n.hiddenFromFeedDesc,
             ),
             const SizedBox(height: AppSpacing.sm),
             _PackageButtons(onActivated: () => ref.invalidate(_visibilityStatusProvider)),
@@ -445,7 +445,7 @@ class _VisibilityStatusCard extends StatelessWidget {
                 if (subtitle.isNotEmpty)
                   Text(subtitle,
                       style: AppTextStyles.caption
-                          .copyWith(color: kTextSecondary)),
+                          .copyWith(color: context.colors.textSecondary)),
               ],
             ),
           ),
@@ -466,31 +466,31 @@ class _PackageButtons extends StatefulWidget {
 class _PackageButtonsState extends State<_PackageButtons> {
   bool _loading = false;
 
-  static const _packages = [
-    ('WEEK',  'Неделя',  '990 ₸',  7),
-    ('MONTH', 'Месяц',  '2 990 ₸', 30),
-    ('BOOST', 'Буст топ', '490 ₸', 1),
+  List<(String, String, String, int)> _packages(BuildContext context) => [
+    ('WEEK',  context.l10n.weekLabel,  '990 ₸',  7),
+    ('MONTH', context.l10n.monthLabel, '2 990 ₸', 30),
+    ('BOOST', context.l10n.boostPackage, '490 ₸', 1),
   ];
 
   Future<void> _activate(String packageType, int amount) async {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: kBgSecondary,
-        title: Text('Оплата через Kaspi', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgSecondary,
+        title: Text(context.l10n.kaspiPayment, style: AppTextStyles.title),
         content: Text(
           'После оплаты нажмите «Активировать».\n\nПакет: $packageType\nСумма: $amount ₸',
-          style: AppTextStyles.body.copyWith(color: kTextSecondary),
+          style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Отмена',
-                style: AppTextStyles.label.copyWith(color: kTextSecondary)),
+            child: Text(context.l10n.cancelBtn,
+                style: AppTextStyles.label.copyWith(color: context.colors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Активировать',
+            child: Text(context.l10n.activateBtn,
                 style: AppTextStyles.label.copyWith(color: kGold)),
           ),
         ],
@@ -508,7 +508,7 @@ class _PackageButtonsState extends State<_PackageButtons> {
     } catch (_) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ошибка активации')));
+          SnackBar(content: Text(context.l10n.errorActivation)));
       }
     } finally {
       if (mounted) setState(() => _loading = false);
@@ -520,11 +520,11 @@ class _PackageButtonsState extends State<_PackageButtons> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text('Пакеты видимости',
-            style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+        Text(context.l10n.visibilityPackages,
+            style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
         const SizedBox(height: AppSpacing.sm),
         Row(
-          children: _packages.map((p) {
+          children: _packages(context).map((p) {
             final (type, label, price, amount) = p;
             return Expanded(
               child: Padding(
@@ -540,7 +540,7 @@ class _PackageButtonsState extends State<_PackageButtons> {
                         onPressed: () => _activate(type, amount),
                         style: OutlinedButton.styleFrom(
                           foregroundColor: kGold,
-                          side: const BorderSide(color: kBorder2),
+                          side: BorderSide(color: context.colors.border2),
                           padding: const EdgeInsets.symmetric(
                               horizontal: 4, vertical: 8),
                           shape: RoundedRectangleBorder(
@@ -552,7 +552,7 @@ class _PackageButtonsState extends State<_PackageButtons> {
                           children: [
                             Text(label,
                                 style: AppTextStyles.caption
-                                    .copyWith(color: kTextSecondary),
+                                    .copyWith(color: context.colors.textSecondary),
                                 textAlign: TextAlign.center),
                             Text(price,
                                 style: AppTextStyles.caption.copyWith(
@@ -600,7 +600,7 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
     await Clipboard.setData(ClipboardData(text: 'https://$_link'));
     if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Ссылка скопирована'), duration: Duration(seconds: 2)),
+        SnackBar(content: Text(context.l10n.linkCopied), duration: const Duration(seconds: 2)),
       );
     }
   }
@@ -636,7 +636,7 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
     final result = await showModalBottomSheet<String?>(
       context: context,
       isScrollControlled: true,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -652,9 +652,9 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder2),
+        border: Border.all(color: context.colors.border2),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -663,7 +663,7 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
             children: [
               const Icon(Icons.link_rounded, color: kGold, size: 18),
               const SizedBox(width: AppSpacing.sm),
-              Text('Моя ссылка для записи', style: AppTextStyles.label),
+              Text(context.l10n.myBookingLink, style: AppTextStyles.label),
             ],
           ),
           const SizedBox(height: AppSpacing.md),
@@ -676,22 +676,22 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
               padding: const EdgeInsets.symmetric(
                   horizontal: AppSpacing.md, vertical: AppSpacing.sm),
               decoration: BoxDecoration(
-                color: kBgTertiary,
+                color: context.colors.bgTertiary,
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                border: Border.all(color: kBorder),
+                border: Border.all(color: context.colors.border),
               ),
               child: Row(
                 children: [
                   Expanded(
                     child: Text(
-                      hasUsername ? _link : 'Задать @handle',
+                      hasUsername ? _link : context.l10n.setHandle,
                       style: hasUsername
                           ? AppTextStyles.body.copyWith(color: kGold)
-                          : AppTextStyles.body.copyWith(color: kTextTertiary),
+                          : AppTextStyles.body.copyWith(color: context.colors.textTertiary),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
-                  const Icon(Icons.edit_outlined, size: 16, color: kTextTertiary),
+                  Icon(Icons.edit_outlined, size: 16, color: context.colors.textTertiary),
                 ],
               ),
             ),
@@ -705,7 +705,7 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
               children: [
                 _LinkActionButton(
                   icon: Icons.copy_rounded,
-                  label: 'Копировать',
+                  label: context.l10n.copyBtn,
                   onTap: _copyLink,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -725,7 +725,7 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
           ],
 
           const SizedBox(height: AppSpacing.md),
-          const Divider(color: kBorder),
+          Divider(color: context.colors.border),
           const SizedBox(height: AppSpacing.sm),
 
           // Тогл
@@ -735,11 +735,11 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Принимать записи по ссылке',
+                    Text(context.l10n.acceptByLink,
                         style: AppTextStyles.body),
                     Text(
-                      widget.isActive ? 'Клиенты могут записаться без приложения' : 'Ссылка отключена',
-                      style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                      widget.isActive ? context.l10n.linkEnabledDesc : context.l10n.linkDisabled,
+                      style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
                     ),
                   ],
                 ),
@@ -752,8 +752,8 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
                       value: widget.isActive,
                       onChanged: _toggleActive,
                       activeColor: kGold,
-                      inactiveThumbColor: kTextTertiary,
-                      inactiveTrackColor: kBgTertiary,
+                      inactiveThumbColor: context.colors.textTertiary,
+                      inactiveTrackColor: context.colors.bgTertiary,
                     ),
             ],
           ),
@@ -782,16 +782,16 @@ class _LinkActionButton extends StatelessWidget {
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
           decoration: BoxDecoration(
-            color: kBgTertiary,
+            color: context.colors.bgTertiary,
             borderRadius: BorderRadius.circular(AppRadius.sm),
-            border: Border.all(color: kBorder),
+            border: Border.all(color: context.colors.border),
           ),
           child: Column(
             children: [
-              Icon(icon, size: 18, color: kTextSecondary),
+              Icon(icon, size: 18, color: context.colors.textSecondary),
               const SizedBox(height: 4),
               Text(label,
-                  style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                  style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
                   textAlign: TextAlign.center),
             ],
           ),
@@ -833,7 +833,7 @@ class _UsernameSheetState extends State<_UsernameSheet> {
   Future<void> _save() async {
     final value = _ctrl.text.trim().toLowerCase();
     if (!_isValidUsername(value)) {
-      setState(() => _error = 'Только латиница, цифры и _. От 3 до 30 символов.');
+      setState(() => _error = context.l10n.handleInvalid);
       return;
     }
     setState(() { _loading = true; _error = null; });
@@ -842,9 +842,9 @@ class _UsernameSheetState extends State<_UsernameSheet> {
       if (mounted) Navigator.pop(context, value);
     } on DioException catch (e) {
       final msg = e.response?.data?['message'] as String?;
-      setState(() => _error = msg ?? 'Этот handle уже занят');
+      setState(() => _error = msg ?? context.l10n.handleTaken);
     } catch (_) {
-      setState(() => _error = 'Ошибка сохранения');
+      setState(() => _error = context.l10n.errorSave);
     } finally {
       if (mounted) setState(() => _loading = false);
     }
@@ -865,13 +865,13 @@ class _UsernameSheetState extends State<_UsernameSheet> {
             child: Container(
               width: 36, height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
-              decoration: BoxDecoration(color: kBorder2, borderRadius: BorderRadius.circular(2)),
+              decoration: BoxDecoration(color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
             ),
           ),
-          Text('Ваш @handle', style: AppTextStyles.title),
+          Text(context.l10n.handleLabel, style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.xs),
-          Text('Только латиница, цифры и _. Минимум 3 символа.',
-              style: AppTextStyles.caption.copyWith(color: kTextSecondary)),
+          Text(context.l10n.handleHint,
+              style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary)),
           const SizedBox(height: AppSpacing.lg),
 
           TextField(
@@ -888,16 +888,16 @@ class _UsernameSheetState extends State<_UsernameSheet> {
               prefixText: '@',
               prefixStyle: AppTextStyles.body.copyWith(color: kGold),
               hintText: 'username',
-              hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
+              hintStyle: AppTextStyles.body.copyWith(color: context.colors.textTertiary),
               errorText: _error,
               filled: true,
-              fillColor: kBgTertiary,
+              fillColor: context.colors.bgTertiary,
               border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  borderSide: const BorderSide(color: kBorder)),
+                  borderSide: BorderSide(color: context.colors.border)),
               enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  borderSide: const BorderSide(color: kBorder)),
+                  borderSide: BorderSide(color: context.colors.border)),
               focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
                   borderSide: const BorderSide(color: kGold)),
@@ -912,7 +912,7 @@ class _UsernameSheetState extends State<_UsernameSheet> {
                 ? const SizedBox.shrink()
                 : Text(
                     'miraku.kz/@${val.text.toLowerCase()}',
-                    style: AppTextStyles.caption.copyWith(color: kTextTertiary),
+                    style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
                   ),
           ),
 
@@ -924,15 +924,15 @@ class _UsernameSheetState extends State<_UsernameSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGold,
                 disabledBackgroundColor: kGold.withValues(alpha: 0.4),
-                foregroundColor: kBgPrimary,
+                foregroundColor: context.colors.bgPrimary,
                 shape: const StadiumBorder(),
               ),
               child: _loading
-                  ? const SizedBox(width: 20, height: 20,
-                      child: CircularProgressIndicator(color: kBgPrimary, strokeWidth: 2))
-                  : Text('Сохранить',
+                  ? SizedBox(width: 20, height: 20,
+                      child: CircularProgressIndicator(color: context.colors.bgPrimary, strokeWidth: 2))
+                  : Text(context.l10n.saveBtn,
                       style: AppTextStyles.label.copyWith(
-                          fontWeight: FontWeight.w700, color: kBgPrimary)),
+                          fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
             ),
           ),
         ],
@@ -1007,7 +1007,7 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Ошибка: $e'), backgroundColor: kBgSecondary),
+          SnackBar(content: Text('Ошибка: $e'), backgroundColor: context.colors.bgSecondary),
         );
       }
     } finally {
@@ -1033,18 +1033,18 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               width: 36, height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
               decoration: BoxDecoration(
-                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+                  color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
             ),
           ),
-          Text('Редактировать профиль', style: AppTextStyles.title),
+          Text(context.l10n.editProfile, style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.lg),
 
-          Text('Имя', style: AppTextStyles.label),
+          Text(context.l10n.nameLabel, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
-          AppTextField(controller: _nameCtrl, hint: 'Ваше имя'),
+          AppTextField(controller: _nameCtrl, hint: context.l10n.namePlaceholder),
           const SizedBox(height: AppSpacing.md),
 
-          Text('О себе', style: AppTextStyles.label),
+          Text(context.l10n.bioLabel, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           TextField(
             controller: _bioCtrl,
@@ -1052,18 +1052,18 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
             maxLength: 300,
             style: AppTextStyles.body,
             decoration: InputDecoration(
-              hintText: 'Расскажите о своём опыте и специализации',
-              hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
+              hintText: context.l10n.bioHint,
+              hintStyle: AppTextStyles.body.copyWith(color: context.colors.textTertiary),
               filled: true,
-              fillColor: kBgTertiary,
-              counterStyle: AppTextStyles.caption.copyWith(color: kTextTertiary),
+              fillColor: context.colors.bgTertiary,
+              counterStyle: AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                borderSide: const BorderSide(color: kBorder),
+                borderSide: BorderSide(color: context.colors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                borderSide: const BorderSide(color: kBorder),
+                borderSide: BorderSide(color: context.colors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -1092,15 +1092,15 @@ class _EditProfileSheetState extends State<_EditProfileSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGold,
                 disabledBackgroundColor: kGold.withValues(alpha: 0.4),
-                foregroundColor: kBgPrimary,
+                foregroundColor: context.colors.bgPrimary,
                 shape: const StadiumBorder(),
               ),
               child: _loading
-                  ? const SizedBox(width: 20, height: 20,
-                      child: CircularProgressIndicator(color: kBgPrimary, strokeWidth: 2))
-                  : Text('Сохранить',
+                  ? SizedBox(width: 20, height: 20,
+                      child: CircularProgressIndicator(color: context.colors.bgPrimary, strokeWidth: 2))
+                  : Text(context.l10n.saveBtn,
                       style: AppTextStyles.label.copyWith(
-                          fontWeight: FontWeight.w700, color: kBgPrimary)),
+                          fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
             ),
           ),
         ],
@@ -1116,9 +1116,9 @@ class _ThemeTile extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(themeProvider);
     final labels = {
-      ThemeMode.dark:   'Тёмная',
-      ThemeMode.light:  'Светлая',
-      ThemeMode.system: 'Системная',
+      ThemeMode.dark:   context.l10n.darkTheme,
+      ThemeMode.light:  context.l10n.lightTheme,
+      ThemeMode.system: context.l10n.systemTheme,
     };
     return ListTile(
       contentPadding: EdgeInsets.zero,
@@ -1126,12 +1126,12 @@ class _ThemeTile extends ConsumerWidget {
         mode == ThemeMode.light ? Icons.light_mode_rounded : Icons.dark_mode_rounded,
         color: kGold,
       ),
-      title: Text('Тема', style: AppTextStyles.body),
+      title: Text(context.l10n.theme, style: AppTextStyles.body),
       trailing: DropdownButton<ThemeMode>(
         value: mode,
         underline: const SizedBox(),
-        dropdownColor: kBgSecondary,
-        style: AppTextStyles.body.copyWith(color: kTextSecondary),
+        dropdownColor: context.colors.bgSecondary,
+        style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
         items: ThemeMode.values.map((m) => DropdownMenuItem(
           value: m,
           child: Text(labels[m]!),
@@ -1156,12 +1156,12 @@ class _LanguageTile extends ConsumerWidget {
     return ListTile(
       contentPadding: EdgeInsets.zero,
       leading: const Icon(Icons.language_rounded, color: kGold),
-      title: Text('Язык', style: AppTextStyles.body),
+      title: Text(context.l10n.language, style: AppTextStyles.body),
       trailing: DropdownButton<String>(
         value: locale.languageCode,
         underline: const SizedBox(),
-        dropdownColor: kBgSecondary,
-        style: AppTextStyles.body.copyWith(color: kTextSecondary),
+        dropdownColor: context.colors.bgSecondary,
+        style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
         items: langs.entries.map((e) => DropdownMenuItem(
           value: e.key,
           child: Text(e.value),

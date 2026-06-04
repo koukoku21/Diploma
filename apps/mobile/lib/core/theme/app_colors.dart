@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_gen/gen_l10n/app_localizations.dart';
+import 'app_theme.dart';
 
 // ─── Фоны ────────────────────────────────────────────────────────
 const Color kBgPrimary   = Color(0xFF0A0A0F);
@@ -22,3 +24,12 @@ const Color kError   = Color(0xFFD4748A);
 // ─── Границы ─────────────────────────────────────────────────────
 const Color kBorder  = Color(0x12FFFFFF); // rgba(255,255,255,0.07)
 const Color kBorder2 = Color(0x1FFFFFFF); // rgba(255,255,255,0.12)
+
+// ─── Context extensions ───────────────────────────────────────────
+extension AppColorExt on BuildContext {
+  AppColorScheme get colors => AppColorScheme.of(this);
+}
+
+extension AppL10nExt on BuildContext {
+  S get l10n => S.of(this)!;
+}

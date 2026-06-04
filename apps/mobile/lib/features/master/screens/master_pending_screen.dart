@@ -13,7 +13,7 @@ class MasterPendingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
@@ -47,7 +47,7 @@ class MasterPendingScreen extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Text(
                 'Наша команда проверяет ваш профиль.\nОдобрение занимает до 24 часов.',
-                style: AppTextStyles.body.copyWith(color: kTextSecondary),
+                style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
                 textAlign: TextAlign.center,
               ),
 
@@ -97,16 +97,16 @@ class _InfoRow extends StatelessWidget {
           width: 40,
           height: 40,
           decoration: BoxDecoration(
-            color: kBgSecondary,
+            color: context.colors.bgSecondary,
             shape: BoxShape.circle,
-            border: Border.all(color: kBorder2),
+            border: Border.all(color: context.colors.border2),
           ),
-          child: Icon(icon, color: kTextSecondary, size: 18),
+          child: Icon(icon, color: context.colors.textSecondary, size: 18),
         ),
         const SizedBox(width: AppSpacing.md),
         Expanded(
           child: Text(text,
-              style: AppTextStyles.body.copyWith(color: kTextSecondary)),
+              style: AppTextStyles.body.copyWith(color: context.colors.textSecondary)),
         ),
       ],
     );

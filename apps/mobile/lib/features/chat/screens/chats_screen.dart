@@ -24,10 +24,10 @@ class ChatsScreen extends ConsumerWidget {
     final async = ref.watch(_chatRoomsProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Чаты', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.chats, style: AppTextStyles.title),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
@@ -38,9 +38,9 @@ class ChatsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.chat_bubble_outline, color: kTextTertiary, size: 56),
+                  Icon(Icons.chat_bubble_outline, color: context.colors.textTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Нет чатов', style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)),
+                  Text('Нет чатов', style: AppTextStyles.subtitle.copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
                   Text('Добавьте мастера в избранное\nчтобы начать переписку',
                       style: AppTextStyles.caption, textAlign: TextAlign.center),
@@ -51,13 +51,13 @@ class ChatsScreen extends ConsumerWidget {
 
           return RefreshIndicator(
             color: kGold,
-            backgroundColor: kBgSecondary,
+            backgroundColor: context.colors.bgSecondary,
             onRefresh: () => ref.refresh(_chatRoomsProvider.future),
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               itemCount: rooms.length,
               separatorBuilder: (_, __) =>
-                  const Divider(height: 1, color: kBorder, indent: 80),
+                  Divider(height: 1, color: context.colors.border, indent: 80),
               itemBuilder: (_, i) => _RoomTile(
                 room: rooms[i],
                 onTap: () => context.push(
@@ -86,11 +86,11 @@ class _RoomTile extends StatelessWidget {
           horizontal: AppSpacing.screenH, vertical: AppSpacing.sm),
       leading: CircleAvatar(
         radius: 28,
-        backgroundColor: kBgTertiary,
+        backgroundColor: context.colors.bgTertiary,
         backgroundImage:
             room.masterCover != null ? NetworkImage(room.masterCover!) : null,
         child: room.masterCover == null
-            ? const Icon(Icons.person_outline, color: kTextTertiary)
+            ? Icon(Icons.person_outline, color: context.colors.textTertiary)
             : null,
       ),
       title: Text(room.masterName, style: AppTextStyles.label),
@@ -101,9 +101,9 @@ class _RoomTile extends StatelessWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             )
-          : Text('Нет сообщений',
-              style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
-      trailing: const Icon(Icons.chevron_right, color: kTextTertiary, size: 20),
+          : Text(context.l10n.noChats,
+              style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
+      trailing: Icon(Icons.chevron_right, color: context.colors.textTertiary, size: 20),
     );
   }
 }

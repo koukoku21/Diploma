@@ -27,13 +27,13 @@ class ProfileScreen extends ConsumerWidget {
     final async = ref.watch(_profileProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Профиль', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.profile, style: AppTextStyles.title),
         actions: [
           IconButton(
-            icon: const Icon(Icons.settings_outlined, color: kTextSecondary),
+            icon: Icon(Icons.settings_outlined, color: context.colors.textSecondary),
             onPressed: () => _showSettings(context, ref),
           ),
         ],
@@ -49,7 +49,7 @@ class ProfileScreen extends ConsumerWidget {
   void _showSettings(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -92,7 +92,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   void _showEditName() {
     showModalBottomSheet(
       context: context,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
@@ -123,12 +123,12 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   children: [
                     CircleAvatar(
                       radius: 48,
-                      backgroundColor: kBgTertiary,
+                      backgroundColor: context.colors.bgTertiary,
                       backgroundImage:
                           _avatarUrl != null ? NetworkImage(_avatarUrl!) : null,
                       child: _avatarUrl == null
-                          ? const Icon(Icons.person_outline,
-                              color: kTextTertiary, size: 48)
+                          ? Icon(Icons.person_outline,
+                              color: context.colors.textTertiary, size: 48)
                           : null,
                     ),
                     Positioned(
@@ -139,8 +139,8 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                         height: 28,
                         decoration: const BoxDecoration(
                             color: kGold, shape: BoxShape.circle),
-                        child: const Icon(Icons.camera_alt,
-                            color: kBgPrimary, size: 16),
+                        child: Icon(Icons.camera_alt,
+                            color: context.colors.bgPrimary, size: 16),
                       ),
                     ),
                   ],
@@ -154,39 +154,40 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   const SizedBox(width: AppSpacing.xs),
                   GestureDetector(
                     onTap: _showEditName,
-                    child: const Icon(Icons.edit_outlined,
-                        color: kTextTertiary, size: 18),
+                    child: Icon(Icons.edit_outlined,
+                        color: context.colors.textTertiary, size: 18),
                   ),
                 ],
               ),
               const SizedBox(height: AppSpacing.xs),
               Text(profile.phone,
-                  style: AppTextStyles.body.copyWith(color: kTextSecondary)),
+                  style: AppTextStyles.body.copyWith(color: context.colors.textSecondary)),
             ],
           ),
         ),
 
         const SizedBox(height: AppSpacing.xl),
-        const Divider(color: kBorder),
+        Divider(color: context.colors.border),
         const SizedBox(height: AppSpacing.md),
 
         // ─── Стать мастером / статус ───────────────────────────
         if (!profile.hasMasterProfile)
           _BecomeMasterCard(
+              label: context.l10n.becomeMaster,
               onTap: () => context.push(AppRoutes.masterSpecializations))
         else if (profile.masterStatus == 'APPROVED')
           _BecomeMasterCard(
-            label: 'Режим мастера',
-            subtitle: 'Переключиться в кабинет мастера',
+            label: context.l10n.masterMode,
+            subtitle: context.l10n.masterModeDesc,
             icon: Icons.swap_horiz_rounded,
             onTap: () => context.go(AppRoutes.masterDashboard),
           )
         else if (profile.masterStatus == 'PENDING')
-          const _MasterStatusCard(
+          _MasterStatusCard(
             icon: Icons.hourglass_bottom_rounded,
             color: kGold,
-            title: 'Заявка на проверке',
-            subtitle: 'Одобрение занимает до 24 часов',
+            title: context.l10n.applicationOnReview,
+            subtitle: context.l10n.applicationOnReviewDesc,
           )
         else if (profile.masterStatus == 'REJECTED')
           _RejectedCard(
@@ -198,9 +199,9 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   ref.invalidate(_profileProvider);
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
-                      content: Text('Заявка отправлена на повторную проверку',
+                      content: Text(context.l10n.applicationResent,
                           style: AppTextStyles.caption),
-                      backgroundColor: kBgSecondary,
+                      backgroundColor: context.colors.bgSecondary,
                     ),
                   );
                 }
@@ -209,7 +210,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(
                       content: Text(e.toString(), style: AppTextStyles.caption),
-                      backgroundColor: kBgSecondary,
+                      backgroundColor: context.colors.bgSecondary,
                     ),
                   );
                 }
@@ -218,22 +219,22 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           ),
 
         const SizedBox(height: AppSpacing.xl),
-        const Divider(color: kBorder),
+        Divider(color: context.colors.border),
 
         // ─── Menu items ────────────────────────────────────────
         _MenuItem(
           icon: Icons.calendar_today_outlined,
-          label: 'Мои записи',
+          label: context.l10n.myBookings,
           onTap: () => context.push(AppRoutes.bookings),
         ),
         _MenuItem(
           icon: Icons.favorite_border_rounded,
-          label: 'Избранные мастера',
+          label: context.l10n.favouriteMasters,
           onTap: () => context.go(AppRoutes.favourites),
         ),
         _MenuItem(
           icon: Icons.chat_bubble_outline,
-          label: 'Чаты',
+          label: context.l10n.chats,
           onTap: () => context.go(AppRoutes.chats),
         ),
 
@@ -283,7 +284,7 @@ class _EditNameSheetState extends State<_EditNameSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString(), style: AppTextStyles.caption),
-            backgroundColor: kBgSecondary,
+            backgroundColor: context.colors.bgSecondary,
           ),
         );
       }
@@ -311,14 +312,14 @@ class _EditNameSheetState extends State<_EditNameSheet> {
               height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
               decoration: BoxDecoration(
-                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+                  color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
             ),
           ),
-          Text('Изменить имя', style: AppTextStyles.title),
+          Text(context.l10n.editNameTitle, style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.lg),
           AppTextField(
             controller: _ctrl,
-            hint: 'Ваше имя',
+            hint: context.l10n.namePlaceholder,
             autofocus: true,
             textInputAction: TextInputAction.done,
             onChanged: (_) => setState(() {}),
@@ -333,18 +334,18 @@ class _EditNameSheetState extends State<_EditNameSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGold,
                 disabledBackgroundColor: kGold.withValues(alpha: 0.4),
-                foregroundColor: kBgPrimary,
+                foregroundColor: context.colors.bgPrimary,
                 shape: const StadiumBorder(),
               ),
               child: _loading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20,
                       height: 20,
                       child: CircularProgressIndicator(
-                          color: kBgPrimary, strokeWidth: 2))
-                  : Text('Сохранить',
+                          color: context.colors.bgPrimary, strokeWidth: 2))
+                  : Text(context.l10n.saveBtn,
                       style: AppTextStyles.label.copyWith(
-                          fontWeight: FontWeight.w700, color: kBgPrimary)),
+                          fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
             ),
           ),
         ],
@@ -357,13 +358,13 @@ class _EditNameSheetState extends State<_EditNameSheet> {
 class _BecomeMasterCard extends StatelessWidget {
   const _BecomeMasterCard({
     required this.onTap,
-    this.label = 'Стать мастером',
-    this.subtitle = 'Начните принимать клиентов',
+    required this.label,
+    this.subtitle,
     this.icon = Icons.star_border_rounded,
   });
   final VoidCallback onTap;
   final String label;
-  final String subtitle;
+  final String? subtitle;
   final IconData icon;
 
   @override
@@ -373,7 +374,7 @@ class _BecomeMasterCard extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: kBgSecondary,
+          color: context.colors.bgSecondary,
           borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(color: kGold.withValues(alpha: 0.4)),
         ),
@@ -395,13 +396,13 @@ class _BecomeMasterCard extends StatelessWidget {
                 children: [
                   Text(label, style: AppTextStyles.label),
                   const SizedBox(height: 2),
-                  Text(subtitle,
+                  Text(subtitle ?? context.l10n.startAcceptingClients,
                       style:
-                          AppTextStyles.caption.copyWith(color: kTextSecondary)),
+                          AppTextStyles.caption.copyWith(color: context.colors.textSecondary)),
                 ],
               ),
             ),
-            const Icon(Icons.chevron_right, color: kTextTertiary, size: 20),
+            Icon(Icons.chevron_right, color: context.colors.textTertiary, size: 20),
           ],
         ),
       ),
@@ -427,7 +428,7 @@ class _MasterStatusCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
@@ -443,7 +444,7 @@ class _MasterStatusCard extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(subtitle,
                     style:
-                        AppTextStyles.caption.copyWith(color: kTextSecondary)),
+                        AppTextStyles.caption.copyWith(color: context.colors.textSecondary)),
               ],
             ),
           ),
@@ -465,9 +466,9 @@ class _MenuItem extends StatelessWidget {
     return ListTile(
       onTap: onTap,
       contentPadding: EdgeInsets.zero,
-      leading: Icon(icon, color: kTextSecondary),
+      leading: Icon(icon, color: context.colors.textSecondary),
       title: Text(label, style: AppTextStyles.body),
-      trailing: const Icon(Icons.chevron_right, color: kTextTertiary, size: 20),
+      trailing: Icon(Icons.chevron_right, color: context.colors.textTertiary, size: 20),
     );
   }
 }
@@ -481,10 +482,10 @@ class _SettingsSheet extends ConsumerWidget {
     final themeMode = ref.watch(themeProvider);
     final locale = ref.watch(localeProvider);
 
-    const themeLabels = {
-      ThemeMode.dark: 'Тёмная',
-      ThemeMode.light: 'Светлая',
-      ThemeMode.system: 'Системная',
+    final themeLabels = {
+      ThemeMode.dark: context.l10n.darkTheme,
+      ThemeMode.light: context.l10n.lightTheme,
+      ThemeMode.system: context.l10n.systemTheme,
     };
     const langLabels = {
       'ru': '🇷🇺  Русский',
@@ -503,12 +504,12 @@ class _SettingsSheet extends ConsumerWidget {
               height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
               decoration: BoxDecoration(
-                color: kBorder2,
+                color: context.colors.border2,
                 borderRadius: BorderRadius.circular(2),
               ),
             ),
           ),
-          Text('Настройки', style: AppTextStyles.title),
+          Text(context.l10n.settings, style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.lg),
           // ─── Тема ─────────────────────────────────────────────
           ListTile(
@@ -519,12 +520,12 @@ class _SettingsSheet extends ConsumerWidget {
                   : Icons.dark_mode_rounded,
               color: kGold,
             ),
-            title: Text('Тема', style: AppTextStyles.body),
+            title: Text(context.l10n.theme, style: AppTextStyles.body),
             trailing: DropdownButton<ThemeMode>(
               value: themeMode,
               underline: const SizedBox(),
-              dropdownColor: kBgSecondary,
-              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              dropdownColor: context.colors.bgSecondary,
+              style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
               items: ThemeMode.values
                   .map((m) => DropdownMenuItem(
                         value: m,
@@ -538,12 +539,12 @@ class _SettingsSheet extends ConsumerWidget {
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.language_rounded, color: kGold),
-            title: Text('Язык', style: AppTextStyles.body),
+            title: Text(context.l10n.language, style: AppTextStyles.body),
             trailing: DropdownButton<String>(
               value: locale.languageCode,
               underline: const SizedBox(),
-              dropdownColor: kBgSecondary,
-              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              dropdownColor: context.colors.bgSecondary,
+              style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
               items: langLabels.entries
                   .map((e) => DropdownMenuItem(
                         value: e.key,
@@ -554,12 +555,12 @@ class _SettingsSheet extends ConsumerWidget {
                   ref.read(localeProvider.notifier).set(Locale(code!)),
             ),
           ),
-          const Divider(color: kBorder),
+          Divider(color: context.colors.border),
           // ─── Выйти ────────────────────────────────────────────
           ListTile(
             contentPadding: EdgeInsets.zero,
             leading: const Icon(Icons.logout_rounded, color: kRose),
-            title: Text('Выйти',
+            title: Text(context.l10n.logout,
                 style: AppTextStyles.body.copyWith(color: kRose)),
             onTap: () async {
               Navigator.pop(context);
@@ -601,7 +602,7 @@ class _RejectedCardState extends State<_RejectedCard> {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: kRose.withValues(alpha: 0.3)),
       ),
@@ -616,7 +617,7 @@ class _RejectedCardState extends State<_RejectedCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text('Заявка отклонена', style: AppTextStyles.label),
+                    Text(context.l10n.applicationRejected, style: AppTextStyles.label),
                     if (widget.reason != null && widget.reason!.isNotEmpty) ...[
                       const SizedBox(height: 4),
                       Text(
@@ -626,8 +627,8 @@ class _RejectedCardState extends State<_RejectedCard> {
                     ] else ...[
                       const SizedBox(height: 4),
                       Text(
-                        'Исправьте профиль и отправьте повторно',
-                        style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                        context.l10n.fixAndResubmit,
+                        style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
                       ),
                     ],
                   ],
@@ -653,7 +654,7 @@ class _RejectedCardState extends State<_RejectedCard> {
                       height: 18,
                       child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2),
                     )
-                  : Text('Отправить повторно',
+                  : Text(context.l10n.resendCode,
                       style: AppTextStyles.label.copyWith(
                           fontWeight: FontWeight.w700, color: Colors.white)),
             ),

@@ -17,7 +17,7 @@ class BellButton extends ConsumerWidget {
       icon: Stack(
         clipBehavior: Clip.none,
         children: [
-          const Icon(Icons.notifications_outlined, color: kTextSecondary),
+          Icon(Icons.notifications_outlined, color: context.colors.textSecondary),
           if (count > 0)
             Positioned(
               right: -4,

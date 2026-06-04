@@ -26,24 +26,24 @@ class PrimaryButton extends StatelessWidget {
         style: ElevatedButton.styleFrom(
           backgroundColor: kGold,
           disabledBackgroundColor: kGold.withValues(alpha: 0.4),
-          foregroundColor: kBgPrimary,
+          foregroundColor: context.colors.bgPrimary,
           shape: const StadiumBorder(),
           elevation: 0,
         ),
         child: loading
-            ? const SizedBox(
+            ? SizedBox(
                 width: 20,
                 height: 20,
                 child: CircularProgressIndicator(
                   strokeWidth: 2,
-                  color: kBgPrimary,
+                  color: context.colors.bgPrimary,
                 ),
               )
             : Text(
                 label,
                 style: AppTextStyles.label.copyWith(
                   fontWeight: FontWeight.w700,
-                  color: kBgPrimary,
+                  color: context.colors.bgPrimary,
                   letterSpacing: 0.3,
                 ),
               ),

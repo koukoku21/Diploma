@@ -74,10 +74,10 @@ class MasterStatsScreen extends ConsumerWidget {
     final async = ref.watch(_statsProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Статистика', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.statistics, style: AppTextStyles.title),
       ),
       body: async.when(
         loading: () =>
@@ -124,7 +124,7 @@ class _BodyState extends State<_Body> with SingleTickerProviderStateMixin {
         Row(children: [
           Expanded(
             child: _StatCard(
-              label: 'Рейтинг',
+              label: context.l10n.ratingLabel,
               value: s.rating != null
                   ? s.rating!.toStringAsFixed(1)
                   : '—',
@@ -135,7 +135,7 @@ class _BodyState extends State<_Body> with SingleTickerProviderStateMixin {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: _StatCard(
-              label: 'Отзывов',
+              label: context.l10n.reviewsCount,
               value: '${s.reviewCount}',
               icon: Icons.chat_bubble_outline_rounded,
               iconColor: kGold,
@@ -144,7 +144,7 @@ class _BodyState extends State<_Body> with SingleTickerProviderStateMixin {
           const SizedBox(width: AppSpacing.md),
           Expanded(
             child: _StatCard(
-              label: 'Отмен',
+              label: context.l10n.cancellations,
               value: '${s.cancelled}',
               icon: Icons.cancel_outlined,
               iconColor: kRose,
@@ -157,27 +157,27 @@ class _BodyState extends State<_Body> with SingleTickerProviderStateMixin {
         // ─── Период ───────────────────────────────────────────
         Container(
           decoration: BoxDecoration(
-            color: kBgSecondary,
+            color: context.colors.bgSecondary,
             borderRadius: BorderRadius.circular(AppRadius.sm),
-            border: Border.all(color: kBorder),
+            border: Border.all(color: context.colors.border),
           ),
           child: TabBar(
             controller: _tabs,
             labelStyle: AppTextStyles.caption
                 .copyWith(fontWeight: FontWeight.w700),
             unselectedLabelStyle: AppTextStyles.caption,
-            labelColor: kBgPrimary,
-            unselectedLabelColor: kTextSecondary,
+            labelColor: context.colors.bgPrimary,
+            unselectedLabelColor: context.colors.textSecondary,
             indicator: BoxDecoration(
               color: kGold,
               borderRadius: BorderRadius.circular(AppRadius.xs),
             ),
             indicatorSize: TabBarIndicatorSize.tab,
             dividerColor: Colors.transparent,
-            tabs: const [
-              Tab(text: 'Неделя'),
-              Tab(text: 'Месяц'),
-              Tab(text: 'Всё время'),
+            tabs: [
+              Tab(text: context.l10n.weekLabel),
+              Tab(text: context.l10n.monthLabel),
+              Tab(text: context.l10n.allTimeLabel),
             ],
           ),
         ),
@@ -196,7 +196,7 @@ class _BodyState extends State<_Body> with SingleTickerProviderStateMixin {
             return Row(children: [
               Expanded(
                 child: _StatCard(
-                  label: 'Выручка',
+                  label: context.l10n.revenueLabel,
                   value: _fmt(period.revenue),
                   icon: Icons.payments_outlined,
                   iconColor: kGold,
@@ -205,7 +205,7 @@ class _BodyState extends State<_Body> with SingleTickerProviderStateMixin {
               const SizedBox(width: AppSpacing.md),
               Expanded(
                 child: _StatCard(
-                  label: 'Записей',
+                  label: context.l10n.bookingsCountLabel,
                   value: '${period.bookings}',
                   icon: Icons.calendar_today_rounded,
                   iconColor: kGold,
@@ -218,7 +218,7 @@ class _BodyState extends State<_Body> with SingleTickerProviderStateMixin {
         const SizedBox(height: AppSpacing.lg),
 
         // ─── График 7 дней ────────────────────────────────────
-        Text('Выручка за 7 дней', style: AppTextStyles.subtitle),
+        Text(context.l10n.revenueFor7Days, style: AppTextStyles.subtitle),
         const SizedBox(height: AppSpacing.md),
         _BarChart(days: s.dailyChart),
 
@@ -256,9 +256,9 @@ class _StatCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,7 +270,7 @@ class _StatCard extends StatelessWidget {
                   .copyWith(fontSize: 20, fontWeight: FontWeight.w700)),
           const SizedBox(height: 2),
           Text(label,
-              style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+              style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
         ],
       ),
     );
@@ -291,9 +291,9 @@ class _BarChart extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Column(
         children: [
@@ -318,7 +318,7 @@ class _BarChart extends StatelessWidget {
                             _shortFmt(d.revenue),
                             style: AppTextStyles.caption.copyWith(
                               fontSize: 9,
-                              color: isToday ? kGold : kTextTertiary,
+                              color: isToday ? kGold : context.colors.textTertiary,
                             ),
                             textAlign: TextAlign.center,
                           ),
@@ -357,7 +357,7 @@ class _BarChart extends StatelessWidget {
                   textAlign: TextAlign.center,
                   style: AppTextStyles.caption.copyWith(
                     fontSize: 10,
-                    color: isToday ? kGold : kTextTertiary,
+                    color: isToday ? kGold : context.colors.textTertiary,
                     fontWeight: isToday ? FontWeight.w700 : FontWeight.w400,
                   ),
                 ),

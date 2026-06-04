@@ -5,8 +5,10 @@ import {
   IsLongitude,
   IsNumber,
   IsOptional,
+  IsString,
   IsUUID,
   Max,
+  MaxLength,
   Min,
 } from 'class-validator';
 
@@ -44,4 +46,9 @@ export class FeedQueryDto {
   @Min(0)
   @Type(() => Number)
   offset: number = 0;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(100)
+  q?: string;
 }

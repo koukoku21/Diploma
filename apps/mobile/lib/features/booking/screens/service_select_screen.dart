@@ -14,14 +14,14 @@ class ServiceSelectScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
+        backgroundColor: context.colors.bgPrimary,
         title: Column(
           children: [
-            Text('Выберите услугу', style: AppTextStyles.title),
+            Text(context.l10n.selectService, style: AppTextStyles.title),
             Text('Шаг 1 из 3',
-                style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
           ],
         ),
         leading: IconButton(
@@ -43,9 +43,9 @@ class ServiceSelectScreen extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(AppSpacing.md),
               decoration: BoxDecoration(
-                color: kBgSecondary,
+                color: context.colors.bgSecondary,
                 borderRadius: BorderRadius.circular(AppRadius.md),
-                border: Border.all(color: kBorder),
+                border: Border.all(color: context.colors.border),
               ),
               child: Row(
                 children: [
@@ -65,7 +65,7 @@ class ServiceSelectScreen extends StatelessWidget {
                     style: AppTextStyles.label.copyWith(color: kGold),
                   ),
                   const SizedBox(width: AppSpacing.sm),
-                  const Icon(Icons.chevron_right, color: kTextTertiary),
+                  Icon(Icons.chevron_right, color: context.colors.textTertiary),
                 ],
               ),
             ),

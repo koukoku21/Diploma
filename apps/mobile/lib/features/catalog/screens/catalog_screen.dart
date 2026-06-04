@@ -54,19 +54,10 @@ final _catalogProvider =
       params['serviceTemplateId'] = filter.serviceTemplate!.id;
     }
     if (filter.maxPrice != null) params['maxPrice'] = filter.maxPrice;
+    if (filter.query.isNotEmpty) params['q'] = filter.query;
 
     final res = await createDio().get('/feed', queryParameters: params);
-    final all =
-        FeedResponse.fromJson(res.data as Map<String, dynamic>).items;
-
-    if (filter.query.isEmpty) return all;
-    final q = filter.query.toLowerCase();
-    return all
-        .where((m) =>
-            m.name.toLowerCase().contains(q) ||
-            (m.bio?.toLowerCase().contains(q) ?? false) ||
-            m.address.toLowerCase().contains(q))
-        .toList();
+    return FeedResponse.fromJson(res.data as Map<String, dynamic>).items;
   },
 );
 
@@ -95,7 +86,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
       BuildContext context, List<ServiceTemplate> templates) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius:
@@ -122,16 +113,16 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
         filter.serviceTemplate != null || filter.maxPrice != null;
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Каталог', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.catalogTitle, style: AppTextStyles.title),
         actions: [
           templatesAsync.whenData((templates) => IconButton(
                 icon: Badge(
                   isLabelVisible: hasFilters,
                   backgroundColor: kGold,
-                  child: const Icon(Icons.tune_rounded, color: kTextSecondary),
+                  child: Icon(Icons.tune_rounded, color: context.colors.textSecondary),
                 ),
                 onPressed: () => _showFilterSheet(context, templates),
               )).valueOrNull ??
@@ -142,7 +133,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                 ref.read(_catalogFilterProvider.notifier).state =
                     _CatalogFilter(query: filter.query);
               },
-              child: Text('Сбросить',
+              child: Text(context.l10n.resetFilter,
                   style: AppTextStyles.caption.copyWith(color: kGold)),
             ),
         ],
@@ -160,11 +151,11 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                   .read(_catalogFilterProvider.notifier)
                   .update((s) => s.copyWith(query: v)),
               decoration: InputDecoration(
-                hintText: 'Поиск мастера...',
+                hintText: context.l10n.searchMaster,
                 hintStyle:
-                    AppTextStyles.body.copyWith(color: kTextTertiary),
+                    AppTextStyles.body.copyWith(color: context.colors.textTertiary),
                 prefixIcon:
-                    const Icon(Icons.search, color: kTextTertiary, size: 20),
+                    Icon(Icons.search, color: context.colors.textTertiary, size: 20),
                 suffixIcon: filter.query.isNotEmpty
                     ? GestureDetector(
                         onTap: () {
@@ -173,21 +164,21 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
                               .read(_catalogFilterProvider.notifier)
                               .update((s) => s.copyWith(query: ''));
                         },
-                        child: const Icon(Icons.close,
-                            color: kTextTertiary, size: 18),
+                        child: Icon(Icons.close,
+                            color: context.colors.textTertiary, size: 18),
                       )
                     : null,
                 filled: true,
-                fillColor: kBgSecondary,
+                fillColor: context.colors.bgSecondary,
                 contentPadding: const EdgeInsets.symmetric(
                     horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
-                  borderSide: const BorderSide(color: kBorder),
+                  borderSide: BorderSide(color: context.colors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
-                  borderSide: const BorderSide(color: kBorder),
+                  borderSide: BorderSide(color: context.colors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -226,7 +217,7 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
               ),
             ),
 
-          const Divider(color: kBorder, height: 1),
+          Divider(color: context.colors.border, height: 1),
 
           // ─── Master list ───────────────────────────────────────
           Expanded(
@@ -234,26 +225,26 @@ class _CatalogScreenState extends ConsumerState<CatalogScreen> {
               loading: () => const Center(
                   child: CircularProgressIndicator(color: kGold)),
               error: (e, _) => Center(
-                  child: Text('Ошибка: $e',
+                  child: Text(context.l10n.errorWithDetails(e.toString()),
                       style: AppTextStyles.caption
-                          .copyWith(color: kTextSecondary))),
+                          .copyWith(color: context.colors.textSecondary))),
               data: (masters) {
                 if (masters.isEmpty) {
                   return Center(
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        const Icon(Icons.search_off,
-                            color: kTextTertiary, size: 48),
+                        Icon(Icons.search_off,
+                            color: context.colors.textTertiary, size: 48),
                         const SizedBox(height: AppSpacing.md),
-                        Text('Мастера не найдены',
+                        Text(context.l10n.mastersNotFound,
                             style: AppTextStyles.body
-                                .copyWith(color: kTextSecondary)),
+                                .copyWith(color: context.colors.textSecondary)),
                         if (hasFilters) ...[
                           const SizedBox(height: AppSpacing.sm),
-                          Text('Попробуйте изменить фильтры',
+                          Text(context.l10n.tryChangeFilters,
                               style: AppTextStyles.caption
-                                  .copyWith(color: kTextTertiary)),
+                                  .copyWith(color: context.colors.textTertiary)),
                         ],
                       ],
                     ),
@@ -365,55 +356,55 @@ class _CatalogFilterSheetState extends State<_CatalogFilterSheet> {
               height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
               decoration: BoxDecoration(
-                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+                  color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
             ),
           ),
           Row(
             children: [
-              Text('Фильтры', style: AppTextStyles.title),
+              Text(context.l10n.filterTitle, style: AppTextStyles.title),
               const Spacer(),
               TextButton(
                 onPressed: () => setState(() {
                   _selectedTemplate = null;
                   _maxPriceCtrl.clear();
                 }),
-                child: Text('Сбросить',
+                child: Text(context.l10n.resetFilter,
                     style:
-                        AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                        AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
               ),
             ],
           ),
           const SizedBox(height: AppSpacing.lg),
 
           // ─── Тип услуги ─────────────────────────────────────
-          Text('Тип услуги', style: AppTextStyles.label),
+          Text(context.l10n.serviceType, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           Container(
             padding: const EdgeInsets.symmetric(
                 horizontal: AppSpacing.md, vertical: AppSpacing.xs),
             decoration: BoxDecoration(
-              color: kBgTertiary,
+              color: context.colors.bgTertiary,
               borderRadius: BorderRadius.circular(AppRadius.sm),
               border: Border.all(
-                  color: _selectedTemplate != null ? kGold : kBorder),
+                  color: _selectedTemplate != null ? kGold : context.colors.border),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<ServiceTemplate?>(
                 value: _selectedTemplate,
                 isExpanded: true,
-                dropdownColor: kBgSecondary,
+                dropdownColor: context.colors.bgSecondary,
                 style: AppTextStyles.body,
-                icon: const Icon(Icons.expand_more,
-                    color: kTextTertiary, size: 20),
-                hint: Text('Любая услуга',
+                icon: Icon(Icons.expand_more,
+                    color: context.colors.textTertiary, size: 20),
+                hint: Text(context.l10n.anyService,
                     style:
-                        AppTextStyles.body.copyWith(color: kTextTertiary)),
+                        AppTextStyles.body.copyWith(color: context.colors.textTertiary)),
                 items: [
                   DropdownMenuItem<ServiceTemplate?>(
                     value: null,
-                    child: Text('Любая услуга',
+                    child: Text(context.l10n.anyService,
                         style: AppTextStyles.body
-                            .copyWith(color: kTextTertiary)),
+                            .copyWith(color: context.colors.textTertiary)),
                   ),
                   ...widget.templates.map((t) =>
                       DropdownMenuItem<ServiceTemplate?>(
@@ -428,7 +419,7 @@ class _CatalogFilterSheetState extends State<_CatalogFilterSheet> {
           const SizedBox(height: AppSpacing.lg),
 
           // ─── Цена до ────────────────────────────────────────
-          Text('Максимальная цена (₸)', style: AppTextStyles.label),
+          Text(context.l10n.maxPriceFilter, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           TextField(
             controller: _maxPriceCtrl,
@@ -436,21 +427,21 @@ class _CatalogFilterSheetState extends State<_CatalogFilterSheet> {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             style: AppTextStyles.body,
             decoration: InputDecoration(
-              hintText: 'Например: 5000',
+              hintText: context.l10n.priceHint,
               hintStyle:
-                  AppTextStyles.body.copyWith(color: kTextTertiary),
+                  AppTextStyles.body.copyWith(color: context.colors.textTertiary),
               suffixText: '₸',
               suffixStyle:
-                  AppTextStyles.body.copyWith(color: kTextSecondary),
+                  AppTextStyles.body.copyWith(color: context.colors.textSecondary),
               filled: true,
-              fillColor: kBgTertiary,
+              fillColor: context.colors.bgTertiary,
               border: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                borderSide: const BorderSide(color: kBorder),
+                borderSide: BorderSide(color: context.colors.border),
               ),
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
-                borderSide: const BorderSide(color: kBorder),
+                borderSide: BorderSide(color: context.colors.border),
               ),
               focusedBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -473,12 +464,12 @@ class _CatalogFilterSheetState extends State<_CatalogFilterSheet> {
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGold,
-                foregroundColor: kBgPrimary,
+                foregroundColor: context.colors.bgPrimary,
                 shape: const StadiumBorder(),
               ),
-              child: Text('Применить',
+              child: Text(context.l10n.applyFilter,
                   style: AppTextStyles.label.copyWith(
-                      fontWeight: FontWeight.w700, color: kBgPrimary)),
+                      fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
             ),
           ),
         ],
@@ -499,9 +490,9 @@ class _MasterListTile extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(AppSpacing.md),
         decoration: BoxDecoration(
-          color: kBgSecondary,
+          color: context.colors.bgSecondary,
           borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: kBorder),
+          border: Border.all(color: context.colors.border),
         ),
         child: Row(
           children: [
@@ -514,12 +505,12 @@ class _MasterListTile extends StatelessWidget {
                 child: master.coverUrl != null
                     ? Image.network(master.coverUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (_, __, ___) => _placeholder())
+                        errorBuilder: (ctx, __, ___) => _placeholder(ctx))
                     : master.avatarUrl != null
                         ? Image.network(master.avatarUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) => _placeholder())
-                        : _placeholder(),
+                            errorBuilder: (ctx, __, ___) => _placeholder(ctx))
+                        : _placeholder(context),
               ),
             ),
 
@@ -539,7 +530,7 @@ class _MasterListTile extends StatelessWidget {
                           .take(2)
                           .join(' · '),
                       style: AppTextStyles.caption
-                          .copyWith(color: kTextSecondary),
+                          .copyWith(color: context.colors.textSecondary),
                     ),
                   ],
                   const SizedBox(height: AppSpacing.xs),
@@ -556,12 +547,12 @@ class _MasterListTile extends StatelessWidget {
                         ),
                         const SizedBox(width: AppSpacing.sm),
                       ],
-                      const Icon(Icons.location_on_outlined,
-                          size: 12, color: kTextTertiary),
+                      Icon(Icons.location_on_outlined,
+                          size: 12, color: context.colors.textTertiary),
                       const SizedBox(width: 2),
                       Text(master.distanceLabel,
                           style: AppTextStyles.caption
-                              .copyWith(color: kTextTertiary)),
+                              .copyWith(color: context.colors.textTertiary)),
                     ],
                   ),
                 ],
@@ -574,9 +565,9 @@ class _MasterListTile extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text('от',
+                  Text(context.l10n.fromPrice,
                       style: AppTextStyles.caption
-                          .copyWith(color: kTextTertiary)),
+                          .copyWith(color: context.colors.textTertiary)),
                   Text(
                     '${master.minPrice}₸',
                     style: AppTextStyles.label.copyWith(color: kGold),
@@ -586,17 +577,17 @@ class _MasterListTile extends StatelessWidget {
             ],
 
             const SizedBox(width: AppSpacing.xs),
-            const Icon(Icons.chevron_right,
-                color: kTextTertiary, size: 18),
+            Icon(Icons.chevron_right,
+                color: context.colors.textTertiary, size: 18),
           ],
         ),
       ),
     );
   }
 
-  Widget _placeholder() => Container(
-        color: kBgTertiary,
-        child: const Icon(Icons.person_outline,
-            color: kTextTertiary, size: 32),
+  Widget _placeholder(BuildContext context) => Container(
+        color: context.colors.bgTertiary,
+        child: Icon(Icons.person_outline,
+            color: context.colors.textTertiary, size: 32),
       );
 }

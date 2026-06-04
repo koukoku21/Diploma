@@ -114,11 +114,11 @@ class _MasterAddressScreenState extends ConsumerState<MasterAddressScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Адрес работы', style: AppTextStyles.title),
-        leading: BackButton(color: kTextPrimary, onPressed: () => context.pop()),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.workAddress, style: AppTextStyles.title),
+        leading: BackButton(color: context.colors.textPrimary, onPressed: () => context.pop()),
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
@@ -126,11 +126,11 @@ class _MasterAddressScreenState extends ConsumerState<MasterAddressScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: AppSpacing.xl),
-            Text('Где вы принимаете?', style: AppTextStyles.h1),
+            Text(context.l10n.whereDoYouWork, style: AppTextStyles.h1),
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Укажите адрес — клиенты увидят расстояние до вас.',
-              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.xl),
 
@@ -142,9 +142,9 @@ class _MasterAddressScreenState extends ConsumerState<MasterAddressScreen> {
               style: AppTextStyles.body,
               decoration: InputDecoration(
                 hintText: 'ул. Кенесары 40, Астана',
-                hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
+                hintStyle: AppTextStyles.body.copyWith(color: context.colors.textTertiary),
                 filled: true,
-                fillColor: kBgSecondary,
+                fillColor: context.colors.bgSecondary,
                 suffixIcon: _searching
                     ? const Padding(
                         padding: EdgeInsets.all(12),
@@ -160,11 +160,11 @@ class _MasterAddressScreenState extends ConsumerState<MasterAddressScreen> {
                         : null,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  borderSide: const BorderSide(color: kBorder),
+                  borderSide: BorderSide(color: context.colors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  borderSide: const BorderSide(color: kBorder),
+                  borderSide: BorderSide(color: context.colors.border),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -180,9 +180,9 @@ class _MasterAddressScreenState extends ConsumerState<MasterAddressScreen> {
               Container(
                 margin: const EdgeInsets.only(top: 4),
                 decoration: BoxDecoration(
-                  color: kBgSecondary,
+                  color: context.colors.bgSecondary,
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  border: Border.all(color: kBorder),
+                  border: Border.all(color: context.colors.border),
                 ),
                 child: ListView.separated(
                   shrinkWrap: true,
@@ -190,22 +190,22 @@ class _MasterAddressScreenState extends ConsumerState<MasterAddressScreen> {
                   padding: EdgeInsets.zero,
                   itemCount: _suggestions.length,
                   separatorBuilder: (_, __) =>
-                      const Divider(height: 1, color: kBorder),
+                      Divider(height: 1, color: context.colors.border),
                   itemBuilder: (_, i) {
                     final s = _suggestions[i];
                     return ListTile(
                       dense: true,
                       contentPadding: const EdgeInsets.symmetric(
                           horizontal: AppSpacing.md, vertical: 4),
-                      leading: const Icon(Icons.location_on_outlined,
-                          color: kTextTertiary, size: 18),
+                      leading: Icon(Icons.location_on_outlined,
+                          color: context.colors.textTertiary, size: 18),
                       title: Text(s.name,
                           style: AppTextStyles.label,
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
                       subtitle: Text('Астана',
                           style: AppTextStyles.caption
-                              .copyWith(color: kTextTertiary)),
+                              .copyWith(color: context.colors.textTertiary)),
                       onTap: () => _select(s),
                     );
                   },
@@ -222,13 +222,13 @@ class _MasterAddressScreenState extends ConsumerState<MasterAddressScreen> {
                 child: Text(
                   'Ничего не найдено. Уточните запрос.',
                   style:
-                      AppTextStyles.caption.copyWith(color: kTextTertiary),
+                      AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
                 ),
               ),
 
             const Spacer(),
             PrimaryButton(
-              label: 'Далее',
+              label: context.l10n.continueBtn,
               onPressed: _save,
               enabled: _canSubmit,
             ),

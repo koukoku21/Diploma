@@ -17,31 +17,31 @@ class BookingsScreen extends ConsumerWidget {
     final async = ref.watch(clientBookingsProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Мои записи', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.myBookings, style: AppTextStyles.title),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-        error: (e, _) => Center(child: Text('Ошибка: $e', style: AppTextStyles.body)),
+        error: (e, _) => Center(child: Text(context.l10n.errorWithDetails(e.toString()), style: AppTextStyles.body)),
         data: (bookings) {
           if (bookings.isEmpty) {
             return Center(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.calendar_today_outlined,
-                      color: kTextTertiary, size: 56),
+                  Icon(Icons.calendar_today_outlined,
+                      color: context.colors.textTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Нет записей', style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)),
+                  Text(context.l10n.noBookings, style: AppTextStyles.subtitle.copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
-                  Text('Запишитесь к мастеру в ленте',
+                  Text(context.l10n.bookWithMasterDesc,
                       style: AppTextStyles.caption),
                   const SizedBox(height: AppSpacing.xl),
                   TextButton(
                     onPressed: () => context.go('/feed'),
-                    child: Text('Перейти в ленту',
+                    child: Text(context.l10n.goToFeed,
                         style: AppTextStyles.label.copyWith(color: kGold)),
                   ),
                 ],
@@ -54,13 +54,13 @@ class BookingsScreen extends ConsumerWidget {
 
           return RefreshIndicator(
             color: kGold,
-            backgroundColor: kBgSecondary,
+            backgroundColor: context.colors.bgSecondary,
             onRefresh: () => ref.refresh(clientBookingsProvider.future),
             child: ListView(
               padding: const EdgeInsets.all(AppSpacing.screenH),
               children: [
                 if (upcoming.isNotEmpty) ...[
-                  Text('Предстоящие', style: AppTextStyles.label.copyWith(color: kTextSecondary)),
+                  Text(context.l10n.upcoming, style: AppTextStyles.label.copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
                   ...upcoming.map((b) => _BookingCard(
                       booking: b,
@@ -69,7 +69,7 @@ class BookingsScreen extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xl),
                 ],
                 if (past.isNotEmpty) ...[
-                  Text('Завершённые', style: AppTextStyles.label.copyWith(color: kTextSecondary)),
+                  Text(context.l10n.completed, style: AppTextStyles.label.copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
                   ...past.map((b) => _BookingCard(
                       booking: b,
@@ -88,20 +88,20 @@ class BookingsScreen extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: kBgSecondary,
-        title: Text('Отменить запись?', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgSecondary,
+        title: Text(context.l10n.cancelBookingQuestion, style: AppTextStyles.title),
         content: Text(
-          'Запись к ${booking.masterName} будет отменена.',
-          style: AppTextStyles.body.copyWith(color: kTextSecondary),
+          context.l10n.bookingToCancelDesc(booking.masterName),
+          style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Нет', style: AppTextStyles.label.copyWith(color: kTextSecondary)),
+            child: Text(context.l10n.no, style: AppTextStyles.label.copyWith(color: context.colors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Да, отменить', style: AppTextStyles.label.copyWith(color: kRose)),
+            child: Text(context.l10n.yesCancelAction, style: AppTextStyles.label.copyWith(color: kRose)),
           ),
         ],
       ),
@@ -116,7 +116,7 @@ class BookingsScreen extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -162,9 +162,9 @@ class _BookingCard extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Row(
         children: [
@@ -175,9 +175,9 @@ class _BookingCard extends StatelessWidget {
                 ? Image.network(booking.masterCover!,
                     width: 56, height: 56, fit: BoxFit.cover)
                 : Container(
-                    width: 56, height: 56, color: kBgTertiary,
-                    child: const Icon(Icons.person_outline,
-                        color: kTextTertiary, size: 28)),
+                    width: 56, height: 56, color: context.colors.bgTertiary,
+                    child: Icon(Icons.person_outline,
+                        color: context.colors.textTertiary, size: 28)),
           ),
           const SizedBox(width: AppSpacing.md),
 
@@ -188,10 +188,10 @@ class _BookingCard extends StatelessWidget {
                 Text(booking.masterName, style: AppTextStyles.label),
                 const SizedBox(height: 2),
                 Text(booking.serviceName,
-                    style: AppTextStyles.body.copyWith(color: kTextSecondary)),
+                    style: AppTextStyles.body.copyWith(color: context.colors.textSecondary)),
                 const SizedBox(height: 4),
                 Row(children: [
-                  const Icon(Icons.access_time, size: 12, color: kTextTertiary),
+                  Icon(Icons.access_time, size: 12, color: context.colors.textTertiary),
                   const SizedBox(width: 4),
                   Text(_dateStr, style: AppTextStyles.caption),
                   const Spacer(),
@@ -211,7 +211,7 @@ class _BookingCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 GestureDetector(
                   onTap: onReview,
-                  child: Text('Оценить',
+                  child: Text(context.l10n.rateAction,
                       style: AppTextStyles.caption.copyWith(color: kGold)),
                 ),
               ],
@@ -219,7 +219,7 @@ class _BookingCard extends StatelessWidget {
                 const SizedBox(height: AppSpacing.sm),
                 GestureDetector(
                   onTap: onCancel,
-                  child: Text('Отменить',
+                  child: Text(context.l10n.cancelAction,
                       style: AppTextStyles.caption.copyWith(color: kRose)),
                 ),
               ],
@@ -238,9 +238,9 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      BookingStatus.confirmed => ('Ожидает', kGold),
-      BookingStatus.completed => ('Завершено', kSuccess),
-      BookingStatus.cancelled => ('Отменено', kRose),
+      BookingStatus.confirmed => (context.l10n.statusPending, kGold),
+      BookingStatus.completed => (context.l10n.statusCompleted, kSuccess),
+      BookingStatus.cancelled => (context.l10n.statusCancelled, kRose),
     };
 
     return Container(

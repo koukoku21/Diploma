@@ -53,8 +53,8 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
   void _showError(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(msg, style: AppTextStyles.caption.copyWith(color: kTextPrimary)),
-        backgroundColor: kBgSecondary,
+        content: Text(msg, style: AppTextStyles.caption.copyWith(color: context.colors.textPrimary)),
+        backgroundColor: context.colors.bgSecondary,
       ),
     );
   }
@@ -64,7 +64,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
     final loading = ref.watch(sendOtpProvider).isLoading;
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
@@ -77,7 +77,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 'Введите ваш номер телефона.\nМы отправим код подтверждения.',
-                style: AppTextStyles.body.copyWith(color: kTextSecondary),
+                style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
               ),
 
               const SizedBox(height: 40),
@@ -112,7 +112,7 @@ class _PhoneScreenState extends ConsumerState<PhoneScreen> {
                 child: Text(
                   'Нажимая «Получить код», вы соглашаетесь\nс Условиями использования',
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(color: kTextTertiary),
+                  style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
                 ),
               ),
               const SizedBox(height: AppSpacing.lg),

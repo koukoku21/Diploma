@@ -95,9 +95,10 @@ class FeedNotifier extends StateNotifier<FeedState> {
     if (state.cards.isEmpty) return;
     final remaining = state.cards.sublist(1);
     state = state.copyWith(cards: remaining);
-    // Подгружаем ещё если осталось мало
     if (remaining.length <= 3 && state.hasMore) _load(reset: false);
   }
+
+  Future<void> loadMore() => _load(reset: false);
 
   Future<void> _load({required bool reset}) async {
     if (state.loading) return;

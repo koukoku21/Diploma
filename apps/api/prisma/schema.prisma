@@ -125,6 +125,7 @@ model MasterProfile {
   scheduleOverrides ScheduleOverride[]
   bookings        Booking[]         @relation("MasterBookings")
   reviews         Review[]          @relation("MasterReviews")
+  reviewReplies   ReviewReply[]     @relation("MasterReviewReplies")
   favouritedBy    Favourite[]
   chatRooms       ChatRoom[]
   salonMemberships SalonMaster[]
@@ -339,8 +340,22 @@ model Review {
   booking Booking       @relation(fields: [bookingId], references: [id])
   client  User          @relation(fields: [clientId], references: [id])
   master  MasterProfile @relation("MasterReviews", fields: [masterId], references: [id])
+  reply   ReviewReply?
 
   @@map("reviews")
+}
+
+model ReviewReply {
+  id        String   @id @default(uuid())
+  reviewId  String   @unique
+  masterId  String
+  text      String
+  createdAt DateTime @default(now())
+
+  review Review        @relation(fields: [reviewId], references: [id], onDelete: Cascade)
+  master MasterProfile @relation("MasterReviewReplies", fields: [masterId], references: [id])
+
+  @@map("review_replies")
 }
 
 // ───────────────────────────────────────────────────────────────────

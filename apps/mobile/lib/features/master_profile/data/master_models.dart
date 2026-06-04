@@ -21,6 +21,19 @@ class MasterService {
       );
 }
 
+class MasterReviewReply {
+  const MasterReviewReply({required this.id, required this.text, required this.createdAt});
+  final String id;
+  final String text;
+  final DateTime createdAt;
+
+  factory MasterReviewReply.fromJson(Map<String, dynamic> j) => MasterReviewReply(
+        id: j['id'] as String,
+        text: j['text'] as String,
+        createdAt: DateTime.parse(j['createdAt'] as String),
+      );
+}
+
 class MasterReview {
   const MasterReview({
     required this.id,
@@ -29,6 +42,7 @@ class MasterReview {
     required this.clientName,
     this.text,
     this.clientAvatar,
+    this.reply,
   });
   final String id;
   final int rating;
@@ -36,6 +50,17 @@ class MasterReview {
   final DateTime createdAt;
   final String clientName;
   final String? clientAvatar;
+  final MasterReviewReply? reply;
+
+  MasterReview withReply(MasterReviewReply r) => MasterReview(
+        id: id,
+        rating: rating,
+        createdAt: createdAt,
+        clientName: clientName,
+        text: text,
+        clientAvatar: clientAvatar,
+        reply: r,
+      );
 
   factory MasterReview.fromJson(Map<String, dynamic> j) => MasterReview(
         id: j['id'] as String,
@@ -44,6 +69,9 @@ class MasterReview {
         createdAt: DateTime.parse(j['createdAt'] as String),
         clientName: (j['client'] as Map?)?['name'] as String? ?? '',
         clientAvatar: (j['client'] as Map?)?['avatarUrl'] as String?,
+        reply: j['reply'] != null
+            ? MasterReviewReply.fromJson(j['reply'] as Map<String, dynamic>)
+            : null,
       );
 }
 

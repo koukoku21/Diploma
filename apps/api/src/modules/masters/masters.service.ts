@@ -124,7 +124,10 @@ export class MastersService {
         reviews: {
           orderBy: { createdAt: 'desc' },
           take: 5,
-          include: { client: { select: { name: true, avatarUrl: true } } },
+          include: {
+            client: { select: { name: true, avatarUrl: true } },
+            reply: true,
+          },
         },
       },
     });

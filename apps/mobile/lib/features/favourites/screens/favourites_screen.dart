@@ -20,10 +20,10 @@ class FavouritesScreen extends ConsumerWidget {
     final async = ref.watch(_favouritesProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Избранное', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.favourites, style: AppTextStyles.title),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
@@ -34,10 +34,10 @@ class FavouritesScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.favorite_border, color: kTextTertiary, size: 56),
+                  Icon(Icons.favorite_border, color: context.colors.textTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Нет избранных мастеров',
-                      style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)),
+                  Text(context.l10n.noFavourites,
+                      style: AppTextStyles.subtitle.copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
                   Text('Нажмите ♡ в ленте, чтобы сохранить мастера',
                       style: AppTextStyles.caption, textAlign: TextAlign.center),
@@ -48,7 +48,7 @@ class FavouritesScreen extends ConsumerWidget {
 
           return RefreshIndicator(
             color: kGold,
-            backgroundColor: kBgSecondary,
+            backgroundColor: context.colors.bgSecondary,
             onRefresh: () => ref.refresh(_favouritesProvider.future),
             child: ListView.separated(
               padding: const EdgeInsets.all(AppSpacing.screenH),
@@ -70,9 +70,9 @@ class FavouritesScreen extends ConsumerWidget {
                   child: Container(
                     padding: const EdgeInsets.all(AppSpacing.md),
                     decoration: BoxDecoration(
-                      color: kBgSecondary,
+                      color: context.colors.bgSecondary,
                       borderRadius: BorderRadius.circular(AppRadius.md),
-                      border: Border.all(color: kBorder),
+                      border: Border.all(color: context.colors.border),
                     ),
                     child: Row(
                       children: [
@@ -80,9 +80,9 @@ class FavouritesScreen extends ConsumerWidget {
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           child: cover != null
                               ? Image.network(cover, width: 64, height: 64, fit: BoxFit.cover)
-                              : Container(width: 64, height: 64, color: kBgTertiary,
-                                  child: const Icon(Icons.person_outline,
-                                      color: kTextTertiary, size: 32)),
+                              : Container(width: 64, height: 64, color: context.colors.bgTertiary,
+                                  child: Icon(Icons.person_outline,
+                                      color: context.colors.textTertiary, size: 32)),
                         ),
                         const SizedBox(width: AppSpacing.md),
                         Expanded(

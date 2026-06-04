@@ -7,6 +7,7 @@ import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
 import '../../../core/theme/app_spacing.dart';
 import '../../../core/router/app_router.dart';
+import '../../../core/providers/me_provider.dart';
 import '../data/master_models.dart';
 import '../providers/master_provider.dart';
 import 'portfolio_gallery_screen.dart';
@@ -19,28 +20,37 @@ class MasterProfileScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final async = ref.watch(masterProfileProvider(masterId));
+    final me = ref.watch(meProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
         error: (e, _) => Center(child: Text('Ошибка: $e')),
-        data: (master) => _ProfileBody(master: master),
+        data: (master) {
+          final myMasterProfileId = me.valueOrNull?.masterProfileId;
+          final isOwnProfile = myMasterProfileId == master.id;
+          return _ProfileBody(
+            master: master,
+            myMasterProfileId: isOwnProfile ? myMasterProfileId : null,
+          );
+        },
       ),
     );
   }
 }
 
 class _ProfileBody extends StatelessWidget {
-  const _ProfileBody({required this.master});
+  const _ProfileBody({required this.master, this.myMasterProfileId});
   final MasterProfile master;
+  final String? myMasterProfileId;
 
   void _shareProfile(BuildContext context, MasterProfile m) {
     if (m.username == null) return;
     final link = 'https://miraku.kz/@${m.username}';
     showModalBottomSheet(
       context: context,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -54,25 +64,25 @@ class _ProfileBody extends StatelessWidget {
                 width: 36, height: 4,
                 margin: const EdgeInsets.only(bottom: AppSpacing.lg),
                 decoration: BoxDecoration(
-                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+                  color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
               ),
             ),
             Text('Поделиться профилем', style: AppTextStyles.title),
             const SizedBox(height: AppSpacing.sm),
             Text(link,
-                style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
             const SizedBox(height: AppSpacing.lg),
             Row(children: [
               Expanded(child: _ShareBtn(
                 icon: Icons.copy_rounded,
-                label: 'Скопировать',
+                label: context.l10n.copyLink,
                 onTap: () async {
                   await Clipboard.setData(ClipboardData(text: link));
                   Navigator.pop(context);
                   ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Ссылка скопирована'),
-                      duration: Duration(seconds: 2),
+                    SnackBar(
+                      content: Text(context.l10n.linkCopied),
+                      duration: const Duration(seconds: 2),
                     ),
                   );
                 },
@@ -118,12 +128,12 @@ class _ProfileBody extends StatelessWidget {
         SliverAppBar(
           expandedHeight: 320,
           pinned: true,
-          backgroundColor: kBgPrimary,
+          backgroundColor: context.colors.bgPrimary,
           leading: IconButton(
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: kBgPrimary.withValues(alpha: 0.7),
+                color: context.colors.bgPrimary.withValues(alpha: 0.7),
                 shape: BoxShape.circle,
               ),
               child: const Icon(Icons.arrow_back_ios_new, size: 18),
@@ -136,7 +146,7 @@ class _ProfileBody extends StatelessWidget {
                 icon: Container(
                   padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: kBgPrimary.withValues(alpha: 0.7),
+                    color: context.colors.bgPrimary.withValues(alpha: 0.7),
                     shape: BoxShape.circle,
                   ),
                   child: const Icon(Icons.ios_share_rounded, size: 18),
@@ -150,13 +160,13 @@ class _ProfileBody extends StatelessWidget {
               children: [
                 master.photos.isNotEmpty
                     ? Image.network(master.photos.first.url, fit: BoxFit.cover)
-                    : Container(color: kBgTertiary),
-                const DecoratedBox(
+                    : Container(color: context.colors.bgTertiary),
+                DecoratedBox(
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       begin: Alignment.topCenter,
                       end: Alignment.bottomCenter,
-                      colors: [Colors.transparent, kBgPrimary],
+                      colors: [Colors.transparent, context.colors.bgPrimary],
                       stops: [0.5, 1.0],
                     ),
                   ),
@@ -196,7 +206,7 @@ class _ProfileBody extends StatelessWidget {
 
               // Портфолио
               if (master.photos.length > 1) ...[
-                Text('Портфолио', style: AppTextStyles.title),
+                Text(context.l10n.portfolio, style: AppTextStyles.title),
                 const SizedBox(height: AppSpacing.md),
                 _PortfolioGrid(
                   photos: master.photos,
@@ -214,7 +224,7 @@ class _ProfileBody extends StatelessWidget {
               ],
 
               // Услуги
-              Text('Услуги', style: AppTextStyles.title),
+              Text(context.l10n.services, style: AppTextStyles.title),
               const SizedBox(height: AppSpacing.md),
               ...master.services.map((s) => _ServiceTile(
                     service: s,
@@ -230,7 +240,7 @@ class _ProfileBody extends StatelessWidget {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text('Отзывы', style: AppTextStyles.title),
+                    Text(context.l10n.reviews, style: AppTextStyles.title),
                     if (master.reviewCount > 3)
                       GestureDetector(
                         onTap: () => Navigator.push(
@@ -241,6 +251,7 @@ class _ProfileBody extends StatelessWidget {
                               reviews: master.reviews,
                               rating: master.rating,
                               reviewCount: master.reviewCount,
+                              myMasterProfileId: myMasterProfileId,
                             ),
                           ),
                         ),
@@ -310,7 +321,7 @@ class _MetaRow extends StatelessWidget {
                       : filled
                           ? Icons.star_rounded
                           : Icons.star_outline_rounded,
-                  color: (filled || half) ? kGold : kBorder2,
+                  color: (filled || half) ? kGold : context.colors.border2,
                   size: 20,
                 );
               }),
@@ -322,7 +333,7 @@ class _MetaRow extends StatelessWidget {
               const SizedBox(width: 4),
               Text(
                 '(${master.reviewCount})',
-                style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
               ),
             ],
           ),
@@ -330,7 +341,7 @@ class _MetaRow extends StatelessWidget {
         ],
         Row(
           children: [
-            const Icon(Icons.location_on_outlined, color: kTextSecondary, size: 16),
+            Icon(Icons.location_on_outlined, color: context.colors.textSecondary, size: 16),
             const SizedBox(width: 4),
             Expanded(
               child: Text(
@@ -429,9 +440,9 @@ class _ServiceTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Row(
         children: [
@@ -463,9 +474,9 @@ class _ServiceTile extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.pill),
               ),
               child: Text(
-                'Записаться',
+                context.l10n.bookBtn,
                 style:
-                    AppTextStyles.caption.copyWith(color: kBgPrimary, fontWeight: FontWeight.w700),
+                    AppTextStyles.caption.copyWith(color: context.colors.bgPrimary, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -485,9 +496,9 @@ class _ReviewTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: AppSpacing.sm),
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -502,7 +513,7 @@ class _ReviewTile extends StatelessWidget {
                   (i) => Icon(
                     Icons.star_rounded,
                     size: 14,
-                    color: i < review.rating ? kGold : kBorder2,
+                    color: i < review.rating ? kGold : context.colors.border2,
                   ),
                 ),
               ),
@@ -511,6 +522,30 @@ class _ReviewTile extends StatelessWidget {
           if (review.text != null) ...[
             const SizedBox(height: AppSpacing.sm),
             Text(review.text!, style: AppTextStyles.body),
+          ],
+          if (review.reply != null) ...[
+            const SizedBox(height: AppSpacing.sm),
+            Container(
+              padding: const EdgeInsets.all(AppSpacing.sm),
+              decoration: BoxDecoration(
+                color: context.colors.bgTertiary,
+                borderRadius: BorderRadius.circular(AppRadius.sm),
+                border: Border.all(color: context.colors.border),
+              ),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Icon(Icons.reply_rounded, size: 14, color: kGold),
+                  const SizedBox(width: 4),
+                  Expanded(
+                    child: Text(review.reply!.text,
+                        style: AppTextStyles.caption,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis),
+                  ),
+                ],
+              ),
+            ),
           ],
         ],
       ),
@@ -531,7 +566,7 @@ class _ShareBtn extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.md),
         decoration: BoxDecoration(
-          color: kBgTertiary,
+          color: context.colors.bgTertiary,
           borderRadius: BorderRadius.circular(AppRadius.md),
         ),
         child: Column(
@@ -540,7 +575,7 @@ class _ShareBtn extends StatelessWidget {
             Icon(icon, color: kGold, size: 24),
             const SizedBox(height: 6),
             Text(label,
-                style: AppTextStyles.caption.copyWith(color: kTextSecondary)),
+                style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary)),
           ],
         ),
       ),

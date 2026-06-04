@@ -126,7 +126,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                     decoration: BoxDecoration(
                       shape: BoxShape.circle,
                       border: Border.all(color: kGold, width: 1.5),
-                      color: kBgSecondary,
+                      color: context.colors.bgSecondary,
                     ),
                     child: story.salonLogoUrl != null
                         ? ClipOval(
@@ -221,7 +221,7 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                         foregroundColor: const Color(0xFF0A0A0F),
                         shape: const StadiumBorder(),
                       ),
-                      child: Text('Записаться',
+                      child: Text(context.l10n.bookBtn,
                           style: AppTextStyles.label.copyWith(
                               fontWeight: FontWeight.w700,
                               color: const Color(0xFF0A0A0F))),

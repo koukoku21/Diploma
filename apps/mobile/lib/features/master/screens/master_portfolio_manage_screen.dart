@@ -57,11 +57,11 @@ class _MasterPortfolioManageScreenState
     final async = ref.watch(_portfolioProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Портфолио', style: AppTextStyles.title),
-        leading: BackButton(color: kTextPrimary, onPressed: () => Navigator.pop(context)),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.portfolio, style: AppTextStyles.title),
+        leading: BackButton(color: context.colors.textPrimary, onPressed: () => Navigator.pop(context)),
         actions: [
           if (_uploading)
             const Padding(
@@ -86,10 +86,10 @@ class _MasterPortfolioManageScreenState
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.photo_library_outlined,
-                      color: kTextTertiary, size: 56),
+                  Icon(Icons.photo_library_outlined,
+                      color: context.colors.textTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Нет фото', style: AppTextStyles.subtitle.copyWith(color: kTextSecondary)),
+                  Text('Нет фото', style: AppTextStyles.subtitle.copyWith(color: context.colors.textSecondary)),
                 ],
               ),
             );
@@ -129,7 +129,7 @@ class _MasterPortfolioManageScreenState
                         ),
                         child: Text('Обложка',
                             style: AppTextStyles.caption.copyWith(
-                                color: kBgPrimary, fontSize: 10)),
+                                color: context.colors.bgPrimary, fontSize: 10)),
                       ),
                     ),
                   Positioned(

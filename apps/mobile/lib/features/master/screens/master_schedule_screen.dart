@@ -44,14 +44,14 @@ class _MasterScheduleScreenState extends ConsumerState<MasterScheduleScreen> {
     final async = ref.watch(masterScheduleProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Расписание', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.schedule, style: AppTextStyles.title),
       ),
       body: async.when(
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
-        error: (e, _) => Center(child: Text('Ошибка: $e')),
+        error: (e, _) => Center(child: Text(context.l10n.errorWithDetails(e.toString()))),
         data: (slots) {
           _local ??= _mergeWithDefaults(slots);
           return _ScheduleEditor(
@@ -76,8 +76,8 @@ class _MasterScheduleScreenState extends ConsumerState<MasterScheduleScreen> {
         ref.refresh(masterScheduleProvider);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Расписание сохранено', style: AppTextStyles.caption),
-            backgroundColor: kBgSecondary,
+            content: Text(context.l10n.scheduleSaved, style: AppTextStyles.caption),
+            backgroundColor: context.colors.bgSecondary,
           ),
         );
       }
@@ -86,7 +86,7 @@ class _MasterScheduleScreenState extends ConsumerState<MasterScheduleScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString(), style: AppTextStyles.caption),
-            backgroundColor: kBgSecondary,
+            backgroundColor: context.colors.bgSecondary,
           ),
         );
       }
@@ -117,7 +117,7 @@ class _ScheduleEditor extends StatelessWidget {
         const SizedBox(height: AppSpacing.md),
         Text(
           'Укажите рабочие часы для каждого дня недели',
-          style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+          style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
         ),
         const SizedBox(height: AppSpacing.lg),
 
@@ -140,7 +140,7 @@ class _ScheduleEditor extends StatelessWidget {
         }),
 
         const SizedBox(height: AppSpacing.xl),
-        PrimaryButton(label: 'Сохранить', onPressed: onSave, loading: saving),
+        PrimaryButton(label: context.l10n.saveBtn, onPressed: onSave, loading: saving),
         const SizedBox(height: AppSpacing.xl),
       ],
     );
@@ -191,9 +191,9 @@ class _DayRow extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.md, vertical: AppSpacing.sm),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: slot.isWorking ? kBorder2 : kBorder),
+        border: Border.all(color: slot.isWorking ? context.colors.border2 : context.colors.border),
       ),
       child: Row(
         children: [
@@ -201,7 +201,7 @@ class _DayRow extends StatelessWidget {
             width: 32,
             child: Text(_dayNames[slot.dayOfWeek],
                 style: AppTextStyles.label.copyWith(
-                  color: slot.isWorking ? kTextPrimary : kTextTertiary,
+                  color: slot.isWorking ? context.colors.textPrimary : context.colors.textTertiary,
                 )),
           ),
 
@@ -209,8 +209,8 @@ class _DayRow extends StatelessWidget {
             value: slot.isWorking,
             onChanged: onToggle,
             activeColor: kGold,
-            inactiveThumbColor: kTextTertiary,
-            inactiveTrackColor: kBorder2,
+            inactiveThumbColor: context.colors.textTertiary,
+            inactiveTrackColor: context.colors.border2,
           ),
 
           if (slot.isWorking) ...[
@@ -224,7 +224,7 @@ class _DayRow extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: AppSpacing.sm),
               child: Text('—',
-                  style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                  style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
             ),
             GestureDetector(
               onTap: () => _pickTime(context, slot.endTime, (t) {
@@ -236,7 +236,7 @@ class _DayRow extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.only(left: AppSpacing.sm),
               child: Text('Выходной',
-                  style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                  style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
             ),
         ],
       ),
@@ -254,9 +254,9 @@ class _TimeChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.sm, vertical: AppSpacing.xs),
       decoration: BoxDecoration(
-        color: kBgTertiary,
+        color: context.colors.bgTertiary,
         borderRadius: BorderRadius.circular(AppRadius.xs),
-        border: Border.all(color: kBorder2),
+        border: Border.all(color: context.colors.border2),
       ),
       child: Text(time, style: AppTextStyles.label),
     );

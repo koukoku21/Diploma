@@ -45,12 +45,12 @@ class _MasterSpecializationsScreenState
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Стать мастером', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.becomeMaster, style: AppTextStyles.title),
         leading: BackButton(
-          color: kTextPrimary,
+          color: context.colors.textPrimary,
           onPressed: () => context.pop(),
         ),
       ),
@@ -60,10 +60,10 @@ class _MasterSpecializationsScreenState
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: AppSpacing.xl),
-            Text('Ваши специализации', style: AppTextStyles.h1),
+            Text(context.l10n.masterSpecializations, style: AppTextStyles.h1),
             const SizedBox(height: AppSpacing.sm),
-            Text('Выберите от одной и более',
-                style: AppTextStyles.body.copyWith(color: kTextSecondary)),
+            Text(context.l10n.chooseOne,
+                style: AppTextStyles.body.copyWith(color: context.colors.textSecondary)),
             const SizedBox(height: AppSpacing.xl),
 
             // ─── Chips ────────────────────────────────────────
@@ -76,7 +76,7 @@ class _MasterSpecializationsScreenState
                     final selected = _selected.contains(s);
                     return FilterChip(
                       label: Text(s, style: AppTextStyles.label.copyWith(
-                        color: selected ? kBgPrimary : kTextPrimary,
+                        color: selected ? context.colors.bgPrimary : context.colors.textPrimary,
                       )),
                       selected: selected,
                       onSelected: (v) => setState(() {
@@ -87,10 +87,10 @@ class _MasterSpecializationsScreenState
                         }
                       }),
                       selectedColor: kGold,
-                      backgroundColor: kBgSecondary,
-                      checkmarkColor: kBgPrimary,
+                      backgroundColor: context.colors.bgSecondary,
+                      checkmarkColor: context.colors.bgPrimary,
                       side: BorderSide(
-                        color: selected ? kGold : kBorder2,
+                        color: selected ? kGold : context.colors.border2,
                       ),
                       shape: const StadiumBorder(),
                       showCheckmark: false,
@@ -104,7 +104,7 @@ class _MasterSpecializationsScreenState
 
             const SizedBox(height: AppSpacing.xl),
             PrimaryButton(
-              label: 'Далее',
+              label: context.l10n.continueBtn,
               onPressed: _next,
               enabled: _selected.isNotEmpty,
             ),

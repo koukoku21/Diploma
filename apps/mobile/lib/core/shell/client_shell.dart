@@ -8,16 +8,16 @@ class ClientShell extends StatelessWidget {
   const ClientShell({super.key, required this.navigationShell});
   final StatefulNavigationShell navigationShell;
 
-  static const _tabs = [
-    _TabItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: 'Лента'),
-    _TabItem(icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view, label: 'Каталог'),
-    _TabItem(icon: Icons.favorite_border, activeIcon: Icons.favorite, label: 'Избранное'),
-    _TabItem(icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: 'Чаты'),
-    _TabItem(icon: Icons.person_outline, activeIcon: Icons.person, label: 'Профиль'),
-  ];
-
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
+    final tabs = [
+      _TabItem(icon: Icons.home_outlined, activeIcon: Icons.home, label: l.tabFeed),
+      _TabItem(icon: Icons.grid_view_outlined, activeIcon: Icons.grid_view, label: l.tabCatalog),
+      _TabItem(icon: Icons.favorite_border, activeIcon: Icons.favorite, label: l.favourites),
+      _TabItem(icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: l.chats),
+      _TabItem(icon: Icons.person_outline, activeIcon: Icons.person, label: l.profile),
+    ];
     return Scaffold(
       body: navigationShell,
       bottomNavigationBar: _FloatingTabBar(
@@ -26,7 +26,7 @@ class ClientShell extends StatelessWidget {
           i,
           initialLocation: i == navigationShell.currentIndex,
         ),
-        tabs: _tabs,
+        tabs: tabs,
       ),
     );
   }
@@ -47,15 +47,15 @@ class _FloatingTabBar extends StatelessWidget {
   Widget build(BuildContext context) {
     final bottom = MediaQuery.of(context).padding.bottom;
     return Container(
-      color: kBgPrimary,
+      color: context.colors.bgPrimary,
       child: Container(
         margin: EdgeInsets.fromLTRB(
             AppSpacing.lg, 0, AppSpacing.lg, bottom + AppSpacing.sm),
         padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: kBgSecondary,
+          color: context.colors.bgSecondary,
           borderRadius: BorderRadius.circular(AppRadius.lg),
-          border: Border.all(color: kBorder),
+          border: Border.all(color: context.colors.border),
         ),
         child: Row(
           children: List.generate(tabs.length, (i) {
@@ -78,7 +78,7 @@ class _FloatingTabBar extends StatelessWidget {
                           : null,
                       child: Icon(
                         active ? tabs[i].activeIcon : tabs[i].icon,
-                        color: active ? kGold : kTextTertiary,
+                        color: active ? kGold : context.colors.textTertiary,
                         size: 22,
                       ),
                     ),
@@ -86,7 +86,7 @@ class _FloatingTabBar extends StatelessWidget {
                       tabs[i].label,
                       style: AppTextStyles.caption.copyWith(
                         fontSize: 10,
-                        color: active ? kGold : kTextTertiary,
+                        color: active ? kGold : context.colors.textTertiary,
                         fontWeight:
                             active ? FontWeight.w700 : FontWeight.w400,
                       ),

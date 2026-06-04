@@ -51,7 +51,10 @@ export class ReviewsService {
     const [reviews, total] = await Promise.all([
       this.prisma.review.findMany({
         where: { masterId },
-        include: { client: { select: { name: true, avatarUrl: true } } },
+        include: {
+          client: { select: { name: true, avatarUrl: true } },
+          reply: true,
+        },
         orderBy: { createdAt: 'desc' },
         take,
         skip,
@@ -60,6 +63,25 @@ export class ReviewsService {
     ]);
 
     return { reviews, total, hasMore: skip + take < total };
+  }
+
+  // M-reply: мастер отвечает на отзыв (один ответ на отзыв)
+  async replyToReview(userId: string, reviewId: string, text: string) {
+    const master = await this.prisma.masterProfile.findFirst({
+      where: { userId, status: 'APPROVED' },
+    });
+    if (!master) throw new ForbiddenException('Только одобренные мастера могут отвечать на отзывы');
+
+    const review = await this.prisma.review.findUnique({ where: { id: reviewId } });
+    if (!review) throw new NotFoundException('Отзыв не найден');
+    if (review.masterId !== master.id) throw new ForbiddenException();
+
+    const existing = await this.prisma.reviewReply.findUnique({ where: { reviewId } });
+    if (existing) throw new BadRequestException('Ответ на этот отзыв уже существует');
+
+    return this.prisma.reviewReply.create({
+      data: { reviewId, masterId: master.id, text },
+    });
   }
 
   private async recalcRating(masterId: string) {

@@ -53,20 +53,20 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: kBgSecondary,
+        backgroundColor: context.colors.bgSecondary,
         title: Text('Отправить заявку?', style: AppTextStyles.h1),
         content: Text(
           'После отправки заявка уйдёт на проверку. Убедитесь, что данные заполнены верно.',
-          style: AppTextStyles.body.copyWith(color: kTextSecondary),
+          style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Отмена', style: AppTextStyles.label.copyWith(color: kTextSecondary)),
+            child: Text(context.l10n.cancelBtn, style: AppTextStyles.label.copyWith(color: context.colors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Отправить', style: AppTextStyles.label.copyWith(color: kGold)),
+            child: Text(context.l10n.sendBtn, style: AppTextStyles.label.copyWith(color: kGold)),
           ),
         ],
       ),
@@ -111,7 +111,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString(), style: AppTextStyles.caption),
-            backgroundColor: kBgSecondary,
+            backgroundColor: context.colors.bgSecondary,
           ),
         );
       }
@@ -123,11 +123,11 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Первая услуга', style: AppTextStyles.title),
-        leading: BackButton(color: kTextPrimary, onPressed: () => context.pop()),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.firstServiceTitle, style: AppTextStyles.title),
+        leading: BackButton(color: context.colors.textPrimary, onPressed: () => context.pop()),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
@@ -135,14 +135,14 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: AppSpacing.xl),
-            Text('Добавьте услугу', style: AppTextStyles.h1),
+            Text(context.l10n.addServiceTitle2, style: AppTextStyles.h1),
             const SizedBox(height: AppSpacing.sm),
-            Text('Вы сможете добавить больше услуг после одобрения.',
-                style: AppTextStyles.body.copyWith(color: kTextSecondary)),
+            Text(context.l10n.addServiceDesc2,
+                style: AppTextStyles.body.copyWith(color: context.colors.textSecondary)),
             const SizedBox(height: AppSpacing.xl),
 
             // Name
-            Text('Название услуги', style: AppTextStyles.label),
+            Text(context.l10n.serviceNameLabel, style: AppTextStyles.label),
             const SizedBox(height: AppSpacing.sm),
             AppTextField(
               controller: _nameCtrl,
@@ -152,22 +152,22 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // Category
-            Text('Категория', style: AppTextStyles.label),
+            Text(context.l10n.categoryLabel, style: AppTextStyles.label),
             const SizedBox(height: AppSpacing.sm),
             DropdownButtonFormField<String>(
               value: _category,
-              dropdownColor: kBgSecondary,
+              dropdownColor: context.colors.bgSecondary,
               style: AppTextStyles.body,
               decoration: InputDecoration(
                 filled: true,
-                fillColor: kBgSecondary,
+                fillColor: context.colors.bgSecondary,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  borderSide: const BorderSide(color: kBorder),
+                  borderSide: BorderSide(color: context.colors.border),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(AppRadius.sm),
-                  borderSide: const BorderSide(color: kBorder),
+                  borderSide: BorderSide(color: context.colors.border),
                 ),
               ),
               items: _categories.keys.map((c) => DropdownMenuItem(
@@ -179,7 +179,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // Price
-            Text('Цена (₸)', style: AppTextStyles.label),
+            Text(context.l10n.priceTenge, style: AppTextStyles.label),
             const SizedBox(height: AppSpacing.sm),
             AppTextField(
               controller: _priceCtrl,
@@ -191,7 +191,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
             const SizedBox(height: AppSpacing.lg),
 
             // Duration
-            Text('Длительность: $_duration мин', style: AppTextStyles.label),
+            Text(context.l10n.durationMinutes(_duration), style: AppTextStyles.label),
             const SizedBox(height: AppSpacing.sm),
             Slider(
               value: _duration.toDouble(),
@@ -199,14 +199,14 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
               max: 240,
               divisions: 15,
               activeColor: kGold,
-              inactiveColor: kBorder2,
-              label: '$_duration мин',
+              inactiveColor: context.colors.border2,
+              label: context.l10n.durationMinutes(_duration),
               onChanged: (v) => setState(() => _duration = v.round()),
             ),
 
             const SizedBox(height: AppSpacing.xl),
             PrimaryButton(
-              label: 'Отправить на проверку',
+              label: context.l10n.submitApplication,
               onPressed: _save,
               loading: _loading,
               enabled: _canSubmit,

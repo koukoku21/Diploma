@@ -115,8 +115,8 @@ class _MasterByUsernameScreenState extends State<_MasterByUsernameScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return const Scaffold(
-      backgroundColor: kBgPrimary,
+    return Scaffold(
+      backgroundColor: context.colors.bgPrimary,
       body: Center(child: CircularProgressIndicator(color: kGold)),
     );
   }

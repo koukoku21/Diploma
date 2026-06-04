@@ -120,9 +120,9 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
           style: AppTextStyles.body,
           decoration: InputDecoration(
             hintText: 'ул. Кенесары 40, Астана',
-            hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
+            hintStyle: AppTextStyles.body.copyWith(color: context.colors.textTertiary),
             filled: true,
-            fillColor: kBgTertiary,
+            fillColor: context.colors.bgTertiary,
             suffixIcon: _searching
                 ? const Padding(
                     padding: EdgeInsets.all(12),
@@ -138,11 +138,11 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
                     : null,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.sm),
-              borderSide: const BorderSide(color: kBorder),
+              borderSide: BorderSide(color: context.colors.border),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.sm),
-              borderSide: const BorderSide(color: kBorder),
+              borderSide: BorderSide(color: context.colors.border),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(AppRadius.sm),
@@ -156,9 +156,9 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
           Container(
             margin: const EdgeInsets.only(top: 4),
             decoration: BoxDecoration(
-              color: kBgSecondary,
+              color: context.colors.bgSecondary,
               borderRadius: BorderRadius.circular(AppRadius.sm),
-              border: Border.all(color: kBorder),
+              border: Border.all(color: context.colors.border),
             ),
             child: ListView.separated(
               shrinkWrap: true,
@@ -166,20 +166,20 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
               padding: EdgeInsets.zero,
               itemCount: _suggestions.length,
               separatorBuilder: (_, __) =>
-                  const Divider(height: 1, color: kBorder),
+                  Divider(height: 1, color: context.colors.border),
               itemBuilder: (_, i) {
                 final s = _suggestions[i];
                 return ListTile(
                   dense: true,
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md, vertical: 4),
-                  leading: const Icon(Icons.location_on_outlined,
-                      color: kTextTertiary, size: 18),
+                  leading: Icon(Icons.location_on_outlined,
+                      color: context.colors.textTertiary, size: 18),
                   title: Text(s.name, style: AppTextStyles.label),
                   subtitle: s.fullName != s.name
                       ? Text(s.fullName,
                           style: AppTextStyles.caption
-                              .copyWith(color: kTextTertiary),
+                              .copyWith(color: context.colors.textTertiary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis)
                       : null,

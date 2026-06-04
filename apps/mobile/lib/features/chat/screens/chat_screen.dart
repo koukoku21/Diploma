@@ -72,11 +72,11 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
     ref.listen(chatSocketProvider(widget.roomId), (_, __) => _scrollToBottom());
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
+        backgroundColor: context.colors.bgPrimary,
         title: Text(widget.masterName, style: AppTextStyles.title),
-        leading: const BackButton(color: kTextPrimary),
+        leading: BackButton(color: context.colors.textPrimary),
       ),
       body: Column(
         children: [
@@ -87,7 +87,7 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
                 : messages.isEmpty
                     ? Center(
                         child: Text('Начните переписку',
-                            style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                            style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
                       )
                     : ListView.builder(
                         controller: _scroll,
@@ -129,7 +129,7 @@ class _MessageBubble extends StatelessWidget {
           maxWidth: MediaQuery.of(context).size.width * 0.72,
         ),
         decoration: BoxDecoration(
-          color: isMe ? kGold : kBgSecondary,
+          color: isMe ? kGold : context.colors.bgSecondary,
           borderRadius: BorderRadius.only(
             topLeft: const Radius.circular(AppRadius.md),
             topRight: const Radius.circular(AppRadius.md),
@@ -140,7 +140,7 @@ class _MessageBubble extends StatelessWidget {
         child: Text(
           message.content,
           style: AppTextStyles.body.copyWith(
-            color: isMe ? kBgPrimary : kTextPrimary,
+            color: isMe ? context.colors.bgPrimary : context.colors.textPrimary,
           ),
         ),
       ),
@@ -166,9 +166,9 @@ class _InputBar extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(
             horizontal: AppSpacing.screenH, vertical: AppSpacing.sm),
-        decoration: const BoxDecoration(
-          color: kBgSecondary,
-          border: Border(top: BorderSide(color: kBorder)),
+        decoration: BoxDecoration(
+          color: context.colors.bgSecondary,
+          border: Border(top: BorderSide(color: context.colors.border)),
         ),
         child: Row(
           children: [
@@ -182,10 +182,10 @@ class _InputBar extends StatelessWidget {
                 minLines: 1,
                 textInputAction: TextInputAction.send,
                 decoration: InputDecoration(
-                  hintText: 'Сообщение...',
-                  hintStyle: AppTextStyles.body.copyWith(color: kTextTertiary),
+                  hintText: context.l10n.messagePlaceholder,
+                  hintStyle: AppTextStyles.body.copyWith(color: context.colors.textTertiary),
                   filled: true,
-                  fillColor: kBgTertiary,
+                  fillColor: context.colors.bgTertiary,
                   contentPadding: const EdgeInsets.symmetric(
                       horizontal: AppSpacing.md, vertical: AppSpacing.sm),
                   border: OutlineInputBorder(
@@ -205,7 +205,7 @@ class _InputBar extends StatelessWidget {
                   color: kGold,
                   shape: BoxShape.circle,
                 ),
-                child: const Icon(Icons.send_rounded, color: kBgPrimary, size: 20),
+                child: Icon(Icons.send_rounded, color: context.colors.bgPrimary, size: 20),
               ),
             ),
           ],

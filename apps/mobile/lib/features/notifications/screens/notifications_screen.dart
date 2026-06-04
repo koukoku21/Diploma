@@ -56,16 +56,16 @@ class NotificationsScreen extends ConsumerWidget {
     final async = ref.watch(_notifProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
+        backgroundColor: context.colors.bgPrimary,
         title: Text('Уведомления', style: AppTextStyles.title),
       ),
       body: async.when(
         loading: () =>
             const Center(child: CircularProgressIndicator(color: kGold)),
         error: (e, _) => Center(
-          child: Text('Ошибка загрузки', style: AppTextStyles.body),
+          child: Text(context.l10n.errorLoad, style: AppTextStyles.body),
         ),
         data: (items) {
           // После загрузки сбрасываем бейдж
@@ -76,12 +76,12 @@ class NotificationsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.notifications_none_rounded,
-                      color: kTextTertiary, size: 64),
+                  Icon(Icons.notifications_none_rounded,
+                      color: context.colors.textTertiary, size: 64),
                   const SizedBox(height: AppSpacing.md),
                   Text('Нет уведомлений',
                       style: AppTextStyles.subtitle
-                          .copyWith(color: kTextSecondary)),
+                          .copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
                   Text('Здесь будут появляться уведомления о записях',
                       style: AppTextStyles.caption,
@@ -95,7 +95,7 @@ class NotificationsScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
             itemCount: items.length,
             separatorBuilder: (_, __) =>
-                const Divider(color: kBorder, height: 1, indent: 72),
+                Divider(color: context.colors.border, height: 1, indent: 72),
             itemBuilder: (_, i) => _NotifTile(notif: items[i]),
           );
         },
@@ -191,11 +191,11 @@ class _NotifTile extends StatelessWidget {
                   const SizedBox(height: 3),
                   Text(notif.body,
                       style: AppTextStyles.caption
-                          .copyWith(color: kTextSecondary)),
+                          .copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: 4),
                   Text(_timeAgo(notif.createdAt),
                       style: AppTextStyles.caption
-                          .copyWith(color: kTextTertiary, fontSize: 11)),
+                          .copyWith(color: context.colors.textTertiary, fontSize: 11)),
                 ],
               ),
             ),

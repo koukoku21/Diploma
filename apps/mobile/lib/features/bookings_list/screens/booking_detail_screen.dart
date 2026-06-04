@@ -18,13 +18,13 @@ class BookingDetailScreen extends ConsumerWidget {
     final async = ref.watch(bookingDetailProvider(bookingId));
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       body: async.when(
         loading: () => const Center(
             child: CircularProgressIndicator(color: kGold)),
         error: (e, _) => Column(children: [
-          AppBar(backgroundColor: kBgPrimary),
-          Center(child: Text('Ошибка: $e', style: AppTextStyles.body)),
+          AppBar(backgroundColor: context.colors.bgPrimary),
+          Center(child: Text(context.l10n.errorWithDetails(e.toString()), style: AppTextStyles.body)),
         ]),
         data: (b) => _Body(booking: b, bookingId: bookingId),
       ),
@@ -54,21 +54,21 @@ class _Body extends ConsumerWidget {
     final ok = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: kBgSecondary,
-        title: Text('Отменить запись?', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgSecondary,
+        title: Text(context.l10n.cancelBookingQuestion, style: AppTextStyles.title),
         content: Text(
-          'Запись к ${booking.masterName} будет отменена.',
-          style: AppTextStyles.body.copyWith(color: kTextSecondary),
+          context.l10n.bookingToCancelDesc(booking.masterName),
+          style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: Text('Нет',
-                style: AppTextStyles.label.copyWith(color: kTextSecondary)),
+            child: Text(context.l10n.no,
+                style: AppTextStyles.label.copyWith(color: context.colors.textSecondary)),
           ),
           TextButton(
             onPressed: () => Navigator.pop(ctx, true),
-            child: Text('Да, отменить',
+            child: Text(context.l10n.yesCancelAction,
                 style: AppTextStyles.label.copyWith(color: kRose)),
           ),
         ],
@@ -83,7 +83,7 @@ class _Body extends ConsumerWidget {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
       ),
@@ -110,16 +110,16 @@ class _Body extends ConsumerWidget {
         SliverAppBar(
           expandedHeight: 220,
           pinned: true,
-          backgroundColor: kBgPrimary,
+          backgroundColor: context.colors.bgPrimary,
           leading: IconButton(
             icon: Container(
               padding: const EdgeInsets.all(6),
               decoration: BoxDecoration(
-                color: kBgPrimary.withValues(alpha: 0.85),
+                color: context.colors.bgPrimary.withValues(alpha: 0.85),
                 shape: BoxShape.circle,
               ),
-              child: const Icon(Icons.arrow_back,
-                  color: kTextPrimary, size: 20),
+              child: Icon(Icons.arrow_back,
+                  color: context.colors.textPrimary, size: 20),
             ),
             onPressed: () => context.pop(),
           ),
@@ -152,7 +152,7 @@ class _Body extends ConsumerWidget {
                             const SizedBox(width: 4),
                             Text(booking.masterRating!.toStringAsFixed(1),
                                 style: AppTextStyles.body
-                                    .copyWith(color: kTextSecondary)),
+                                    .copyWith(color: context.colors.textSecondary)),
                           ]),
                       ],
                     ),
@@ -164,7 +164,7 @@ class _Body extends ConsumerWidget {
                 // Услуга
                 _InfoCard(
                   icon: Icons.content_cut_rounded,
-                  label: 'Услуга',
+                  label: context.l10n.serviceLabel,
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -173,7 +173,7 @@ class _Body extends ConsumerWidget {
                       Row(children: [
                         Text('${booking.durationMin} мин',
                             style: AppTextStyles.body
-                                .copyWith(color: kTextSecondary)),
+                                .copyWith(color: context.colors.textSecondary)),
                         const SizedBox(width: 12),
                         Text('${booking.priceSnapshot} ₸',
                             style: AppTextStyles.label.copyWith(color: kGold)),
@@ -186,7 +186,7 @@ class _Body extends ConsumerWidget {
                 // Дата и время
                 _InfoCard(
                   icon: Icons.calendar_today_rounded,
-                  label: 'Дата и время',
+                  label: context.l10n.dateTimeLabel,
                   child: Text(_dateStr, style: AppTextStyles.label),
                 ),
                 const SizedBox(height: AppSpacing.md),
@@ -198,7 +198,7 @@ class _Body extends ConsumerWidget {
                     label: 'Адрес',
                     child: Text(booking.masterAddress!,
                         style: AppTextStyles.body
-                            .copyWith(color: kTextSecondary)),
+                            .copyWith(color: context.colors.textSecondary)),
                   ),
                   const SizedBox(height: AppSpacing.md),
                 ],
@@ -208,10 +208,10 @@ class _Body extends ConsumerWidget {
                     booking.cancelReason != null) ...[
                   _InfoCard(
                     icon: Icons.info_outline_rounded,
-                    label: 'Причина отмены',
+                    label: context.l10n.cancelReasonLabel,
                     child: Text(booking.cancelReason!,
                         style: AppTextStyles.body
-                            .copyWith(color: kTextSecondary)),
+                            .copyWith(color: context.colors.textSecondary)),
                   ),
                   const SizedBox(height: AppSpacing.md),
                 ],
@@ -220,7 +220,7 @@ class _Body extends ConsumerWidget {
                 if (booking.hasReview && booking.reviewRating != null) ...[
                   _InfoCard(
                     icon: Icons.star_rounded,
-                    label: 'Мой отзыв',
+                    label: context.l10n.myReviewLabel,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -231,7 +231,7 @@ class _Body extends ConsumerWidget {
                                 : Icons.star_outline_rounded,
                             color: i < booking.reviewRating!
                                 ? kGold
-                                : kTextTertiary,
+                                : context.colors.textTertiary,
                             size: 18,
                           )),
                         ),
@@ -239,7 +239,7 @@ class _Body extends ConsumerWidget {
                           const SizedBox(height: 6),
                           Text(booking.reviewText!,
                               style: AppTextStyles.body
-                                  .copyWith(color: kTextSecondary)),
+                                  .copyWith(color: context.colors.textSecondary)),
                         ],
                       ],
                     ),
@@ -257,12 +257,12 @@ class _Body extends ConsumerWidget {
                       onPressed: () => _review(context, ref),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kGold,
-                        foregroundColor: kBgPrimary,
+                        foregroundColor: context.colors.bgPrimary,
                         shape: const StadiumBorder(),
                       ),
-                      child: Text('Оставить отзыв',
+                      child: Text(context.l10n.leaveReview,
                           style: AppTextStyles.label.copyWith(
-                              fontWeight: FontWeight.w700, color: kBgPrimary)),
+                              fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
                     ),
                   ),
                 if (canReview) const SizedBox(height: AppSpacing.md),
@@ -277,12 +277,12 @@ class _Body extends ConsumerWidget {
                           AppRoutes.masterPublicProfile(booking.masterId)),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: kGold,
-                        foregroundColor: kBgPrimary,
+                        foregroundColor: context.colors.bgPrimary,
                         shape: const StadiumBorder(),
                       ),
-                      child: Text('Записаться снова',
+                      child: Text(context.l10n.bookAgain,
                           style: AppTextStyles.label.copyWith(
-                              fontWeight: FontWeight.w700, color: kBgPrimary)),
+                              fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
                     ),
                   ),
                   const SizedBox(height: AppSpacing.md),
@@ -298,7 +298,7 @@ class _Body extends ConsumerWidget {
                     minimumSize: const Size.fromHeight(48),
                     shape: const StadiumBorder(),
                   ),
-                  child: Text('Открыть профиль мастера',
+                  child: Text(context.l10n.openMasterProfile,
                       style: AppTextStyles.label.copyWith(color: kGold)),
                 ),
 
@@ -322,7 +322,7 @@ class _Body extends ConsumerWidget {
                       child: Text(
                         tooLateToCancel
                             ? 'Отмена недоступна (менее 2 ч.)'
-                            : 'Отменить запись',
+                            : context.l10n.cancelBooking,
                         style: AppTextStyles.label.copyWith(
                           color: canCancel
                               ? kRose
@@ -354,9 +354,9 @@ class _InfoCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(AppSpacing.md),
       decoration: BoxDecoration(
-        color: kBgSecondary,
+        color: context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.md),
-        border: Border.all(color: kBorder),
+        border: Border.all(color: context.colors.border),
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -369,7 +369,7 @@ class _InfoCard extends StatelessWidget {
               children: [
                 Text(label,
                     style: AppTextStyles.caption
-                        .copyWith(color: kTextTertiary)),
+                        .copyWith(color: context.colors.textTertiary)),
                 const SizedBox(height: 4),
                 child,
               ],
@@ -388,7 +388,7 @@ class _StatusChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final (label, color) = switch (status) {
-      BookingStatus.confirmed => ('Предстоит', kGold),
+      BookingStatus.confirmed => (context.l10n.bookingStatusUpcoming, kGold),
       BookingStatus.completed => ('Завершено', kSuccess),
       BookingStatus.cancelled => ('Отменено', kRose),
     };
@@ -411,9 +411,9 @@ class _CoverPlaceholder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: kBgSecondary,
-      child: const Center(
-        child: Icon(Icons.person_outline, color: kTextTertiary, size: 64),
+      color: context.colors.bgSecondary,
+      child: Center(
+        child: Icon(Icons.person_outline, color: context.colors.textTertiary, size: 64),
       ),
     );
   }

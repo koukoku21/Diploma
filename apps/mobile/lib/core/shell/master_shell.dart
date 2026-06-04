@@ -11,7 +11,7 @@ class MasterShell extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       body: navigationShell,
       bottomNavigationBar: _MasterTabBar(
         currentIndex: navigationShell.currentIndex,
@@ -29,11 +29,12 @@ class _MasterTabBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const items = [
-      _TabItem(icon: Icons.dashboard_outlined, label: 'Главная'),
-      _TabItem(icon: Icons.calendar_today_outlined, label: 'Записи'),
-      _TabItem(icon: Icons.access_time_rounded, label: 'Расписание'),
-      _TabItem(icon: Icons.person_outline, label: 'Профиль'),
+    final l = context.l10n;
+    final items = [
+      _TabItem(icon: Icons.dashboard_outlined, label: l.tabDashboard),
+      _TabItem(icon: Icons.calendar_today_outlined, label: l.tabBookings),
+      _TabItem(icon: Icons.access_time_rounded, label: l.schedule),
+      _TabItem(icon: Icons.person_outline, label: l.profile),
     ];
 
     return SafeArea(
@@ -42,9 +43,9 @@ class _MasterTabBar extends StatelessWidget {
         margin: const EdgeInsets.symmetric(
             horizontal: AppSpacing.screenH, vertical: AppSpacing.sm),
         decoration: BoxDecoration(
-          color: kBgSecondary,
+          color: context.colors.bgSecondary,
           borderRadius: BorderRadius.circular(AppRadius.xl),
-          border: Border.all(color: kBorder),
+          border: Border.all(color: context.colors.border),
         ),
         child: Row(
           children: items.asMap().entries.map((e) {
@@ -68,11 +69,11 @@ class _MasterTabBar extends StatelessWidget {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(item.icon,
-                          color: active ? kGold : kTextTertiary, size: 22),
+                          color: active ? kGold : context.colors.textTertiary, size: 22),
                       const SizedBox(height: 2),
                       Text(item.label,
                           style: AppTextStyles.caption.copyWith(
-                            color: active ? kGold : kTextTertiary,
+                            color: active ? kGold : context.colors.textTertiary,
                             fontSize: 10,
                           )),
                     ],

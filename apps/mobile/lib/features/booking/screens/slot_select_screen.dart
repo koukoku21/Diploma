@@ -49,14 +49,14 @@ class _SlotSelectScreenState extends ConsumerState<SlotSelectScreen> {
     )));
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
+        backgroundColor: context.colors.bgPrimary,
         title: Column(
           children: [
-            Text('Выберите время', style: AppTextStyles.title),
+            Text(context.l10n.selectTime, style: AppTextStyles.title),
             Text('Шаг 2 из 3',
-                style: AppTextStyles.caption.copyWith(color: kTextTertiary)),
+                style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
           ],
         ),
         leading: IconButton(
@@ -121,15 +121,15 @@ class _SlotSelectScreenState extends ConsumerState<SlotSelectScreen> {
               loading: () =>
                   const Center(child: CircularProgressIndicator(color: kGold)),
               error: (e, _) => Center(
-                  child: Text('Ошибка загрузки слотов',
+                  child: Text(context.l10n.errorLoadSlots,
                       style:
-                          AppTextStyles.body.copyWith(color: kTextSecondary))),
+                          AppTextStyles.body.copyWith(color: context.colors.textSecondary))),
               data: (result) {
                 if (result.isDayOff || result.slots.isEmpty) {
                   return Center(
-                    child: Text('Нет свободного времени',
+                    child: Text(context.l10n.noFreeTime,
                         style: AppTextStyles.body
-                            .copyWith(color: kTextSecondary)),
+                            .copyWith(color: context.colors.textSecondary)),
                   );
                 }
                 return GridView.builder(
@@ -151,15 +151,15 @@ class _SlotSelectScreenState extends ConsumerState<SlotSelectScreen> {
                       child: Container(
                         alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: sel ? kGold : kBgSecondary,
+                          color: sel ? kGold : context.colors.bgSecondary,
                           borderRadius: BorderRadius.circular(AppRadius.xs),
                           border: Border.all(
-                              color: sel ? kGold : kBorder),
+                              color: sel ? kGold : context.colors.border),
                         ),
                         child: Text(
                           t,
                           style: AppTextStyles.label.copyWith(
-                              color: sel ? kBgPrimary : kTextPrimary,
+                              color: sel ? context.colors.bgPrimary : context.colors.textPrimary,
                               fontWeight: sel
                                   ? FontWeight.w700
                                   : FontWeight.w500),
@@ -211,9 +211,9 @@ class _DateCell extends StatelessWidget {
     return Container(
       width: 52,
       decoration: BoxDecoration(
-        color: selected ? kGold : kBgSecondary,
+        color: selected ? kGold : context.colors.bgSecondary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: selected ? kGold : kBorder),
+        border: Border.all(color: selected ? kGold : context.colors.border),
       ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -221,21 +221,21 @@ class _DateCell extends StatelessWidget {
           Text(
             _weekdays[date.weekday % 7],
             style: AppTextStyles.caption.copyWith(
-              color: selected ? kBgPrimary : kTextSecondary,
+              color: selected ? context.colors.bgPrimary : context.colors.textSecondary,
               fontSize: 10,
             ),
           ),
           Text(
             '${date.day}',
             style: AppTextStyles.subtitle.copyWith(
-              color: selected ? kBgPrimary : kTextPrimary,
+              color: selected ? context.colors.bgPrimary : context.colors.textPrimary,
               fontWeight: FontWeight.w700,
             ),
           ),
           Text(
             _months[date.month],
             style: AppTextStyles.caption.copyWith(
-              color: selected ? kBgPrimary : kTextSecondary,
+              color: selected ? context.colors.bgPrimary : context.colors.textSecondary,
               fontSize: 10,
             ),
           ),

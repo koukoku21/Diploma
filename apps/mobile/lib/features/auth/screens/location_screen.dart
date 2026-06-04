@@ -32,7 +32,7 @@ class LocationScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: AppSpacing.screenH),
@@ -66,13 +66,13 @@ class LocationScreen extends StatelessWidget {
               Text(
                 'Разрешите доступ к геолокации,\nчтобы видеть мастеров в вашем районе\nАстаны.',
                 textAlign: TextAlign.center,
-                style: AppTextStyles.body.copyWith(color: kTextSecondary),
+                style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
               ),
 
               const Spacer(),
 
               PrimaryButton(
-                label: 'Разрешить геолокацию',
+                label: context.l10n.allowLocation,
                 onPressed: () => _requestLocation(context),
               ),
 
@@ -81,8 +81,8 @@ class LocationScreen extends StatelessWidget {
               TextButton(
                 onPressed: () => _goToFeed(context),
                 child: Text(
-                  'Пропустить',
-                  style: AppTextStyles.label.copyWith(color: kTextSecondary),
+                  context.l10n.skipBtn,
+                  style: AppTextStyles.label.copyWith(color: context.colors.textSecondary),
                 ),
               ),
 

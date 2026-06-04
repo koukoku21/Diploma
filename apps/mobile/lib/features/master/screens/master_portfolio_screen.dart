@@ -53,12 +53,12 @@ class _MasterPortfolioScreenState
     final canContinue = _photos.length >= 3;
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Портфолио', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.portfolio, style: AppTextStyles.title),
         leading:
-            BackButton(color: kTextPrimary, onPressed: () => context.pop()),
+            BackButton(color: context.colors.textPrimary, onPressed: () => context.pop()),
       ),
       body: Padding(
         padding:
@@ -71,7 +71,7 @@ class _MasterPortfolioScreenState
             const SizedBox(height: AppSpacing.sm),
             Text(
               'Минимум 3 фото. Первое фото станет обложкой профиля.',
-              style: AppTextStyles.body.copyWith(color: kTextSecondary),
+              style: AppTextStyles.body.copyWith(color: context.colors.textSecondary),
             ),
             const SizedBox(height: AppSpacing.xl),
 
@@ -105,7 +105,7 @@ class _MasterPortfolioScreenState
                 child: Text(
                   'Добавьте ещё ${3 - _photos.length} фото',
                   style: AppTextStyles.caption
-                      .copyWith(color: kTextSecondary),
+                      .copyWith(color: context.colors.textSecondary),
                 ),
               ),
 
@@ -133,12 +133,12 @@ class _AddPhotoCell extends StatelessWidget {
       onTap: onTap,
       child: Container(
         decoration: BoxDecoration(
-          color: kBgSecondary,
+          color: context.colors.bgSecondary,
           borderRadius: BorderRadius.circular(AppRadius.sm),
-          border: Border.all(color: kBorder2),
+          border: Border.all(color: context.colors.border2),
         ),
-        child: const Icon(Icons.add_photo_alternate_outlined,
-            color: kTextTertiary, size: 32),
+        child: Icon(Icons.add_photo_alternate_outlined,
+            color: context.colors.textTertiary, size: 32),
       ),
     );
   }
@@ -175,7 +175,7 @@ class _PhotoCell extends StatelessWidget {
               ),
               child: Text('Обложка',
                   style: AppTextStyles.caption
-                      .copyWith(color: kBgPrimary, fontSize: 10)),
+                      .copyWith(color: context.colors.bgPrimary, fontSize: 10)),
             ),
           ),
         Positioned(

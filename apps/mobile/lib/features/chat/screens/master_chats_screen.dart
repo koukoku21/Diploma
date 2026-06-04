@@ -25,12 +25,12 @@ class MasterChatsScreen extends ConsumerWidget {
     final async = ref.watch(_masterChatRoomsProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Сообщения', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.messages, style: AppTextStyles.title),
         leading: BackButton(
-            color: kTextPrimary, onPressed: () => Navigator.pop(context)),
+            color: context.colors.textPrimary, onPressed: () => Navigator.pop(context)),
       ),
       body: async.when(
         loading: () =>
@@ -42,12 +42,12 @@ class MasterChatsScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.chat_bubble_outline,
-                      color: kTextTertiary, size: 56),
+                  Icon(Icons.chat_bubble_outline,
+                      color: context.colors.textTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
-                  Text('Нет сообщений',
+                  Text(context.l10n.noChats,
                       style: AppTextStyles.subtitle
-                          .copyWith(color: kTextSecondary)),
+                          .copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
                   Text('Клиенты смогут написать вам\nпосле добавления в избранное',
                       style: AppTextStyles.caption,
@@ -59,13 +59,13 @@ class MasterChatsScreen extends ConsumerWidget {
 
           return RefreshIndicator(
             color: kGold,
-            backgroundColor: kBgSecondary,
+            backgroundColor: context.colors.bgSecondary,
             onRefresh: () => ref.refresh(_masterChatRoomsProvider.future),
             child: ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               itemCount: rooms.length,
               separatorBuilder: (_, __) =>
-                  const Divider(height: 1, color: kBorder, indent: 80),
+                  Divider(height: 1, color: context.colors.border, indent: 80),
               itemBuilder: (_, i) {
                 final room = rooms[i];
                 final name = room.clientName ?? 'Клиент';
@@ -80,12 +80,12 @@ class MasterChatsScreen extends ConsumerWidget {
                       vertical: AppSpacing.sm),
                   leading: CircleAvatar(
                     radius: 28,
-                    backgroundColor: kBgTertiary,
+                    backgroundColor: context.colors.bgTertiary,
                     backgroundImage:
                         avatar != null ? NetworkImage(avatar) : null,
                     child: avatar == null
-                        ? const Icon(Icons.person_outline,
-                            color: kTextTertiary)
+                        ? Icon(Icons.person_outline,
+                            color: context.colors.textTertiary)
                         : null,
                   ),
                   title: Text(name, style: AppTextStyles.label),
@@ -96,11 +96,11 @@ class MasterChatsScreen extends ConsumerWidget {
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         )
-                      : Text('Нет сообщений',
+                      : Text(context.l10n.noChats,
                           style: AppTextStyles.caption
-                              .copyWith(color: kTextTertiary)),
-                  trailing: const Icon(Icons.chevron_right,
-                      color: kTextTertiary, size: 20),
+                              .copyWith(color: context.colors.textTertiary)),
+                  trailing: Icon(Icons.chevron_right,
+                      color: context.colors.textTertiary, size: 20),
                 );
               },
             ),

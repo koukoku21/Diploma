@@ -22,12 +22,12 @@ class MasterServicesScreen extends ConsumerWidget {
     final async = ref.watch(_servicesProvider);
 
     return Scaffold(
-      backgroundColor: kBgPrimary,
+      backgroundColor: context.colors.bgPrimary,
       appBar: AppBar(
-        backgroundColor: kBgPrimary,
-        title: Text('Услуги', style: AppTextStyles.title),
+        backgroundColor: context.colors.bgPrimary,
+        title: Text(context.l10n.services, style: AppTextStyles.title),
         leading: BackButton(
-            color: kTextPrimary, onPressed: () => Navigator.pop(context)),
+            color: context.colors.textPrimary, onPressed: () => Navigator.pop(context)),
         actions: [
           IconButton(
             icon: const Icon(Icons.add, color: kGold),
@@ -44,12 +44,12 @@ class MasterServicesScreen extends ConsumerWidget {
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  const Icon(Icons.content_cut_outlined,
-                      color: kTextTertiary, size: 56),
+                  Icon(Icons.content_cut_outlined,
+                      color: context.colors.textTertiary, size: 56),
                   const SizedBox(height: AppSpacing.md),
                   Text('Нет услуг',
                       style: AppTextStyles.subtitle
-                          .copyWith(color: kTextSecondary)),
+                          .copyWith(color: context.colors.textSecondary)),
                   const SizedBox(height: AppSpacing.sm),
                   TextButton(
                     onPressed: () => _showAddSheet(context, ref),
@@ -65,7 +65,7 @@ class MasterServicesScreen extends ConsumerWidget {
             padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
             itemCount: services.length,
             separatorBuilder: (_, __) =>
-                const Divider(height: 1, color: kBorder, indent: 16, endIndent: 16),
+                Divider(height: 1, color: context.colors.border, indent: 16, endIndent: 16),
             itemBuilder: (_, i) {
               final s = services[i];
               final template = s['template'] as Map<String, dynamic>?;
@@ -77,7 +77,7 @@ class MasterServicesScreen extends ConsumerWidget {
                 title: Text(title, style: AppTextStyles.label),
                 subtitle: Text(
                   '${s['durationMin']} мин · ${ServiceTemplate.categoryLabel(category)}',
-                  style: AppTextStyles.caption.copyWith(color: kTextSecondary),
+                  style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
                 ),
                 trailing: Row(
                   mainAxisSize: MainAxisSize.min,
@@ -109,7 +109,7 @@ class MasterServicesScreen extends ConsumerWidget {
   void _showAddSheet(BuildContext context, WidgetRef ref) {
     showModalBottomSheet(
       context: context,
-      backgroundColor: kBgSecondary,
+      backgroundColor: context.colors.bgSecondary,
       isScrollControlled: true,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
@@ -158,7 +158,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(e.toString(), style: AppTextStyles.caption),
-            backgroundColor: kBgSecondary,
+            backgroundColor: context.colors.bgSecondary,
           ),
         );
       }
@@ -188,14 +188,14 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
               height: 4,
               margin: const EdgeInsets.only(bottom: AppSpacing.lg),
               decoration: BoxDecoration(
-                  color: kBorder2, borderRadius: BorderRadius.circular(2)),
+                  color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
             ),
           ),
           Text('Новая услуга', style: AppTextStyles.title),
           const SizedBox(height: AppSpacing.lg),
 
           // ─── Выбор услуги из справочника ──────────────────────
-          Text('Услуга', style: AppTextStyles.label),
+          Text(context.l10n.serviceLabel, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           templatesAsync.when(
             loading: () => const Center(
@@ -211,7 +211,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
           const SizedBox(height: AppSpacing.md),
 
           // ─── Цена ─────────────────────────────────────────────
-          Text('Цена (₸)', style: AppTextStyles.label),
+          Text(context.l10n.priceTenge, style: AppTextStyles.label),
           const SizedBox(height: AppSpacing.sm),
           AppTextField(
             controller: _priceCtrl,
@@ -230,7 +230,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
             max: 240,
             divisions: 15,
             activeColor: kGold,
-            inactiveColor: kBorder2,
+            inactiveColor: context.colors.border2,
             label: '$_duration мин',
             onChanged: (v) => setState(() => _duration = v.round()),
           ),
@@ -244,17 +244,17 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: kGold,
                 disabledBackgroundColor: kGold.withValues(alpha: 0.4),
-                foregroundColor: kBgPrimary,
+                foregroundColor: context.colors.bgPrimary,
                 shape: const StadiumBorder(),
               ),
               child: _loading
-                  ? const SizedBox(
+                  ? SizedBox(
                       width: 20, height: 20,
                       child: CircularProgressIndicator(
-                          color: kBgPrimary, strokeWidth: 2))
+                          color: context.colors.bgPrimary, strokeWidth: 2))
                   : Text('Добавить',
                       style: AppTextStyles.label.copyWith(
-                          fontWeight: FontWeight.w700, color: kBgPrimary)),
+                          fontWeight: FontWeight.w700, color: context.colors.bgPrimary)),
             ),
           ),
         ],
@@ -285,9 +285,9 @@ class _TemplatePicker extends StatelessWidget {
 
     return Container(
       decoration: BoxDecoration(
-        color: kBgTertiary,
+        color: context.colors.bgTertiary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: selected != null ? kGold : kBorder),
+        border: Border.all(color: selected != null ? kGold : context.colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -302,17 +302,17 @@ class _TemplatePicker extends StatelessWidget {
                   child: Text(
                     selected?.name ?? 'Выберите услугу...',
                     style: AppTextStyles.body.copyWith(
-                      color: selected != null ? kTextPrimary : kTextTertiary,
+                      color: selected != null ? context.colors.textPrimary : context.colors.textTertiary,
                     ),
                   ),
                 ),
-                const Icon(Icons.expand_more, color: kTextTertiary, size: 20),
+                Icon(Icons.expand_more, color: context.colors.textTertiary, size: 20),
               ],
             ),
           ),
 
           // Список сгруппированный
-          const Divider(height: 1, color: kBorder),
+          Divider(height: 1, color: context.colors.border),
           ConstrainedBox(
             constraints: const BoxConstraints(maxHeight: 320),
             child: SingleChildScrollView(
@@ -347,7 +347,7 @@ class _TemplatePicker extends StatelessWidget {
                                         style: AppTextStyles.body.copyWith(
                                           color: selected?.id == t.id
                                               ? kGold
-                                              : kTextPrimary,
+                                              : context.colors.textPrimary,
                                         )),
                                   ),
                                   if (selected?.id == t.id)
