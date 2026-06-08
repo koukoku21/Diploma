@@ -131,6 +131,8 @@ model MasterProfile {
   salonMemberships SalonMaster[]
   visibilityPeriods MasterVisibility[]
 
+  @@index([status, isVerified, isActive])
+  @@index([lat, lng])
   @@map("master_profiles")
 }
 
