@@ -33,27 +33,30 @@ class ChatsScreen extends ConsumerWidget {
         loading: () => const Center(child: CircularProgressIndicator(color: kGold)),
         error: (e, _) => Center(child: Text('Ошибка: $e')),
         data: (rooms) {
-          if (rooms.isEmpty) {
-            return Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(Icons.chat_bubble_outline, color: context.colors.textTertiary, size: 56),
-                  const SizedBox(height: AppSpacing.md),
-                  Text('Нет чатов', style: AppTextStyles.subtitle.copyWith(color: context.colors.textSecondary)),
-                  const SizedBox(height: AppSpacing.sm),
-                  Text('Добавьте мастера в избранное\nчтобы начать переписку',
-                      style: AppTextStyles.caption, textAlign: TextAlign.center),
-                ],
-              ),
-            );
-          }
-
           return RefreshIndicator(
             color: kGold,
             backgroundColor: context.colors.bgSecondary,
             onRefresh: () => ref.refresh(_chatRoomsProvider.future),
-            child: ListView.separated(
+            child: rooms.isEmpty
+                ? ListView(
+                    children: [
+                      SizedBox(
+                        height: MediaQuery.of(context).size.height * 0.6,
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.chat_bubble_outline, color: context.colors.textTertiary, size: 56),
+                            const SizedBox(height: AppSpacing.md),
+                            Text('Нет чатов', style: AppTextStyles.subtitle.copyWith(color: context.colors.textSecondary)),
+                            const SizedBox(height: AppSpacing.sm),
+                            Text('Потяните вниз для обновления',
+                                style: AppTextStyles.caption, textAlign: TextAlign.center),
+                          ],
+                        ),
+                      ),
+                    ],
+                  )
+                : ListView.separated(
               padding: const EdgeInsets.symmetric(vertical: AppSpacing.sm),
               itemCount: rooms.length,
               separatorBuilder: (_, __) =>

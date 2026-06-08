@@ -574,7 +574,7 @@ class _MasterListCardState extends State<_MasterListCard> {
       final res = await createDio().get('/chat/rooms/by-master/${master.id}');
       final roomId = res.data['id'] as String;
       if (!mounted) return;
-      context.push(AppRoutes.chat(roomId));
+      context.push(AppRoutes.chat(roomId), extra: (masterName: master.name));
     } catch (_) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(

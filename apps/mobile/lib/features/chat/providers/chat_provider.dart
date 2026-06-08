@@ -50,8 +50,15 @@ class ChatSocketNotifier extends StateNotifier<List<ChatMessage>> {
     const storage = FlutterSecureStorage();
     final token = await storage.read(key: 'access_token');
 
+    // Берём базовый URL из dio_client и убираем /api/v1
+    const apiUrl = String.fromEnvironment(
+      'API_URL',
+      defaultValue: 'https://diploma-production-92be.up.railway.app/api/v1',
+    );
+    final socketUrl = '${apiUrl.replaceFirst('/api/v1', '')}/chat';
+
     _socket = io.io(
-      'http://10.0.2.2:3000/chat',
+      socketUrl,
       io.OptionBuilder()
           .setTransports(['websocket'])
           .setAuth({'token': token})
