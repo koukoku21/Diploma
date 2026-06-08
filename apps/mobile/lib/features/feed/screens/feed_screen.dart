@@ -538,9 +538,16 @@ class _ToggleBtn extends StatelessWidget {
 }
 
 // ─── Горизонтальная карточка мастера (режим Лента) ───────────────
-class _MasterListCard extends StatelessWidget {
+class _MasterListCard extends StatefulWidget {
   const _MasterListCard({required this.master});
   final FeedMaster master;
+
+  @override
+  State<_MasterListCard> createState() => _MasterListCardState();
+}
+
+class _MasterListCardState extends State<_MasterListCard> {
+  FeedMaster get master => widget.master;
 
   static const _catLabels = {
     'MANICURE': 'Маникюр', 'PEDICURE': 'Педикюр',
@@ -548,6 +555,36 @@ class _MasterListCard extends StatelessWidget {
     'MAKEUP': 'Макияж',    'LASHES': 'Ресницы',
     'BROWS': 'Брови',      'SKINCARE': 'Уход', 'OTHER': 'Другое',
   };
+
+  Future<void> _addFavourite() async {
+    try {
+      await createDio().post('/favourites/${master.id}');
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('${master.name} добавлен в избранное',
+            style: AppTextStyles.caption.copyWith(color: context.colors.textPrimary)),
+        backgroundColor: context.colors.bgSecondary,
+        duration: const Duration(seconds: 2),
+      ));
+    } catch (_) {}
+  }
+
+  Future<void> _openChat() async {
+    try {
+      final res = await createDio().get('/chat/rooms/by-master/${master.id}');
+      final roomId = res.data['id'] as String;
+      if (!mounted) return;
+      context.push(AppRoutes.chat(roomId));
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text('Сначала запишитесь к мастеру',
+            style: AppTextStyles.caption.copyWith(color: context.colors.textPrimary)),
+        backgroundColor: context.colors.bgSecondary,
+        duration: const Duration(seconds: 2),
+      ));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -669,7 +706,7 @@ class _MasterListCard extends StatelessWidget {
                       const SizedBox(height: 6),
                     ],
 
-                    // Цена + кнопка
+                    // Цена + кнопки действий
                     Row(
                       children: [
                         if (master.minPrice != null)
@@ -679,21 +716,48 @@ class _MasterListCard extends StatelessWidget {
                                 color: context.colors.textSecondary),
                           ),
                         const Spacer(),
+                        // Избранное
+                        GestureDetector(
+                          onTap: _addFavourite,
+                          child: Container(
+                            width: 30, height: 30,
+                            decoration: BoxDecoration(
+                              color: context.colors.bgTertiary,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: context.colors.border2),
+                            ),
+                            child: const Icon(Icons.favorite_border_rounded,
+                                color: kRose, size: 15),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
+                        // Чат
+                        GestureDetector(
+                          onTap: _openChat,
+                          child: Container(
+                            width: 30, height: 30,
+                            decoration: BoxDecoration(
+                              color: context.colors.bgTertiary,
+                              shape: BoxShape.circle,
+                              border: Border.all(color: context.colors.border2),
+                            ),
+                            child: Icon(Icons.chat_bubble_outline_rounded,
+                                color: context.colors.textSecondary, size: 15),
+                          ),
+                        ),
+                        const SizedBox(width: 6),
                         SizedBox(
-                          width: 96,
+                          width: 88,
                           height: 30,
                           child: ElevatedButton(
                             onPressed: () => context.push(
-                                AppRoutes.masterPublicProfile(
-                                    master.id)),
+                                AppRoutes.masterPublicProfile(master.id)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: kGold,
                               foregroundColor: context.colors.bgPrimary,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 12),
+                              padding: const EdgeInsets.symmetric(horizontal: 12),
                               minimumSize: Size.zero,
-                              tapTargetSize:
-                                  MaterialTapTargetSize.shrinkWrap,
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                               shape: const StadiumBorder(),
                               textStyle: AppTextStyles.caption.copyWith(
                                 fontWeight: FontWeight.w700,

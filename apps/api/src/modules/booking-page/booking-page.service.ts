@@ -97,23 +97,25 @@ export class BookingPageService {
       throw new BadRequestException('Мастер временно не принимает записи по ссылке');
     }
 
-    const rateLimitKey = `otp:rate:${dto.phone}`;
+    const phone = dto.phone.startsWith('+') ? dto.phone : `+${dto.phone}`;
+    const rateLimitKey = `otp:rate:${phone}`;
     if (await this.redis.get(rateLimitKey)) {
       throw new BadRequestException('Подождите минуту перед повторной отправкой');
     }
 
     const code = String(crypto.randomInt(1000, 9999));
-    await this.redis.set(`otp:${dto.phone}`, code, OTP_TTL_SECONDS);
+    await this.redis.set(`otp:${phone}`, code, OTP_TTL_SECONDS);
     await this.redis.set(rateLimitKey, '1', OTP_RATE_LIMIT_TTL);
 
-    await this.mobizon.sendOtp(dto.phone, code);
+    await this.mobizon.sendOtp(phone, code);
 
     return { message: 'Код отправлен' };
   }
 
   // POST /p/:username/book
   async bookSlot(username: string, dto: BookSlotPwaDto) {
-    const { name, phone, otpCode, serviceId, date, time } = dto;
+    const { name, otpCode, serviceId, date, time } = dto;
+    const phone = dto.phone.startsWith('+') ? dto.phone : `+${dto.phone}`;
 
     // Верификация OTP
     const otpKey = `otp:${phone}`;
