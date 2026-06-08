@@ -58,4 +58,19 @@ export class UpdateMasterDto {
   @IsOptional()
   @IsBoolean()
   isBookingLinkActive?: boolean;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  instagramUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(60)
+  tiktokUrl?: string;
+
+  @IsOptional()
+  @IsString()
+  @MaxLength(20)
+  whatsappPhone?: string;
 }

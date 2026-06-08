@@ -69,6 +69,9 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   late String _address;
   String? _username;
   late bool _isBookingLinkActive;
+  String? _instagramUrl;
+  String? _tiktokUrl;
+  String? _whatsappPhone;
 
   @override
   void initState() {
@@ -80,6 +83,9 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     _address            = widget.profile['address'] as String? ?? '';
     _username           = widget.profile['username'] as String?;
     _isBookingLinkActive = widget.profile['isBookingLinkActive'] as bool? ?? true;
+    _instagramUrl       = widget.profile['instagramUrl'] as String?;
+    _tiktokUrl          = widget.profile['tiktokUrl'] as String?;
+    _whatsappPhone      = widget.profile['whatsappPhone'] as String?;
   }
 
   Future<void> _openEditSheet() async {
@@ -247,6 +253,20 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           isActive: _isBookingLinkActive,
           onUsernameChanged: (v) => setState(() => _username = v),
           onActiveChanged: (v) => setState(() => _isBookingLinkActive = v),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ─── Соцсети ──────────────────────────────────────────
+        _SocialLinksBlock(
+          instagramUrl: _instagramUrl,
+          tiktokUrl: _tiktokUrl,
+          whatsappPhone: _whatsappPhone,
+          onChanged: (ig, tt, wa) => setState(() {
+            _instagramUrl  = ig;
+            _tiktokUrl     = tt;
+            _whatsappPhone = wa;
+          }),
         ),
 
         const SizedBox(height: AppSpacing.md),
@@ -1167,6 +1187,253 @@ class _LanguageTile extends ConsumerWidget {
           child: Text(e.value),
         )).toList(),
         onChanged: (code) => ref.read(localeProvider.notifier).set(Locale(code!)),
+      ),
+    );
+  }
+}
+
+// ─── Блок соцсетей ───────────────────────────────────────────────────────────
+class _SocialLinksBlock extends StatefulWidget {
+  const _SocialLinksBlock({
+    required this.instagramUrl,
+    required this.tiktokUrl,
+    required this.whatsappPhone,
+    required this.onChanged,
+  });
+  final String? instagramUrl;
+  final String? tiktokUrl;
+  final String? whatsappPhone;
+  final void Function(String? ig, String? tt, String? wa) onChanged;
+
+  @override
+  State<_SocialLinksBlock> createState() => _SocialLinksBlockState();
+}
+
+class _SocialLinksBlockState extends State<_SocialLinksBlock> {
+  Future<void> _openEditSheet() async {
+    final result = await showModalBottomSheet<Map<String, String?>?>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: context.colors.bgSecondary,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(AppRadius.lg)),
+      ),
+      builder: (_) => _SocialLinksSheet(
+        instagramUrl: widget.instagramUrl,
+        tiktokUrl: widget.tiktokUrl,
+        whatsappPhone: widget.whatsappPhone,
+      ),
+    );
+    if (result == null || !mounted) return;
+    widget.onChanged(result['instagramUrl'], result['tiktokUrl'], result['whatsappPhone']);
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: context.colors.bgSecondary,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: context.colors.border2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.share_rounded, color: kGold, size: 18),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(child: Text('Соцсети', style: AppTextStyles.label)),
+              GestureDetector(
+                onTap: _openEditSheet,
+                child: Text('Изменить',
+                    style: AppTextStyles.caption.copyWith(color: kGold)),
+              ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          if (widget.instagramUrl != null)
+            _SocialChip(label: 'Instagram: @${widget.instagramUrl}',
+                color: const Color(0xFFE1306C)),
+          if (widget.tiktokUrl != null)
+            _SocialChip(label: 'TikTok: @${widget.tiktokUrl}',
+                color: context.colors.textPrimary),
+          if (widget.whatsappPhone != null)
+            _SocialChip(label: 'WhatsApp: ${widget.whatsappPhone}',
+                color: const Color(0xFF25D366)),
+          if (widget.instagramUrl == null && widget.tiktokUrl == null && widget.whatsappPhone == null)
+            Text('Не указаны',
+                style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary)),
+        ],
+      ),
+    );
+  }
+}
+
+class _SocialChip extends StatelessWidget {
+  const _SocialChip({required this.label, required this.color});
+  final String label;
+  final Color color;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 4),
+      child: Text(label,
+          style: AppTextStyles.caption.copyWith(color: color)),
+    );
+  }
+}
+
+class _SocialLinksSheet extends StatefulWidget {
+  const _SocialLinksSheet({this.instagramUrl, this.tiktokUrl, this.whatsappPhone});
+  final String? instagramUrl;
+  final String? tiktokUrl;
+  final String? whatsappPhone;
+
+  @override
+  State<_SocialLinksSheet> createState() => _SocialLinksSheetState();
+}
+
+class _SocialLinksSheetState extends State<_SocialLinksSheet> {
+  late final TextEditingController _igCtrl;
+  late final TextEditingController _ttCtrl;
+  late final TextEditingController _waCtrl;
+  bool _saving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _igCtrl = TextEditingController(text: widget.instagramUrl ?? '');
+    _ttCtrl = TextEditingController(text: widget.tiktokUrl ?? '');
+    _waCtrl = TextEditingController(text: widget.whatsappPhone ?? '');
+  }
+
+  @override
+  void dispose() {
+    _igCtrl.dispose();
+    _ttCtrl.dispose();
+    _waCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    setState(() => _saving = true);
+    try {
+      await createDio().patch('/masters/me', data: {
+        'instagramUrl':  _igCtrl.text.trim().isEmpty ? null : _igCtrl.text.trim().replaceFirst('@', ''),
+        'tiktokUrl':     _ttCtrl.text.trim().isEmpty ? null : _ttCtrl.text.trim().replaceFirst('@', ''),
+        'whatsappPhone': _waCtrl.text.trim().isEmpty ? null : _waCtrl.text.trim(),
+      });
+      if (mounted) {
+        Navigator.pop(context, {
+          'instagramUrl':  _igCtrl.text.trim().isEmpty ? null : _igCtrl.text.trim().replaceFirst('@', ''),
+          'tiktokUrl':     _ttCtrl.text.trim().isEmpty ? null : _ttCtrl.text.trim().replaceFirst('@', ''),
+          'whatsappPhone': _waCtrl.text.trim().isEmpty ? null : _waCtrl.text.trim(),
+        });
+      }
+    } catch (_) {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: AppSpacing.screenH, right: AppSpacing.screenH,
+        top: AppSpacing.lg,
+        bottom: MediaQuery.of(context).viewInsets.bottom + AppSpacing.xl,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Center(
+            child: Container(
+              width: 36, height: 4,
+              margin: const EdgeInsets.only(bottom: AppSpacing.lg),
+              decoration: BoxDecoration(
+                color: context.colors.border2, borderRadius: BorderRadius.circular(2)),
+            ),
+          ),
+          Text('Соцсети', style: AppTextStyles.title),
+          const SizedBox(height: AppSpacing.lg),
+          _SocialField(ctrl: _igCtrl, hint: 'username без @', label: 'Instagram',
+              icon: Icons.camera_alt_outlined, color: const Color(0xFFE1306C)),
+          const SizedBox(height: AppSpacing.md),
+          _SocialField(ctrl: _ttCtrl, hint: 'username без @', label: 'TikTok',
+              icon: Icons.music_note_rounded, color: context.colors.textPrimary),
+          const SizedBox(height: AppSpacing.md),
+          _SocialField(ctrl: _waCtrl, hint: '77001234567', label: 'WhatsApp',
+              icon: Icons.message_rounded, color: const Color(0xFF25D366),
+              keyboardType: TextInputType.phone),
+          const SizedBox(height: AppSpacing.xl),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _saving ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: kGold,
+                foregroundColor: const Color(0xFF0A0A0F),
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: const StadiumBorder(),
+              ),
+              child: _saving
+                  ? const SizedBox(height: 18, width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  : const Text('Сохранить'),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _SocialField extends StatelessWidget {
+  const _SocialField({
+    required this.ctrl,
+    required this.hint,
+    required this.label,
+    required this.icon,
+    required this.color,
+    this.keyboardType,
+  });
+  final TextEditingController ctrl;
+  final String hint;
+  final String label;
+  final IconData icon;
+  final Color color;
+  final TextInputType? keyboardType;
+
+  @override
+  Widget build(BuildContext context) {
+    return TextField(
+      controller: ctrl,
+      keyboardType: keyboardType,
+      style: AppTextStyles.body.copyWith(color: context.colors.textPrimary),
+      decoration: InputDecoration(
+        labelText: label,
+        hintText: hint,
+        prefixIcon: Icon(icon, color: color, size: 20),
+        labelStyle: AppTextStyles.caption.copyWith(color: color),
+        hintStyle: AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
+        filled: true,
+        fillColor: context.colors.bgTertiary,
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: context.colors.border2),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: context.colors.border2),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          borderSide: BorderSide(color: color),
+        ),
       ),
     );
   }

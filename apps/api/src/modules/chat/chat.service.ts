@@ -127,10 +127,21 @@ export class ChatService {
   }
 
   async getRoomByMaster(userId: string, masterId: string) {
-    const room = await this.prisma.chatRoom.findUnique({
-      where: { clientId_masterId: { clientId: userId, masterId } },
+    const master = await this.prisma.masterProfile.findFirst({
+      where: { id: masterId },
+      select: { userId: true },
     });
-    if (!room) throw new NotFoundException('Чат не найден — добавьте мастера в избранное');
+    if (!master) throw new NotFoundException('Мастер не найден');
+
+    const room = await this.prisma.chatRoom.upsert({
+      where: { clientId_masterId: { clientId: userId, masterId } },
+      create: {
+        clientId: userId,
+        masterId,
+        users: { create: [{ userId }, { userId: master.userId }] },
+      },
+      update: {},
+    });
     return room;
   }
 }

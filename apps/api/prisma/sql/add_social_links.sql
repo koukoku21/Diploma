@@ -1,0 +1,4 @@
+ALTER TABLE master_profiles
+  ADD COLUMN IF NOT EXISTS "instagramUrl"   VARCHAR,
+  ADD COLUMN IF NOT EXISTS "tiktokUrl"      VARCHAR,
+  ADD COLUMN IF NOT EXISTS "whatsappPhone"  VARCHAR;

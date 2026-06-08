@@ -203,7 +203,15 @@ class _ProfileBody extends StatelessWidget {
 
               // Рейтинг + адрес
               _MetaRow(master: master),
-              const SizedBox(height: AppSpacing.xl),
+              const SizedBox(height: AppSpacing.md),
+
+              // Соцсети
+              if (master.instagramUrl != null || master.tiktokUrl != null || master.whatsappPhone != null)
+                _SocialRow(master: master),
+              if (master.instagramUrl != null || master.tiktokUrl != null || master.whatsappPhone != null)
+                const SizedBox(height: AppSpacing.xl)
+              else
+                const SizedBox(height: AppSpacing.xl),
 
               // Портфолио
               if (master.photos.length > 1) ...[
@@ -549,6 +557,80 @@ class _ReviewTile extends StatelessWidget {
             ),
           ],
         ],
+      ),
+    );
+  }
+}
+
+class _SocialRow extends StatelessWidget {
+  const _SocialRow({required this.master});
+  final MasterProfile master;
+
+  Future<void> _open(String url) =>
+      launchUrl(Uri.parse(url), mode: LaunchMode.externalApplication);
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        if (master.instagramUrl != null)
+          _SocialBtn(
+            label: 'Instagram',
+            color: const Color(0xFFE1306C),
+            icon: Icons.camera_alt_outlined,
+            onTap: () => _open('https://instagram.com/${master.instagramUrl}'),
+          ),
+        if (master.instagramUrl != null && (master.tiktokUrl != null || master.whatsappPhone != null))
+          const SizedBox(width: AppSpacing.sm),
+        if (master.tiktokUrl != null)
+          _SocialBtn(
+            label: 'TikTok',
+            color: context.colors.textPrimary,
+            icon: Icons.music_note_rounded,
+            onTap: () => _open('https://tiktok.com/@${master.tiktokUrl}'),
+          ),
+        if (master.tiktokUrl != null && master.whatsappPhone != null)
+          const SizedBox(width: AppSpacing.sm),
+        if (master.whatsappPhone != null)
+          _SocialBtn(
+            label: 'WhatsApp',
+            color: const Color(0xFF25D366),
+            icon: Icons.message_rounded,
+            onTap: () => _open('https://wa.me/${master.whatsappPhone}'),
+          ),
+      ],
+    );
+  }
+}
+
+class _SocialBtn extends StatelessWidget {
+  const _SocialBtn({required this.label, required this.color, required this.icon, required this.onTap});
+  final String label;
+  final Color color;
+  final IconData icon;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: GestureDetector(
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 10),
+          decoration: BoxDecoration(
+            color: color.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: color.withValues(alpha: 0.3)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(icon, color: color, size: 16),
+              const SizedBox(width: 6),
+              Text(label, style: AppTextStyles.caption.copyWith(color: color, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
       ),
     );
   }

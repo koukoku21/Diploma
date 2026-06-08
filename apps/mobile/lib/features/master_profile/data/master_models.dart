@@ -107,6 +107,9 @@ class MasterProfile {
     this.lat,
     this.lng,
     this.username,
+    this.instagramUrl,
+    this.tiktokUrl,
+    this.whatsappPhone,
   });
 
   final String id;
@@ -121,6 +124,9 @@ class MasterProfile {
   final double? lat;
   final double? lng;
   final String? username;
+  final String? instagramUrl;
+  final String? tiktokUrl;
+  final String? whatsappPhone;
   final List<String> specializations;
   final List<MasterService> services;
   final List<MasterReview> reviews;
@@ -141,6 +147,9 @@ class MasterProfile {
       lat: (j['lat'] as num?)?.toDouble(),
       lng: (j['lng'] as num?)?.toDouble(),
       username: j['username'] as String?,
+      instagramUrl: j['instagramUrl'] as String?,
+      tiktokUrl: j['tiktokUrl'] as String?,
+      whatsappPhone: j['whatsappPhone'] as String?,
       specializations: (j['specializations'] as List?)
               ?.map((e) => (e as Map)['category'].toString())
               .toList() ??

@@ -104,6 +104,9 @@ model MasterProfile {
   // ALTER TABLE master_profiles ADD COLUMN location geography(Point,4326)
   username             String?       @unique      // @handle для публичной ссылки
   bookingSlug          String?       @unique      // 8 символов, генерируется при верификации
+  instagramUrl         String?       // instagram username без @
+  tiktokUrl            String?       // tiktok username без @
+  whatsappPhone        String?       // номер в формате 77001234567
   isBookingLinkActive  Boolean       @default(true) // тогл «принимать записи по ссылке»
   bufferMinutes  Int           @default(15)
   isActive       Boolean       @default(true)   // тогл "Принимаю записи"
