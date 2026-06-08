@@ -29,8 +29,8 @@ CLAUDE.md
 ARCHITECTURE.md
 design-system.md
 README.md
-
-
+DEPLOY.md
+miraku.md
 # ─── Uploads (локальные файлы, в проде хранятся на R2) ───────────
 apps/api/uploads/
 
