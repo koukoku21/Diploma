@@ -4,16 +4,29 @@ import { useParams, useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { getMasterProfile, getMasterSlots, sendOtpPwa, createBooking } from '@/lib/api';
 import type { Service, SlotsResult } from '@/lib/api';
+import Link from 'next/link';
 
 type Step = 'service' | 'datetime' | 'contact' | 'otp';
 
 const TODAY = new Date().toISOString().split('T')[0];
+
+const CARD_STYLE = {
+  background: '#111118',
+  borderColor: 'rgba(201,169,110,0.15)',
+};
+
+const INPUT_STYLE = {
+  background: '#16161f',
+  borderColor: 'rgba(201,169,110,0.2)',
+  color: '#f0ede8',
+};
 
 export default function BookPage() {
   const { username } = useParams<{ username: string }>();
   const router = useRouter();
 
   const [services, setServices] = useState<Service[]>([]);
+  const [servicesLoading, setServicesLoading] = useState(true);
   const [step, setStep] = useState<Step>('service');
 
   const [selectedService, setSelectedService] = useState<Service | null>(null);
@@ -30,12 +43,14 @@ export default function BookPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    getMasterProfile(username).then((m) => setServices(m.services)).catch(() => {});
+    getMasterProfile(username)
+      .then((m) => setServices(m.services))
+      .catch(() => {})
+      .finally(() => setServicesLoading(false));
   }, [username]);
 
   useEffect(() => {
     if (!selectedService || !selectedDate) return;
-    setSlotsLoading(true);
     getSlotsForDate(selectedDate);
   }, [selectedService, selectedDate]);
 
@@ -94,66 +109,134 @@ export default function BookPage() {
     }
   }
 
+  const stepLabels: Record<Step, string> = {
+    service: 'Услуга',
+    datetime: 'Дата и время',
+    contact: 'Контакты',
+    otp: 'Подтверждение',
+  };
+  const stepOrder: Step[] = ['service', 'datetime', 'contact', 'otp'];
+  const currentStepIndex = stepOrder.indexOf(step);
+
   return (
-    <div className="px-4 py-6 pb-10">
+    <div className="px-4 pt-4 pb-10 min-h-screen" style={{ background: '#0a0a0f' }}>
+      {/* Заголовок */}
+      <div className="flex items-center gap-3 mb-5">
+        {step === 'service' ? (
+          <Link href={`/p/${username}`} className="text-text-secondary text-sm">← Назад</Link>
+        ) : (
+          <button
+            onClick={() => {
+              const prev = stepOrder[currentStepIndex - 1];
+              if (prev) setStep(prev);
+            }}
+            className="text-text-secondary text-sm"
+          >
+            ← Назад
+          </button>
+        )}
+        <span className="font-display text-base font-semibold text-text-primary">
+          {stepLabels[step]}
+        </span>
+      </div>
+
+      {/* Прогресс */}
+      <div className="flex gap-1.5 mb-6">
+        {stepOrder.map((s, i) => (
+          <div
+            key={s}
+            className="h-0.5 flex-1 rounded-full transition-all"
+            style={{ background: i <= currentStepIndex ? '#c9a96e' : 'rgba(201,169,110,0.2)' }}
+          />
+        ))}
+      </div>
+
       {/* Шаг 1: выбор услуги */}
       {step === 'service' && (
         <>
-          <h1 className="text-xl font-bold mb-4">Выберите услугу</h1>
-          <div className="space-y-2">
-            {services.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => { setSelectedService(s); setStep('datetime'); }}
-                className="w-full text-left flex justify-between items-center p-4 bg-white rounded-2xl border border-gray-200 hover:border-brand transition-colors"
-              >
-                <div>
-                  <p className="font-medium text-gray-800">{s.title}</p>
-                  <p className="text-xs text-gray-400">{s.durationMin} мин</p>
-                </div>
-                <span className="font-semibold text-gray-900 text-sm">от {s.priceFrom.toLocaleString('ru')} ₸</span>
-              </button>
-            ))}
-          </div>
+          {servicesLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <div key={i} className="h-16 rounded-2xl animate-pulse" style={{ background: '#111118' }} />
+              ))}
+            </div>
+          ) : services.length === 0 ? (
+            <p className="text-text-secondary text-sm text-center mt-10">Услуги не найдены</p>
+          ) : (
+            <div className="space-y-2">
+              {services.map((s) => (
+                <button
+                  key={s.id}
+                  onClick={() => { setSelectedService(s); setStep('datetime'); }}
+                  className="w-full text-left flex justify-between items-center p-4 rounded-2xl border transition-all active:scale-[0.98]"
+                  style={CARD_STYLE}
+                >
+                  <div>
+                    <p className="font-medium text-text-primary text-sm">{s.title}</p>
+                    <p className="text-xs text-text-secondary mt-0.5">{s.durationMin} мин</p>
+                  </div>
+                  <span className="font-semibold text-brand text-sm ml-3 shrink-0">
+                    от {s.priceFrom.toLocaleString('ru')} ₸
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
         </>
       )}
 
       {/* Шаг 2: дата и время */}
       {step === 'datetime' && selectedService && (
         <>
-          <button onClick={() => setStep('service')} className="text-brand text-sm mb-4">← Назад</button>
-          <h1 className="text-xl font-bold mb-1">{selectedService.title}</h1>
-          <p className="text-sm text-gray-400 mb-4">{selectedService.durationMin} мин · от {selectedService.priceFrom.toLocaleString('ru')} ₸</p>
+          {/* Выбранная услуга */}
+          <div className="rounded-2xl p-4 mb-5 border" style={CARD_STYLE}>
+            <p className="font-semibold text-text-primary text-sm">{selectedService.title}</p>
+            <p className="text-xs text-text-secondary mt-0.5">
+              {selectedService.durationMin} мин · от {selectedService.priceFrom.toLocaleString('ru')} ₸
+            </p>
+          </div>
 
-          <label className="block text-sm font-medium text-gray-700 mb-1">Дата</label>
+          <label className="block text-xs font-medium text-text-secondary mb-2 uppercase tracking-wider">Дата</label>
           <input
             type="date"
             min={TODAY}
             value={selectedDate}
             onChange={(e) => setSelectedDate(e.target.value)}
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 mb-4 text-gray-800 focus:outline-none focus:border-brand"
+            className="w-full rounded-2xl px-4 py-3 mb-5 border text-sm focus:outline-none"
+            style={INPUT_STYLE}
           />
 
-          {slotsLoading && <p className="text-sm text-gray-400">Загружаем слоты...</p>}
+          {slotsLoading && (
+            <div className="grid grid-cols-4 gap-2">
+              {[1,2,3,4,5,6,7,8].map((i) => (
+                <div key={i} className="h-10 rounded-xl animate-pulse" style={{ background: '#111118' }} />
+              ))}
+            </div>
+          )}
 
           {slotsResult && !slotsLoading && (
             slotsResult.isDayOff ? (
-              <p className="text-sm text-red-500">Выходной день — выберите другую дату</p>
+              <div className="rounded-2xl p-4 text-center border" style={{ background: '#16161f', borderColor: 'rgba(255,80,80,0.2)' }}>
+                <p className="text-sm" style={{ color: '#ff6b6b' }}>Выходной день — выберите другую дату</p>
+              </div>
             ) : slotsResult.slots.length === 0 ? (
-              <p className="text-sm text-gray-500">Нет свободного времени на эту дату</p>
+              <div className="rounded-2xl p-4 text-center border" style={CARD_STYLE}>
+                <p className="text-sm text-text-secondary">Нет свободного времени на эту дату</p>
+              </div>
             ) : (
               <>
-                <p className="text-sm font-medium text-gray-700 mb-2">Время</p>
+                <label className="block text-xs font-medium text-text-secondary mb-2 uppercase tracking-wider">Время</label>
                 <div className="grid grid-cols-4 gap-2">
                   {slotsResult.slots.map((t) => (
                     <button
                       key={t}
                       onClick={() => setSelectedTime(t)}
-                      className={`py-2 rounded-xl text-sm font-medium transition-colors ${
+                      className="py-2.5 rounded-xl text-sm font-medium transition-all active:scale-95"
+                      style={
                         selectedTime === t
-                          ? 'bg-brand text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-pink-50'
-                      }`}
+                          ? { background: '#c9a96e', color: '#0a0a0f' }
+                          : { background: '#111118', color: '#9b9690', border: '1px solid rgba(201,169,110,0.15)' }
+                      }
                     >
                       {t}
                     </button>
@@ -166,7 +249,8 @@ export default function BookPage() {
           {selectedTime && (
             <button
               onClick={() => setStep('contact')}
-              className="mt-6 w-full bg-brand text-white font-semibold py-3.5 rounded-2xl"
+              className="mt-6 w-full font-semibold py-4 transition-opacity active:opacity-80"
+              style={{ background: '#c9a96e', color: '#0a0a0f', borderRadius: '100px' }}
             >
               Продолжить
             </button>
@@ -174,42 +258,48 @@ export default function BookPage() {
         </>
       )}
 
-      {/* Шаг 3: контактные данные */}
+      {/* Шаг 3 + 4: контакты + OTP */}
       {(step === 'contact' || step === 'otp') && (
         <>
-          <button onClick={() => setStep('datetime')} className="text-brand text-sm mb-4">← Назад</button>
-          <h1 className="text-xl font-bold mb-1">Ваши данные</h1>
-          <p className="text-sm text-gray-400 mb-4">
-            {selectedService?.title} · {selectedDate} в {selectedTime}
-          </p>
+          {/* Сводка */}
+          <div className="rounded-2xl p-4 mb-5 border" style={CARD_STYLE}>
+            <p className="text-text-secondary text-xs mb-1">{selectedService?.title}</p>
+            <p className="text-text-primary text-sm font-medium">
+              {selectedDate} · {selectedTime}
+            </p>
+          </div>
 
-          <div className="space-y-3">
+          <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Имя</label>
+              <label className="block text-xs font-medium text-text-secondary mb-2 uppercase tracking-wider">Имя</label>
               <input
                 type="text"
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 placeholder="Ваше имя"
                 disabled={otpSent}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand disabled:bg-gray-50"
+                className="w-full rounded-2xl px-4 py-3 border text-sm focus:outline-none disabled:opacity-50"
+                style={INPUT_STYLE}
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Телефон</label>
+              <label className="block text-xs font-medium text-text-secondary mb-2 uppercase tracking-wider">Телефон</label>
               <input
                 type="tel"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
                 placeholder="+7 (777) 123-45-67"
                 disabled={otpSent}
-                className="w-full border border-gray-200 rounded-xl px-4 py-3 focus:outline-none focus:border-brand disabled:bg-gray-50"
+                className="w-full rounded-2xl px-4 py-3 border text-sm focus:outline-none disabled:opacity-50"
+                style={INPUT_STYLE}
               />
             </div>
 
             {step === 'otp' && (
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Код из SMS</label>
+                <label className="block text-xs font-medium text-text-secondary mb-2 uppercase tracking-wider">
+                  Код из SMS
+                </label>
                 <input
                   type="text"
                   inputMode="numeric"
@@ -217,20 +307,30 @@ export default function BookPage() {
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
                   placeholder="• • • •"
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-center text-2xl tracking-widest focus:outline-none focus:border-brand"
+                  className="w-full rounded-2xl px-4 py-4 border text-center text-2xl tracking-[0.5em] focus:outline-none"
+                  style={{ ...INPUT_STYLE, fontFamily: 'Mulish, sans-serif' }}
                 />
+                <p className="text-xs text-text-secondary mt-2 text-center">
+                  Код отправлен на {phone}
+                </p>
               </div>
             )}
           </div>
 
-          {error && <p className="mt-3 text-sm text-red-500">{error}</p>}
+          {error && (
+            <div className="mt-4 rounded-xl p-3 text-sm text-center"
+              style={{ background: 'rgba(255,80,80,0.1)', color: '#ff6b6b', border: '1px solid rgba(255,80,80,0.2)' }}>
+              {error}
+            </div>
+          )}
 
           <div className="mt-6 space-y-3">
             {step === 'contact' && (
               <button
                 onClick={handleSendOtp}
                 disabled={loading || !name.trim() || !phone.trim()}
-                className="w-full bg-brand text-white font-semibold py-3.5 rounded-2xl disabled:opacity-50"
+                className="w-full font-semibold py-4 transition-opacity active:opacity-80 disabled:opacity-40"
+                style={{ background: '#c9a96e', color: '#0a0a0f', borderRadius: '100px' }}
               >
                 {loading ? 'Отправляем...' : 'Получить код'}
               </button>
@@ -240,13 +340,14 @@ export default function BookPage() {
                 <button
                   onClick={handleBook}
                   disabled={loading || otpCode.length < 4}
-                  className="w-full bg-brand text-white font-semibold py-3.5 rounded-2xl disabled:opacity-50"
+                  className="w-full font-semibold py-4 transition-opacity active:opacity-80 disabled:opacity-40"
+                  style={{ background: '#c9a96e', color: '#0a0a0f', borderRadius: '100px' }}
                 >
                   {loading ? 'Записываем...' : 'Подтвердить запись'}
                 </button>
                 <button
                   onClick={() => { setOtpSent(false); setStep('contact'); setOtpCode(''); }}
-                  className="w-full text-brand text-sm py-2"
+                  className="w-full text-text-secondary text-sm py-2"
                 >
                   Изменить номер
                 </button>

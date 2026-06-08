@@ -1,11 +1,20 @@
+@import url('https://fonts.googleapis.com/css2?family=Mulish:wght@400;500;600;700&family=Playfair+Display:wght@400;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --brand: #FF6B9D;
+  --brand: #c9a96e;
 }
 
 body {
-  background-color: #f9fafb;
+  background-color: #0a0a0f;
+  color: #f0ede8;
+  font-family: 'Mulish', sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+input[type='date']::-webkit-calendar-picker-indicator {
+  filter: invert(1) brightness(0.6);
 }

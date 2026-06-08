@@ -20,71 +20,81 @@ export default function SuccessPage({
     : '';
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-between px-4 py-10">
-      <div className="flex-1 flex flex-col items-center justify-center text-center">
+    <div className="min-h-screen flex flex-col items-center justify-between px-4 py-10"
+      style={{ background: '#0a0a0f' }}>
+      <div className="flex-1 flex flex-col items-center justify-center text-center w-full">
         {/* Иконка успеха */}
-        <div className="w-20 h-20 rounded-full bg-green-100 flex items-center justify-center mb-6">
-          <svg className="w-10 h-10 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+        <div className="w-20 h-20 rounded-full flex items-center justify-center mb-6"
+          style={{ background: 'rgba(201,169,110,0.12)', border: '1.5px solid rgba(201,169,110,0.4)' }}>
+          <svg className="w-9 h-9" fill="none" viewBox="0 0 24 24" stroke="#c9a96e" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
           </svg>
         </div>
 
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">Запись подтверждена!</h1>
+        <h1 className="font-display text-2xl font-semibold text-text-primary mb-2">
+          Запись подтверждена
+        </h1>
 
         {masterName && (
-          <p className="text-gray-500 mb-4">
-            Вы записаны к <span className="font-medium text-gray-700">{masterName}</span>
+          <p className="text-text-secondary mb-5 text-sm">
+            Вы записаны к <span className="text-text-primary font-medium">{masterName}</span>
           </p>
         )}
 
         {(service || formattedDate) && (
-          <div className="bg-gray-50 rounded-2xl p-5 w-full max-w-xs mb-6 text-left space-y-3">
+          <div className="rounded-2xl p-5 w-full max-w-xs mb-6 text-left space-y-4 border"
+            style={{ background: '#111118', borderColor: 'rgba(201,169,110,0.15)' }}>
             {service && (
               <div>
-                <p className="text-xs text-gray-400 uppercase tracking-wide">Услуга</p>
-                <p className="font-medium text-gray-800">{service}</p>
+                <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Услуга</p>
+                <p className="font-medium text-text-primary text-sm">{service}</p>
               </div>
             )}
             {formattedDate && (
               <div>
-                <p className="text-xs text-gray-400 uppercase tracking-wide">Дата и время</p>
-                <p className="font-medium text-gray-800">{formattedDate}</p>
+                <p className="text-xs text-text-secondary uppercase tracking-wider mb-1">Дата и время</p>
+                <p className="font-medium text-brand text-sm">{formattedDate}</p>
               </div>
             )}
           </div>
         )}
 
-        <p className="text-sm text-gray-400">
+        <p className="text-xs text-text-secondary">
           Мастер получил уведомление о вашей записи
         </p>
       </div>
 
       {/* Баннер «Скачай Miraku» */}
-      <div className="w-full bg-gradient-to-br from-pink-500 to-pink-400 rounded-3xl p-5 text-white">
-        <p className="font-bold text-lg mb-1">Скачай приложение Miraku</p>
-        <p className="text-pink-100 text-sm mb-4">
-          Управляй записями, общайся с мастером и находи новых
+      <div className="w-full rounded-3xl p-5 border"
+        style={{ background: '#111118', borderColor: 'rgba(201,169,110,0.2)' }}>
+        <div className="flex items-center gap-2 mb-1">
+          <span className="text-brand text-lg">✦</span>
+          <p className="font-display font-semibold text-text-primary">Miraku</p>
+        </div>
+        <p className="text-text-secondary text-sm mb-4">
+          Управляй записями и общайся с мастером в приложении
         </p>
         <div className="flex gap-2">
           <a
             href="https://apps.apple.com"
-            className="flex-1 bg-white text-pink-500 text-center text-sm font-semibold py-2.5 rounded-xl"
+            className="flex-1 text-center text-sm font-semibold py-3 rounded-2xl transition-opacity active:opacity-80"
+            style={{ background: '#c9a96e', color: '#0a0a0f' }}
           >
             App Store
           </a>
           <a
             href="https://play.google.com"
-            className="flex-1 bg-white text-pink-500 text-center text-sm font-semibold py-2.5 rounded-xl"
+            className="flex-1 text-center text-sm font-semibold py-3 rounded-2xl border transition-opacity active:opacity-80"
+            style={{ background: 'transparent', color: '#c9a96e', borderColor: 'rgba(201,169,110,0.4)' }}
           >
             Google Play
           </a>
         </div>
       </div>
 
-      {/* Кнопка назад к профилю */}
       <Link
         href={`/p/${params.username}`}
-        className="mt-4 text-brand text-sm"
+        className="mt-4 text-sm text-text-secondary"
       >
         Вернуться к профилю мастера
       </Link>
