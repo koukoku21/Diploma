@@ -593,7 +593,7 @@ class _BookingLinkBlockState extends State<_BookingLinkBlock> {
   bool _saving = false;
 
   String get _link =>
-      widget.username != null ? 'miraku.kz/@${widget.username}' : '';
+      widget.username != null ? 'diploma-api-dt1b.vercel.app/p/${widget.username}' : '';
 
   Future<void> _copyLink() async {
     if (widget.username == null) return;
@@ -911,7 +911,7 @@ class _UsernameSheetState extends State<_UsernameSheet> {
             builder: (_, val, __) => val.text.isEmpty
                 ? const SizedBox.shrink()
                 : Text(
-                    'miraku.kz/@${val.text.toLowerCase()}',
+                    'diploma-api-dt1b.vercel.app/p/${val.text.toLowerCase()}',
                     style: AppTextStyles.caption.copyWith(color: context.colors.textTertiary),
                   ),
           ),

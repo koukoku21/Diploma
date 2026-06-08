@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -503,13 +504,13 @@ class _MasterListTile extends StatelessWidget {
                 width: 64,
                 height: 64,
                 child: master.coverUrl != null
-                    ? Image.network(master.coverUrl!,
+                    ? CachedNetworkImage(imageUrl: master.coverUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (ctx, __, ___) => _placeholder(ctx))
+                        errorWidget: (ctx, __, ___) => _placeholder(ctx))
                     : master.avatarUrl != null
-                        ? Image.network(master.avatarUrl!,
+                        ? CachedNetworkImage(imageUrl: master.avatarUrl!,
                             fit: BoxFit.cover,
-                            errorBuilder: (ctx, __, ___) => _placeholder(ctx))
+                            errorWidget: (ctx, __, ___) => _placeholder(ctx))
                         : _placeholder(context),
               ),
             ),

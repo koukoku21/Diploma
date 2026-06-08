@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
@@ -114,7 +115,7 @@ class _MasterPortfolioManageScreenState
                 children: [
                   ClipRRect(
                     borderRadius: BorderRadius.circular(AppRadius.sm),
-                    child: Image.network(url, fit: BoxFit.cover),
+                    child: CachedNetworkImage(imageUrl: url, fit: BoxFit.cover),
                   ),
                   if (isCover)
                     Positioned(

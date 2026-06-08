@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
@@ -570,12 +571,12 @@ class _MasterListCard extends StatelessWidget {
                     bottomLeft: Radius.circular(AppRadius.md),
                   ),
                   child: master.coverUrl != null
-                      ? Image.network(
-                          master.coverUrl!,
+                      ? CachedNetworkImage(
+                          imageUrl: master.coverUrl!,
                           width: 110,
                           height: 130,
                           fit: BoxFit.cover,
-                          errorBuilder: (ctx, __, ___) => _photoPlaceholder(ctx),
+                          errorWidget: (ctx, __, ___) => _photoPlaceholder(ctx),
                         )
                       : _photoPlaceholder(context),
                 ),

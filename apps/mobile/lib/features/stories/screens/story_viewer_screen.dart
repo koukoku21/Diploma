@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -130,10 +131,10 @@ class _StoryViewerScreenState extends ConsumerState<StoryViewerScreen>
                     ),
                     child: story.salonLogoUrl != null
                         ? ClipOval(
-                            child: Image.network(
-                              story.salonLogoUrl!,
+                            child: CachedNetworkImage(
+                              imageUrl: story.salonLogoUrl!,
                               fit: BoxFit.cover,
-                              errorBuilder: (_, __, ___) =>
+                              errorWidget: (_, __, ___) =>
                                   _avatarPlaceholder(story.salonName),
                             ),
                           )
@@ -257,20 +258,19 @@ class _StoryMedia extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Image.network(
-      mediaUrl,
+    return CachedNetworkImage(
+      imageUrl: mediaUrl,
       fit: BoxFit.cover,
       width: double.infinity,
       height: double.infinity,
-      errorBuilder: (_, __, ___) => Container(
+      errorWidget: (_, __, ___) => Container(
         color: const Color(0xFF111118),
         child: const Center(
           child: Icon(Icons.image_not_supported_outlined,
               color: Color(0xFF5A5750), size: 48),
         ),
       ),
-      loadingBuilder: (_, child, progress) {
-        if (progress == null) return child;
+      progressIndicatorBuilder: (_, __, progress) {
         return Container(
           color: Colors.black,
           child: const Center(

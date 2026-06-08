@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -125,9 +126,9 @@ class _Body extends ConsumerWidget {
           ),
           flexibleSpace: FlexibleSpaceBar(
             background: booking.masterCover != null
-                ? Image.network(booking.masterCover!,
+                ? CachedNetworkImage(imageUrl: booking.masterCover!,
                     fit: BoxFit.cover,
-                    errorBuilder: (_, __, ___) => const _CoverPlaceholder())
+                    errorWidget: (_, __, ___) => const _CoverPlaceholder())
                 : const _CoverPlaceholder(),
           ),
         ),

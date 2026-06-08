@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -159,7 +160,7 @@ class _ProfileBody extends StatelessWidget {
               fit: StackFit.expand,
               children: [
                 master.photos.isNotEmpty
-                    ? Image.network(master.photos.first.url, fit: BoxFit.cover)
+                    ? CachedNetworkImage(imageUrl: master.photos.first.url, fit: BoxFit.cover)
                     : Container(color: context.colors.bgTertiary),
                 DecoratedBox(
                   decoration: BoxDecoration(
@@ -416,8 +417,8 @@ class _PortfolioGrid extends StatelessWidget {
           onTap: () => onTap(i),
           child: ClipRRect(
             borderRadius: BorderRadius.circular(AppRadius.sm),
-            child: Image.network(
-              photos[i].thumbUrl ?? photos[i].url,
+            child: CachedNetworkImage(
+              imageUrl: photos[i].thumbUrl ?? photos[i].url,
               width: 100,
               height: 120,
               fit: BoxFit.cover,

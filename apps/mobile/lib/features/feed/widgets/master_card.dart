@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -27,10 +28,10 @@ class MasterCard extends StatelessWidget {
               children: [
                 // Фото
                 master.coverUrl != null
-                    ? Image.network(
-                        master.coverUrl!,
+                    ? CachedNetworkImage(
+                        imageUrl: master.coverUrl!,
                         fit: BoxFit.cover,
-                        errorBuilder: (ctx, __, ___) => _photoPlaceholder(ctx),
+                        errorWidget: (ctx, __, ___) => _photoPlaceholder(ctx),
                       )
                     : _photoPlaceholder(context),
 

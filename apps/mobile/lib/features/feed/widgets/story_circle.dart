@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../../../core/theme/app_colors.dart';
 import '../../../core/theme/app_text_styles.dart';
@@ -51,12 +52,12 @@ class StoryCircle extends StatelessWidget {
                     padding: const EdgeInsets.all(2),
                     child: ClipOval(
                       child: story.salonLogoUrl != null
-                          ? Image.network(
-                              story.salonLogoUrl!,
+                          ? CachedNetworkImage(
+                              imageUrl: story.salonLogoUrl!,
                               fit: BoxFit.cover,
                               width: double.infinity,
                               height: double.infinity,
-                              errorBuilder: (_, __, ___) => _placeholder(),
+                              errorWidget: (_, __, ___) => _placeholder(),
                             )
                           : _placeholder(),
                     ),

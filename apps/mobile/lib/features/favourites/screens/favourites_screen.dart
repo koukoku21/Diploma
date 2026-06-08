@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -79,7 +80,7 @@ class FavouritesScreen extends ConsumerWidget {
                         ClipRRect(
                           borderRadius: BorderRadius.circular(AppRadius.sm),
                           child: cover != null
-                              ? Image.network(cover, width: 64, height: 64, fit: BoxFit.cover)
+                              ? CachedNetworkImage(imageUrl: cover, width: 64, height: 64, fit: BoxFit.cover)
                               : Container(width: 64, height: 64, color: context.colors.bgTertiary,
                                   child: Icon(Icons.person_outline,
                                       color: context.colors.textTertiary, size: 32)),

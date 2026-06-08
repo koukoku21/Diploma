@@ -1,3 +1,4 @@
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import '../data/master_models.dart';
 import '../../../core/theme/app_colors.dart';
@@ -74,15 +75,12 @@ class _PortfolioGalleryScreenState extends State<PortfolioGalleryScreen> {
             minScale: 0.8,
             maxScale: 4.0,
             child: Center(
-              child: Image.network(
-                widget.photos[i].url,
+              child: CachedNetworkImage(
+                imageUrl: widget.photos[i].url,
                 fit: BoxFit.contain,
-                loadingBuilder: (_, child, progress) {
-                  if (progress == null) return child;
-                  return const Center(
-                    child: CircularProgressIndicator(color: kGold, strokeWidth: 2),
-                  );
-                },
+                progressIndicatorBuilder: (_, __, ___) => const Center(
+                  child: CircularProgressIndicator(color: kGold, strokeWidth: 2),
+                ),
               ),
             ),
           );
