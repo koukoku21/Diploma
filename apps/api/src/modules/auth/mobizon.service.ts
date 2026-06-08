@@ -5,45 +5,34 @@ import axios from 'axios';
 @Injectable()
 export class MobizonService {
   private readonly logger = new Logger(MobizonService.name);
-  private readonly login: string;
-  private readonly password: string;
-  private readonly sender: string;
+  private readonly instanceId: string;
+  private readonly token: string;
 
   constructor(config: ConfigService) {
-    this.login = config.getOrThrow<string>('SMSC_LOGIN');
-    this.password = config.getOrThrow<string>('SMSC_PASSWORD');
-    this.sender = config.get<string>('SMSC_SENDER', 'Miraku');
+    this.instanceId = config.getOrThrow<string>('GREENAPI_INSTANCE_ID');
+    this.token = config.getOrThrow<string>('GREENAPI_TOKEN');
   }
 
   async sendOtp(phone: string, code: string): Promise<void> {
-    const text = `Miraku: ваш код подтверждения ${code}. Никому не сообщайте.`;
+    const message = `Miraku: ваш код подтверждения *${code}*. Никому не сообщайте.`;
 
     if (process.env.NODE_ENV !== 'production') {
       this.logger.debug(`[DEV] OTP для ${phone}: ${code}`);
       return;
     }
 
+    // chatId format: 77001234567@c.us (без +)
+    const chatId = `${phone.replace('+', '')}@c.us`;
+
     try {
-      const response = await axios.get('https://smsc.kz/sys/send.php', {
-        params: {
-          login: this.login,
-          psw: this.password,
-          phones: phone.replace('+', ''),
-          mes: text,
-          sender: this.sender,
-          fmt: 3,
-        },
-      });
+      const response = await axios.post(
+        `https://api.green-api.com/waInstance${this.instanceId}/sendMessage/${this.token}`,
+        { chatId, message },
+      );
 
-      if (response.data?.error_code) {
-        this.logger.error('SMSC error', response.data);
-        this.logger.warn(`[OTP FALLBACK] ${phone}: ${code}`);
-        return;
-      }
-
-      this.logger.debug(`SMS sent to ${phone}, id=${response.data?.id}`);
+      this.logger.debug(`WhatsApp OTP sent to ${phone}, id=${response.data?.idMessage}`);
     } catch (err) {
-      this.logger.error('Failed to send SMS', err);
+      this.logger.error('Failed to send WhatsApp OTP', err);
       this.logger.warn(`[OTP FALLBACK] ${phone}: ${code}`);
     }
   }
