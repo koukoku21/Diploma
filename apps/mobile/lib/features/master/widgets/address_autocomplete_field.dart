@@ -176,13 +176,6 @@ class _AddressAutocompleteFieldState extends State<AddressAutocompleteField> {
                   leading: Icon(Icons.location_on_outlined,
                       color: context.colors.textTertiary, size: 18),
                   title: Text(s.name, style: AppTextStyles.label),
-                  subtitle: s.fullName != s.name
-                      ? Text(s.fullName,
-                          style: AppTextStyles.caption
-                              .copyWith(color: context.colors.textTertiary),
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis)
-                      : null,
                   onTap: () => _select(s),
                 );
               },
