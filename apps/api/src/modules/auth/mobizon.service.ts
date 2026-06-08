@@ -5,49 +5,46 @@ import axios from 'axios';
 @Injectable()
 export class MobizonService {
   private readonly logger = new Logger(MobizonService.name);
-  private readonly apiKey: string;
+  private readonly login: string;
+  private readonly password: string;
   private readonly sender: string;
-  private readonly baseUrl = 'https://api.mobizon.kz/service';
 
   constructor(config: ConfigService) {
-    this.apiKey = config.getOrThrow<string>('MOBIZON_API_KEY');
-    this.sender = config.get<string>('MOBIZON_SENDER', 'Miraku');
+    this.login = config.getOrThrow<string>('SMSC_LOGIN');
+    this.password = config.getOrThrow<string>('SMSC_PASSWORD');
+    this.sender = config.get<string>('SMSC_SENDER', 'Miraku');
   }
 
   async sendOtp(phone: string, code: string): Promise<void> {
     const text = `Miraku: ваш код подтверждения ${code}. Никому не сообщайте.`;
 
-    // В dev режиме — не отправляем реальный SMS
     if (process.env.NODE_ENV !== 'production') {
       this.logger.debug(`[DEV] OTP для ${phone}: ${code}`);
       return;
     }
 
     try {
-      const response = await axios.post(
-        `${this.baseUrl}/message/sendsmsmessage`,
-        null,
-        {
-          params: {
-            recipient: phone.replace('+', ''),
-            text,
-            apiKey: this.apiKey,
-            output: 'json',
-            api: 1,
-          },
+      const response = await axios.get('https://smsc.kz/sys/send.php', {
+        params: {
+          login: this.login,
+          psw: this.password,
+          phones: phone.replace('+', ''),
+          mes: text,
+          sender: this.sender,
+          fmt: 3,
         },
-      );
+      });
 
-      if (response.data?.code !== 0) {
-        this.logger.error('Mobizon error', response.data);
+      if (response.data?.error_code) {
+        this.logger.error('SMSC error', response.data);
         this.logger.warn(`[OTP FALLBACK] ${phone}: ${code}`);
-        // Не бросаем ошибку — пользователь может взять код из логов
         return;
       }
+
+      this.logger.debug(`SMS sent to ${phone}, id=${response.data?.id}`);
     } catch (err) {
       this.logger.error('Failed to send SMS', err);
       this.logger.warn(`[OTP FALLBACK] ${phone}: ${code}`);
-      // Не бросаем ошибку — пользователь может взять код из логов
     }
   }
 }
