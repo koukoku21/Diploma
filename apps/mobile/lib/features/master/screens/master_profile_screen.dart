@@ -69,6 +69,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
   late String _address;
   String? _username;
   late bool _isBookingLinkActive;
+  late int _bufferMinutes;
   String? _instagramUrl;
   String? _tiktokUrl;
   String? _whatsappPhone;
@@ -83,6 +84,7 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
     _address            = widget.profile['address'] as String? ?? '';
     _username           = widget.profile['username'] as String?;
     _isBookingLinkActive = widget.profile['isBookingLinkActive'] as bool? ?? true;
+    _bufferMinutes      = widget.profile['bufferMinutes'] as int? ?? 15;
     _instagramUrl       = widget.profile['instagramUrl'] as String?;
     _tiktokUrl          = widget.profile['tiktokUrl'] as String?;
     _whatsappPhone      = widget.profile['whatsappPhone'] as String?;
@@ -253,6 +255,14 @@ class _ProfileBodyState extends ConsumerState<_ProfileBody> {
           isActive: _isBookingLinkActive,
           onUsernameChanged: (v) => setState(() => _username = v),
           onActiveChanged: (v) => setState(() => _isBookingLinkActive = v),
+        ),
+
+        const SizedBox(height: AppSpacing.md),
+
+        // ─── Буфер между записями ─────────────────────────────
+        _BufferBlock(
+          bufferMinutes: _bufferMinutes,
+          onChanged: (v) => setState(() => _bufferMinutes = v),
         ),
 
         const SizedBox(height: AppSpacing.md),
@@ -1187,6 +1197,97 @@ class _LanguageTile extends ConsumerWidget {
           child: Text(e.value),
         )).toList(),
         onChanged: (code) => ref.read(localeProvider.notifier).set(Locale(code!)),
+      ),
+    );
+  }
+}
+
+// ─── Буфер между записями ────────────────────────────────────────────────────
+class _BufferBlock extends StatefulWidget {
+  const _BufferBlock({required this.bufferMinutes, required this.onChanged});
+  final int bufferMinutes;
+  final ValueChanged<int> onChanged;
+
+  @override
+  State<_BufferBlock> createState() => _BufferBlockState();
+}
+
+class _BufferBlockState extends State<_BufferBlock> {
+  bool _saving = false;
+
+  static const _options = [0, 5, 10, 15, 20, 30, 45, 60];
+
+  Future<void> _save(int value) async {
+    setState(() => _saving = true);
+    try {
+      await createDio().patch('/masters/me', data: {'bufferMinutes': value});
+      widget.onChanged(value);
+    } catch (_) {
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(AppSpacing.md),
+      decoration: BoxDecoration(
+        color: context.colors.bgSecondary,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: context.colors.border2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.timer_outlined, color: kGold, size: 18),
+              const SizedBox(width: AppSpacing.sm),
+              Expanded(
+                child: Text('Буфер между записями', style: AppTextStyles.label),
+              ),
+              if (_saving)
+                const SizedBox(
+                  width: 16, height: 16,
+                  child: CircularProgressIndicator(strokeWidth: 2, color: kGold),
+                ),
+            ],
+          ),
+          const SizedBox(height: AppSpacing.xs),
+          Text(
+            'Время на подготовку после каждого клиента',
+            style: AppTextStyles.caption.copyWith(color: context.colors.textSecondary),
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Wrap(
+            spacing: AppSpacing.sm,
+            runSpacing: AppSpacing.sm,
+            children: _options.map((min) {
+              final selected = min == widget.bufferMinutes;
+              return GestureDetector(
+                onTap: _saving ? null : () => _save(min),
+                child: Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: selected ? kGold : context.colors.bgTertiary,
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
+                    border: Border.all(
+                      color: selected ? kGold : context.colors.border2,
+                    ),
+                  ),
+                  child: Text(
+                    min == 0 ? 'Без буфера' : '$min мин',
+                    style: AppTextStyles.caption.copyWith(
+                      color: selected ? const Color(0xFF0A0A0F) : context.colors.textPrimary,
+                      fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
+                    ),
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
+        ],
       ),
     );
   }
