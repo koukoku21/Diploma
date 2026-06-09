@@ -264,7 +264,7 @@ class _AddServiceSheetState extends ConsumerState<_AddServiceSheet> {
 }
 
 // ─── Пикер шаблонов ────────────────────────────────────────────────
-class _TemplatePicker extends StatelessWidget {
+class _TemplatePicker extends StatefulWidget {
   const _TemplatePicker({
     required this.templates,
     required this.selected,
@@ -276,10 +276,16 @@ class _TemplatePicker extends StatelessWidget {
   final ValueChanged<ServiceTemplate> onChanged;
 
   @override
+  State<_TemplatePicker> createState() => _TemplatePickerState();
+}
+
+class _TemplatePickerState extends State<_TemplatePicker> {
+  bool _expanded = false;
+
+  @override
   Widget build(BuildContext context) {
-    // Группируем по категории
     final byCategory = <String, List<ServiceTemplate>>{};
-    for (final t in templates) {
+    for (final t in widget.templates) {
       byCategory.putIfAbsent(t.category, () => []).add(t);
     }
 
@@ -287,82 +293,96 @@ class _TemplatePicker extends StatelessWidget {
       decoration: BoxDecoration(
         color: context.colors.bgTertiary,
         borderRadius: BorderRadius.circular(AppRadius.sm),
-        border: Border.all(color: selected != null ? kGold : context.colors.border),
+        border: Border.all(color: widget.selected != null ? kGold : context.colors.border),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Текущий выбор
-          Padding(
-            padding: const EdgeInsets.symmetric(
-                horizontal: AppSpacing.md, vertical: AppSpacing.sm),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Text(
-                    selected?.name ?? 'Выберите услугу...',
-                    style: AppTextStyles.body.copyWith(
-                      color: selected != null ? context.colors.textPrimary : context.colors.textTertiary,
+          // Заголовок — нажатие раскрывает/закрывает список
+          GestureDetector(
+            onTap: () => setState(() => _expanded = !_expanded),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.md, vertical: AppSpacing.sm),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Text(
+                      widget.selected?.name ?? 'Выберите услугу...',
+                      style: AppTextStyles.body.copyWith(
+                        color: widget.selected != null
+                            ? context.colors.textPrimary
+                            : context.colors.textTertiary,
+                      ),
                     ),
                   ),
-                ),
-                Icon(Icons.expand_more, color: context.colors.textTertiary, size: 20),
-              ],
-            ),
-          ),
-
-          // Список сгруппированный
-          Divider(height: 1, color: context.colors.border),
-          ConstrainedBox(
-            constraints: const BoxConstraints(maxHeight: 320),
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: byCategory.entries.map((entry) {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(
-                            AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.xs),
-                        child: Text(
-                          ServiceTemplate.categoryLabel(entry.key),
-                          style: AppTextStyles.caption.copyWith(
-                              color: kGold, fontWeight: FontWeight.w700),
-                        ),
-                      ),
-                      ...entry.value.map((t) => GestureDetector(
-                            onTap: () => onChanged(t),
-                            child: Container(
-                              color: selected?.id == t.id
-                                  ? kGold.withValues(alpha: 0.08)
-                                  : Colors.transparent,
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: AppSpacing.md,
-                                  vertical: AppSpacing.sm),
-                              child: Row(
-                                children: [
-                                  Expanded(
-                                    child: Text(t.name,
-                                        style: AppTextStyles.body.copyWith(
-                                          color: selected?.id == t.id
-                                              ? kGold
-                                              : context.colors.textPrimary,
-                                        )),
-                                  ),
-                                  if (selected?.id == t.id)
-                                    const Icon(Icons.check,
-                                        color: kGold, size: 18),
-                                ],
-                              ),
-                            ),
-                          )),
-                    ],
-                  );
-                }).toList(),
+                  AnimatedRotation(
+                    turns: _expanded ? 0.5 : 0,
+                    duration: const Duration(milliseconds: 200),
+                    child: Icon(Icons.expand_more,
+                        color: context.colors.textTertiary, size: 20),
+                  ),
+                ],
               ),
             ),
           ),
+
+          // Список — только когда раскрыт
+          if (_expanded) ...[
+            Divider(height: 1, color: context.colors.border),
+            ConstrainedBox(
+              constraints: const BoxConstraints(maxHeight: 320),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: byCategory.entries.map((entry) {
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(
+                              AppSpacing.md, AppSpacing.sm, AppSpacing.md, AppSpacing.xs),
+                          child: Text(
+                            ServiceTemplate.categoryLabel(entry.key),
+                            style: AppTextStyles.caption.copyWith(
+                                color: kGold, fontWeight: FontWeight.w700),
+                          ),
+                        ),
+                        ...entry.value.map((t) => GestureDetector(
+                              onTap: () {
+                                widget.onChanged(t);
+                                setState(() => _expanded = false);
+                              },
+                              child: Container(
+                                color: widget.selected?.id == t.id
+                                    ? kGold.withValues(alpha: 0.08)
+                                    : Colors.transparent,
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: AppSpacing.md,
+                                    vertical: AppSpacing.sm),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(t.name,
+                                          style: AppTextStyles.body.copyWith(
+                                            color: widget.selected?.id == t.id
+                                                ? kGold
+                                                : context.colors.textPrimary,
+                                          )),
+                                    ),
+                                    if (widget.selected?.id == t.id)
+                                      const Icon(Icons.check, color: kGold, size: 18),
+                                  ],
+                                ),
+                              ),
+                            )),
+                      ],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );
