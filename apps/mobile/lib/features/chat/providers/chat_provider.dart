@@ -80,8 +80,8 @@ class ChatSocketNotifier extends StateNotifier<List<ChatMessage>> {
     });
   }
 
-  void send(String content, String tempId) {
-    // оптимистичное добавление — видим своё сообщение сразу
+  Future<void> send(String content, String tempId) async {
+    // Оптимистичное добавление — видим своё сообщение сразу
     final optimistic = ChatMessage(
       id: tempId,
       content: content,
@@ -91,7 +91,25 @@ class ChatSocketNotifier extends StateNotifier<List<ChatMessage>> {
       createdAt: DateTime.now(),
     );
     state = [...state, optimistic];
-    _socket?.emit('send_message', {'roomId': roomId, 'content': content});
+
+    try {
+      // HTTP — гарантированное сохранение на сервере
+      final res = await createDio().post(
+        '/chat/rooms/$roomId/messages',
+        data: {'content': content},
+      );
+      // Заменяем оптимистичное сообщение реальным (с id от сервера)
+      final real = ChatMessage.fromJson(
+        res.data as Map<String, dynamic>,
+        myId: _myId,
+      );
+      state = state
+          .map((m) => m.id == tempId ? real : m)
+          .toList();
+    } catch (_) {
+      // При ошибке — убираем оптимистичное сообщение
+      state = state.where((m) => m.id != tempId).toList();
+    }
   }
 
   void sendTyping() {
