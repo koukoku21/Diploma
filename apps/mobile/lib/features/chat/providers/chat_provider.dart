@@ -69,21 +69,33 @@ class ChatSocketNotifier extends StateNotifier<List<ChatMessage>> {
     _socket!.connect();
 
     _socket!.onConnect((_) {
-      _socket!.emit('join_room', {'roomId': roomId});
+      _socket!.emit('join_room', roomId);
     });
 
     _socket!.on('new_message', (data) {
       final msg = ChatMessage.fromJson(data as Map<String, dynamic>, myId: _myId);
+      // не дублируем оптимистично добавленные сообщения
+      if (state.any((m) => m.id == msg.id)) return;
       state = [...state, msg];
     });
   }
 
-  void send(String content) {
+  void send(String content, String tempId) {
+    // оптимистичное добавление — видим своё сообщение сразу
+    final optimistic = ChatMessage(
+      id: tempId,
+      content: content,
+      senderId: _myId ?? '',
+      senderName: '',
+      isMe: true,
+      createdAt: DateTime.now(),
+    );
+    state = [...state, optimistic];
     _socket?.emit('send_message', {'roomId': roomId, 'content': content});
   }
 
   void sendTyping() {
-    _socket?.emit('typing', {'roomId': roomId});
+    _socket?.emit('typing', roomId);
   }
 
   @override

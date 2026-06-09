@@ -30,9 +30,14 @@ export class GeocodeService {
 
   private cleanName(fullName: string): string {
     const parts = fullName.split(', ');
-    const meaningful = parts.filter(p => p.trim() && !ADMIN_RE.test(p));
-    // Берём максимум улица + номер дома (2 части)
-    return meaningful.slice(0, 2).join(', ') || parts[0] || fullName;
+    const meaningful = parts.filter(p => p.trim() && !ADMIN_RE.test(p)).slice(0, 2);
+    if (meaningful.length === 0) return parts[0] || fullName;
+
+    // Если первая часть — число (номер дома), переставляем: "улица, номер"
+    if (/^\d+[а-яa-z]?$/i.test(meaningful[0]) && meaningful.length > 1) {
+      return `${meaningful[1]}, ${meaningful[0]}`;
+    }
+    return meaningful.join(', ');
   }
 
   private async fetchFrom2gis(q: string): Promise<GeoSuggestion[]> {

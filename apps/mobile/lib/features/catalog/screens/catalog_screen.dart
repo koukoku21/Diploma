@@ -394,7 +394,7 @@ class _CatalogFilterSheetState extends State<_CatalogFilterSheet> {
                 value: _selectedTemplate,
                 isExpanded: true,
                 dropdownColor: context.colors.bgSecondary,
-                style: AppTextStyles.body,
+                style: AppTextStyles.body.copyWith(color: context.colors.textPrimary),
                 icon: Icon(Icons.expand_more,
                     color: context.colors.textTertiary, size: 20),
                 hint: Text(context.l10n.anyService,
@@ -410,7 +410,7 @@ class _CatalogFilterSheetState extends State<_CatalogFilterSheet> {
                   ...widget.templates.map((t) =>
                       DropdownMenuItem<ServiceTemplate?>(
                         value: t,
-                        child: Text(t.name, style: AppTextStyles.body),
+                        child: Text(t.name, style: AppTextStyles.body.copyWith(color: context.colors.textPrimary)),
                       )),
                 ],
                 onChanged: (t) => setState(() => _selectedTemplate = t),

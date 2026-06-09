@@ -157,7 +157,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
             DropdownButtonFormField<String>(
               value: _category,
               dropdownColor: context.colors.bgSecondary,
-              style: AppTextStyles.body,
+              style: AppTextStyles.body.copyWith(color: context.colors.textPrimary),
               decoration: InputDecoration(
                 filled: true,
                 fillColor: context.colors.bgSecondary,
@@ -172,7 +172,7 @@ class _MasterServiceScreenState extends ConsumerState<MasterServiceScreen> {
               ),
               items: _categories.keys.map((c) => DropdownMenuItem(
                 value: c,
-                child: Text(c, style: AppTextStyles.body),
+                child: Text(c, style: AppTextStyles.body.copyWith(color: context.colors.textPrimary)),
               )).toList(),
               onChanged: (v) => setState(() => _category = v!),
             ),

@@ -52,7 +52,8 @@ class _ChatScreenState extends ConsumerState<ChatScreen> {
   void _send() {
     final text = _ctrl.text.trim();
     if (text.isEmpty) return;
-    ref.read(chatSocketProvider(widget.roomId).notifier).send(text);
+    final tempId = 'temp_${DateTime.now().millisecondsSinceEpoch}';
+    ref.read(chatSocketProvider(widget.roomId).notifier).send(text, tempId);
     _ctrl.clear();
     _scrollToBottom();
   }
