@@ -48,7 +48,7 @@ class _ProfileBody extends StatelessWidget {
 
   void _shareProfile(BuildContext context, MasterProfile m) {
     if (m.username == null) return;
-    final link = 'https://diploma-production-92be.up.railway.app/p/${m.username}';
+    final link = 'https://diploma-api-dt1b.vercel.app/p/${m.username}';
     showModalBottomSheet(
       context: context,
       backgroundColor: context.colors.bgSecondary,
