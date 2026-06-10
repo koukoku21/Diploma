@@ -30,9 +30,16 @@ export class MobizonService {
         { chatId, message },
       );
 
-      this.logger.debug(`WhatsApp OTP sent to ${phone}, id=${response.data?.idMessage}`);
-    } catch (err) {
-      this.logger.error('Failed to send WhatsApp OTP', err);
+      if (response.status === 200) {
+        this.logger.log(`WhatsApp OTP sent to ${phone}`);
+      } else {
+        this.logger.warn(`Green API ${response.status}: ${JSON.stringify(response.data)}`);
+        this.logger.warn(`[OTP FALLBACK] ${phone}: ${code}`);
+      }
+    } catch (err: any) {
+      const status = err?.response?.status;
+      const data = err?.response?.data;
+      this.logger.warn(`Green API error ${status}: ${JSON.stringify(data)}`);
       this.logger.warn(`[OTP FALLBACK] ${phone}: ${code}`);
     }
   }
